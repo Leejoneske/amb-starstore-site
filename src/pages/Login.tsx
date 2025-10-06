@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Star } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+import { Send } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -37,18 +38,23 @@ const Login = () => {
     }, 1000);
   };
 
+  const handleTelegramLogin = () => {
+    // Will be implemented with actual Telegram auth
+    toast({
+      title: "Telegram Login",
+      description: "This feature will be implemented soon.",
+    });
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-md p-8 glass-card">
-        <div className="flex flex-col items-center mb-8">
-          <div className="p-3 rounded-full bg-primary/10 mb-4">
-            <Star className="h-8 w-8 text-primary" />
-          </div>
-          <h1 className="text-3xl font-bold">Ambassador Login</h1>
-          <p className="text-muted-foreground mt-2">Welcome back to StarStore</p>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-background">
+      <Card className="w-full max-w-md p-8 shadow-card">
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold mb-2">Ambassador Login</h1>
+          <p className="text-muted-foreground text-sm">Sign in to access your dashboard</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -65,13 +71,13 @@ const Login = () => {
             <div className="flex items-center justify-between">
               <Label htmlFor="password">Password</Label>
               <Link to="/forgot-password" className="text-sm text-primary hover:underline">
-                Forgot password?
+                Forgot?
               </Link>
             </div>
             <Input
               id="password"
               type="password"
-              placeholder="••••••••"
+              placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -83,19 +89,32 @@ const Login = () => {
           </Button>
         </form>
 
+        <div className="my-6">
+          <Separator />
+        </div>
+
+        <Button 
+          variant="outline" 
+          className="w-full flex items-center justify-center gap-2"
+          onClick={handleTelegramLogin}
+        >
+          <Send className="h-4 w-4" />
+          Continue with Telegram
+        </Button>
+
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground">
-            Not an ambassador yet?{" "}
-            <Link to="/apply" className="text-primary hover:underline font-medium">
+            Not an ambassador?{" "}
+            <Link to="/apply" className="text-primary hover:underline">
               Apply now
             </Link>
           </p>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-border">
+        <div className="mt-6 pt-6 border-t border-border">
           <Link to="/">
             <Button variant="ghost" className="w-full">
-              Back to Home
+              ← Back to Home
             </Button>
           </Link>
         </div>

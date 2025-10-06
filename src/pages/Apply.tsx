@@ -58,16 +58,13 @@ const Apply = () => {
   };
 
   return (
-    <div className="min-h-screen py-12 px-4">
+    <div className="min-h-screen py-12 px-4 bg-background">
       <div className="container mx-auto max-w-3xl">
-        <Card className="p-8 md:p-12 glass-card">
-          <div className="flex flex-col items-center mb-8">
-            <div className="p-3 rounded-full bg-primary/10 mb-4">
-              <Star className="h-8 w-8 text-primary" />
-            </div>
-            <h1 className="text-4xl font-bold text-center">Ambassador Application</h1>
-            <p className="text-muted-foreground mt-2 text-center max-w-2xl">
-              Join our elite community and start earning. Applications are reviewed within 48 hours.
+        <Card className="p-8 md:p-12 shadow-card">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">Ambassador Application</h1>
+            <p className="text-muted-foreground text-sm">
+              Join our community and start earning. Applications reviewed within 48 hours.
             </p>
           </div>
 

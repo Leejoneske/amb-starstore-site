@@ -55,32 +55,32 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen py-8 px-4 bg-background">
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-4xl font-bold mb-2">Welcome back, {ambassador.name}!</h1>
+              <h1 className="text-3xl font-bold mb-2">Welcome back, {ambassador.name}</h1>
               <div className="flex items-center gap-2">
-                <span className="px-3 py-1 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white text-sm font-semibold">
+                <span className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-sm font-medium">
                   {ambassador.tier}
                 </span>
               </div>
             </div>
             <Link to="/">
-              <Button variant="outline">Back to Home</Button>
+              <Button variant="outline">← Home</Button>
             </Link>
           </div>
 
           {/* Tier Progress */}
-          <Card className="p-6 glass-card">
+          <Card className="p-6 shadow-card">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm text-muted-foreground">Progress to {ambassador.nextTier}</p>
                 <p className="text-2xl font-bold">{ambassador.tierProgress}%</p>
               </div>
-              <Award className="h-8 w-8 text-gold" />
+              <Award className="h-8 w-8 text-primary" />
             </div>
             <Progress value={ambassador.tierProgress} className="h-3" />
             <p className="text-sm text-muted-foreground mt-2">
@@ -91,7 +91,7 @@ const Dashboard = () => {
 
         {/* Stats Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="p-6 glass-card">
+          <Card className="p-6 shadow-card">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-muted-foreground">Total Earnings</p>
               <DollarSign className="h-5 w-5 text-success" />
@@ -100,7 +100,7 @@ const Dashboard = () => {
             <p className="text-sm text-muted-foreground mt-1">All time</p>
           </Card>
 
-          <Card className="p-6 glass-card">
+          <Card className="p-6 shadow-card">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-muted-foreground">This Month</p>
               <TrendingUp className="h-5 w-5 text-primary" />
@@ -109,19 +109,19 @@ const Dashboard = () => {
             <p className="text-sm text-success mt-1">+15% from last month</p>
           </Card>
 
-          <Card className="p-6 glass-card">
+          <Card className="p-6 shadow-card">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-muted-foreground">Total Referrals</p>
-              <Users className="h-5 w-5 text-accent" />
+              <Users className="h-5 w-5 text-primary" />
             </div>
             <p className="text-3xl font-bold">{stats.referrals}</p>
             <p className="text-sm text-muted-foreground mt-1">Conversion: {stats.conversionRate}%</p>
           </Card>
 
-          <Card className="p-6 glass-card">
+          <Card className="p-6 shadow-card">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-muted-foreground">Next Payout</p>
-              <Calendar className="h-5 w-5 text-gold" />
+              <Calendar className="h-5 w-5 text-primary" />
             </div>
             <p className="text-3xl font-bold">${stats.pendingAmount.toFixed(2)}</p>
             <p className="text-sm text-muted-foreground mt-1">{stats.nextPayout}</p>
@@ -129,7 +129,7 @@ const Dashboard = () => {
         </div>
 
         {/* Referral Tools */}
-        <Card className="p-6 glass-card mb-8">
+        <Card className="p-6 shadow-card mb-8">
           <h2 className="text-2xl font-bold mb-6">Your Referral Tools</h2>
           
           <div className="space-y-4">
@@ -188,14 +188,14 @@ const Dashboard = () => {
           </TabsList>
 
           <TabsContent value="referrals">
-            <Card className="glass-card">
+            <Card className="shadow-card">
               <div className="p-6">
                 <h3 className="text-xl font-semibold mb-4">Recent Referrals</h3>
                 <div className="space-y-4">
                   {recentReferrals.map((referral) => (
                     <div 
                       key={referral.id}
-                      className="flex items-center justify-between p-4 rounded-lg bg-muted/30"
+                      className="flex items-center justify-between p-4 rounded-lg bg-secondary"
                     >
                       <div>
                         <p className="font-medium">Sale #{referral.id}</p>
@@ -204,7 +204,7 @@ const Dashboard = () => {
                       <div className="text-right">
                         <p className="font-bold text-lg">${referral.amount.toFixed(2)}</p>
                         <span className={`text-sm ${
-                          referral.status === "Completed" ? "text-success" : "text-accent"
+                          referral.status === "Completed" ? "text-success" : "text-primary"
                         }`}>
                           {referral.status}
                         </span>
@@ -217,7 +217,7 @@ const Dashboard = () => {
           </TabsContent>
 
           <TabsContent value="earnings">
-            <Card className="glass-card p-6">
+            <Card className="shadow-card p-6">
               <h3 className="text-xl font-semibold mb-4">Earnings History</h3>
               <p className="text-muted-foreground">
                 Detailed earnings history and payout records will appear here.
@@ -226,7 +226,7 @@ const Dashboard = () => {
           </TabsContent>
 
           <TabsContent value="resources">
-            <Card className="glass-card p-6">
+            <Card className="shadow-card p-6">
               <h3 className="text-xl font-semibold mb-4">Ambassador Resources</h3>
               <div className="grid md:grid-cols-2 gap-4">
                 <ResourceCard 
