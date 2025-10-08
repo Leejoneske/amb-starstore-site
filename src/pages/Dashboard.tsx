@@ -8,69 +8,67 @@ import { Label } from "@/components/ui/label";
 import { 
   DollarSign, 
   TrendingUp, 
-  Users, 
   Star, 
   Copy, 
   Download,
   Award,
-  Calendar,
-  Link as LinkIcon,
+  LinkIcon,
   Sparkles,
-  BarChart3,
-  MessageSquare,
   CheckCircle2,
-  ArrowUpRight
+  ArrowUpRight,
+  Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useAmbassadorProfile } from "@/hooks/useAmbassadorProfile";
+import { useTransactions } from "@/hooks/useTransactions";
+import { usePayouts } from "@/hooks/usePayouts";
 
-const Dashboard = () => {
+const NewDashboard = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { ambassadorProfile, tierConfig, isLoading } = useAmbassadorProfile(user?.id);
+  const { data: transactions } = useTransactions(ambassadorProfile?.id);
+  const { data: payouts } = usePayouts(ambassadorProfile?.id);
 
-  const ambassador = {
-    name: "Alex Johnson",
-    currentTier: 2,
-    tierName: "Growing Ambassador",
-    tierProgress: 68,
-    nextTier: "Advanced Ambassador",
-    nextTierThreshold: 70,
-    currentReferrals: 34,
-    referralCode: "ALEX2025",
-    referralLink: "https://starstore.site?ref=ALEX2025",
-    avgStars: 412,
-    qualityRate: 82,
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
-  const stats = {
-    totalEarnings: 2847.50,
-    monthlyEarnings: 425.30,
-    referrals: 34,
-    monthlyTransactions: 34,
-    avgStarsPerTransaction: 412,
-    qualityTransactions: 28,
-    conversionRate: 12.5,
-    nextPayout: "2025-11-01",
-    pendingAmount: 425.30,
-    currentCommissionRate: "70%",
-    socialPostsThisMonth: 5,
-    socialPostsRequired: 4,
-  };
+  if (!ambassadorProfile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <Card className="p-12 text-center max-w-md">
+          <Sparkles className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2">No Ambassador Profile</h2>
+          <p className="text-muted-foreground mb-6">
+            You haven't been approved as an ambassador yet. Please apply first or wait for approval.
+          </p>
+          <Link to="/apply">
+            <Button>Apply to Become an Ambassador</Button>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
 
-  const tierInfo = [
-    { level: 1, name: "Entry Level", threshold: 30, commission: "6%", baseEarnings: 13, qualityBonus: 30, socialPosts: 0 },
-    { level: 2, name: "Growing Ambassador", threshold: 50, commission: "70%", baseEarnings: 35, qualityBonus: 25, socialPosts: 4 },
-    { level: 3, name: "Advanced Ambassador", threshold: 70, commission: "75%", baseEarnings: 52.5, qualityBonus: 28.5, socialPosts: 6 },
-    { level: 4, name: "Elite Ambassador", threshold: 100, commission: "30%", baseEarnings: 30, qualityBonus: 30, socialPosts: 8 },
+  const tierLevels = [
+    { tier: 'entry', threshold: 30 },
+    { tier: 'growing', threshold: 50 },
+    { tier: 'advanced', threshold: 70 },
+    { tier: 'elite', threshold: 100 },
   ];
 
-  const currentTierData = tierInfo.find(t => t.level === ambassador.currentTier);
-
-  const recentReferrals = [
-    { id: 1, date: "2025-10-25", amount: 15.75, stars: 485, status: "Completed" },
-    { id: 2, date: "2025-10-24", amount: 31.50, stars: 392, status: "Completed" },
-    { id: 3, date: "2025-10-23", amount: 7.88, stars: 198, status: "Pending" },
-    { id: 4, date: "2025-10-22", amount: 23.62, stars: 512, status: "Completed" },
-  ];
+  const currentTierIndex = tierLevels.findIndex(t => t.tier === ambassadorProfile.current_tier);
+  const nextTier = tierLevels[currentTierIndex + 1];
+  const tierProgress = nextTier 
+    ? (ambassadorProfile.total_referrals / nextTier.threshold) * 100
+    : 100;
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -80,79 +78,200 @@ const Dashboard = () => {
     });
   };
 
+  const referralLink = `${window.location.origin}?ref=${ambassadorProfile.referral_code}`;
+
   return (
     <div className="min-h-screen py-8 px-4 bg-background">
       <div className="container mx-auto max-w-7xl">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Welcome back, {ambassador.name}</h1>
+              <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.user_metadata?.full_name || 'Ambassador'}</h1>
               <div className="flex items-center gap-2 flex-wrap">
-                <Badge className="gap-1">Level {ambassador.currentTier}: {ambassador.tierName}</Badge>
-                <Badge variant="outline" className="gap-1"><Star className="h-3 w-3" />{ambassador.avgStars} avg stars</Badge>
+                <Badge className="gap-1">
+                  {tierConfig?.name || ambassadorProfile.current_tier}
+                </Badge>
+                <Badge variant="outline" className="gap-1">
+                  <Star className="h-3 w-3" />
+                  {ambassadorProfile.avg_stars_per_transaction?.toFixed(0) || 0} avg stars
+                </Badge>
               </div>
             </div>
             <Link to="/"><Button variant="outline">← Home</Button></Link>
           </div>
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Progress to {ambassador.nextTier}</p>
-                <p className="text-2xl font-bold">{ambassador.currentReferrals} / {ambassador.nextTierThreshold} referrals</p>
+
+          {nextTier && (
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Progress to {tierLevels[currentTierIndex + 1]?.tier || 'Next Tier'}
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {ambassadorProfile.total_referrals} / {nextTier.threshold} referrals
+                  </p>
+                </div>
+                <Award className="h-8 w-8 text-primary" />
               </div>
-              <Award className="h-8 w-8 text-primary" />
-            </div>
-            <Progress value={ambassador.tierProgress} className="h-3 mb-2" />
-            <p className="text-sm text-muted-foreground">{ambassador.nextTierThreshold - ambassador.currentReferrals} more to reach {ambassador.nextTier}</p>
-          </Card>
+              <Progress value={tierProgress} className="h-3 mb-2" />
+              <p className="text-sm text-muted-foreground">
+                {nextTier.threshold - ambassadorProfile.total_referrals} more to reach next tier
+              </p>
+            </Card>
+          )}
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="p-6"><div className="flex items-center justify-between mb-2"><p className="text-sm text-muted-foreground">Total Earnings</p><DollarSign className="h-5 w-5 text-success" /></div><p className="text-3xl font-bold">${stats.totalEarnings.toFixed(2)}</p><p className="text-sm text-muted-foreground mt-1">All time</p></Card>
-          <Card className="p-6"><div className="flex items-center justify-between mb-2"><p className="text-sm text-muted-foreground">Commission Rate</p><Award className="h-5 w-5 text-primary" /></div><p className="text-3xl font-bold">{stats.currentCommissionRate}</p><p className="text-sm text-muted-foreground mt-1">Level {ambassador.currentTier}</p></Card>
-          <Card className="p-6"><div className="flex items-center justify-between mb-2"><p className="text-sm text-muted-foreground">Avg Stars</p><Star className="h-5 w-5 text-warning" /></div><p className="text-3xl font-bold">{stats.avgStarsPerTransaction}</p><div className="flex items-center gap-1 mt-1"><ArrowUpRight className="h-4 w-4 text-success" /><p className="text-sm text-success">Above 392</p></div></Card>
-          <Card className="p-6"><div className="flex items-center justify-between mb-2"><p className="text-sm text-muted-foreground">Quality Rate</p><Sparkles className="h-5 w-5 text-primary" /></div><p className="text-3xl font-bold">{ambassador.qualityRate}%</p><p className="text-sm text-muted-foreground mt-1">{stats.qualityTransactions}/{stats.monthlyTransactions} above 250★</p></Card>
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-muted-foreground">Total Earnings</p>
+              <DollarSign className="h-5 w-5 text-success" />
+            </div>
+            <p className="text-3xl font-bold">${ambassadorProfile.total_earnings.toFixed(2)}</p>
+            <p className="text-sm text-muted-foreground mt-1">All time</p>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-muted-foreground">Commission Rate</p>
+              <Award className="h-5 w-5 text-primary" />
+            </div>
+            <p className="text-3xl font-bold">
+              {tierConfig ? (tierConfig.commission_rate * 100).toFixed(0) : 0}%
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">{tierConfig?.name}</p>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-muted-foreground">Avg Stars</p>
+              <Star className="h-5 w-5 text-warning" />
+            </div>
+            <p className="text-3xl font-bold">
+              {ambassadorProfile.avg_stars_per_transaction?.toFixed(0) || 0}
+            </p>
+            <div className="flex items-center gap-1 mt-1">
+              <ArrowUpRight className="h-4 w-4 text-success" />
+              <p className="text-sm text-success">Quality metric</p>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-muted-foreground">Quality Rate</p>
+              <Sparkles className="h-5 w-5 text-primary" />
+            </div>
+            <p className="text-3xl font-bold">
+              {ambassadorProfile.quality_transaction_rate?.toFixed(0) || 0}%
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">Transactions above 250★</p>
+          </Card>
         </div>
         
-        {ambassador.qualityRate >= 75 && <Card className="p-6 mb-8 bg-success/5 border-success/20"><div className="flex items-start gap-3"><CheckCircle2 className="h-5 w-5 text-success mt-0.5" /><div><div className="font-semibold text-success mb-1">Quality Bonus Eligible! 🎉</div><p className="text-sm text-muted-foreground">Eligible for ${currentTierData?.qualityBonus} quality bonus this month.</p></div></div></Card>}
+        {(ambassadorProfile.quality_transaction_rate || 0) >= 75 && (
+          <Card className="p-6 mb-8 bg-success/5 border-success/20">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="h-5 w-5 text-success mt-0.5" />
+              <div>
+                <div className="font-semibold text-success mb-1">Quality Bonus Eligible! 🎉</div>
+                <p className="text-sm text-muted-foreground">
+                  Eligible for ${tierConfig?.quality_bonus.toFixed(2)} quality bonus this month.
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
 
         <Card className="p-6 mb-8">
           <h2 className="text-2xl font-bold mb-6">Your Referral Tools</h2>
           <div className="space-y-4">
-            <div><Label className="text-sm font-medium mb-2 block">Referral Code</Label><div className="flex gap-2"><Input value={ambassador.referralCode} readOnly className="font-mono text-lg" /><Button onClick={() => copyToClipboard(ambassador.referralCode, "Referral code")} variant="outline"><Copy className="h-4 w-4" /></Button></div></div>
-            <div><Label className="text-sm font-medium mb-2 block">Referral Link</Label><div className="flex gap-2"><Input value={ambassador.referralLink} readOnly /><Button onClick={() => copyToClipboard(ambassador.referralLink, "Referral link")} variant="outline"><Copy className="h-4 w-4" /></Button></div></div>
-            <div className="flex gap-4 pt-2"><Button className="flex-1"><Download className="h-4 w-4 mr-2" />Download Marketing Kit</Button><Button variant="outline" className="flex-1"><LinkIcon className="h-4 w-4 mr-2" />Create Custom Link</Button></div>
+            <div>
+              <Label className="text-sm font-medium mb-2 block">Referral Code</Label>
+              <div className="flex gap-2">
+                <Input 
+                  value={ambassadorProfile.referral_code} 
+                  readOnly 
+                  className="font-mono text-lg" 
+                />
+                <Button 
+                  onClick={() => copyToClipboard(ambassadorProfile.referral_code, "Referral code")} 
+                  variant="outline"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div>
+              <Label className="text-sm font-medium mb-2 block">Referral Link</Label>
+              <div className="flex gap-2">
+                <Input value={referralLink} readOnly />
+                <Button 
+                  onClick={() => copyToClipboard(referralLink, "Referral link")} 
+                  variant="outline"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="flex gap-4 pt-2">
+              <Button className="flex-1">
+                <Download className="h-4 w-4 mr-2" />
+                Download Marketing Kit
+              </Button>
+              <Button variant="outline" className="flex-1">
+                <LinkIcon className="h-4 w-4 mr-2" />
+                Create Custom Link
+              </Button>
+            </div>
           </div>
         </Card>
 
-        {/* Activity Tabs */}
         <Tabs defaultValue="referrals" className="space-y-6">
           <TabsList className="grid w-full md:w-auto md:inline-grid grid-cols-3 gap-2">
-            <TabsTrigger value="referrals">Recent Referrals</TabsTrigger>
-            <TabsTrigger value="earnings">Earnings History</TabsTrigger>
+            <TabsTrigger value="referrals">Recent Transactions</TabsTrigger>
+            <TabsTrigger value="earnings">Payouts</TabsTrigger>
             <TabsTrigger value="resources">Resources</TabsTrigger>
           </TabsList>
 
           <TabsContent value="referrals">
             <Card className="shadow-card">
               <div className="p-6">
-                <h3 className="text-xl font-semibold mb-4">Recent Referrals</h3>
+                <h3 className="text-xl font-semibold mb-4">Recent Transactions</h3>
                 <div className="space-y-3">
-                  {recentReferrals.map((referral) => (
-                    <div key={referral.id} className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-secondary/50 transition-colors">
-                      <div>
-                        <p className="font-medium">Sale #{referral.id}</p>
-                        <div className="flex items-center gap-3 mt-1">
-                          <p className="text-sm text-muted-foreground">{referral.date}</p>
-                          <div className="flex items-center gap-1"><Star className="h-3 w-3 text-warning" /><span className="text-xs font-medium">{referral.stars}</span></div>
+                  {transactions && transactions.length > 0 ? (
+                    transactions.map((transaction) => (
+                      <div 
+                        key={transaction.id} 
+                        className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-secondary/50 transition-colors"
+                      >
+                        <div>
+                          <p className="font-medium">Transaction #{transaction.order_id || transaction.id.substring(0, 8)}</p>
+                          <div className="flex items-center gap-3 mt-1">
+                            <p className="text-sm text-muted-foreground">
+                              {new Date(transaction.transaction_date).toLocaleDateString()}
+                            </p>
+                            <div className="flex items-center gap-1">
+                              <Star className="h-3 w-3 text-warning" />
+                              <span className="text-xs font-medium">{transaction.stars_awarded}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-lg">${transaction.commission_amount.toFixed(2)}</p>
+                          <Badge 
+                            variant={transaction.status === "completed" ? "default" : "secondary"} 
+                            className="mt-1"
+                          >
+                            {transaction.status}
+                          </Badge>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-lg">${referral.amount.toFixed(2)}</p>
-                        <Badge variant={referral.status === "Completed" ? "default" : "secondary"} className="mt-1">{referral.status}</Badge>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-center text-muted-foreground py-8">
+                      No transactions yet. Start sharing your referral link!
+                    </p>
+                  )}
                 </div>
               </div>
             </Card>
@@ -160,10 +279,36 @@ const Dashboard = () => {
 
           <TabsContent value="earnings">
             <Card className="shadow-card p-6">
-              <h3 className="text-xl font-semibold mb-4">Earnings History</h3>
-              <p className="text-muted-foreground">
-                Detailed earnings history and payout records will appear here.
-              </p>
+              <h3 className="text-xl font-semibold mb-4">Payout History</h3>
+              {payouts && payouts.length > 0 ? (
+                <div className="space-y-3">
+                  {payouts.map((payout) => (
+                    <div 
+                      key={payout.id}
+                      className="flex items-center justify-between p-4 rounded-lg border border-border"
+                    >
+                      <div>
+                        <p className="font-medium">
+                          {new Date(payout.period_start).toLocaleDateString()} - {new Date(payout.period_end).toLocaleDateString()}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {payout.status === 'completed' ? `Paid ${new Date(payout.paid_at!).toLocaleDateString()}` : `Status: ${payout.status}`}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-lg">${payout.total_amount.toFixed(2)}</p>
+                        {payout.quality_bonus > 0 && (
+                          <p className="text-sm text-success">+${payout.quality_bonus.toFixed(2)} bonus</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-center py-8">
+                  No payouts yet. Keep earning commissions!
+                </p>
+              )}
             </Card>
           </TabsContent>
 
@@ -203,4 +348,4 @@ const ResourceCard = ({ title, description }: { title: string; description: stri
   </div>
 );
 
-export default Dashboard;
+export default NewDashboard;

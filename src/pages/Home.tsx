@@ -134,7 +134,7 @@ const Home = () => {
                   Apply Now <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link to="/login">
+              <Link to="/auth">
                 <Button size="lg" variant="outline">Ambassador Login</Button>
               </Link>
             </div>
@@ -351,7 +351,7 @@ const Home = () => {
                   Apply Now <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link to="/login">
+              <Link to="/auth">
                 <Button size="lg" variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
                   Sign In
                 </Button>

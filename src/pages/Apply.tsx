@@ -1,284 +1,226 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Star, Upload } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, Sparkles, CheckCircle2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Apply = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [telegram, setTelegram] = useState("");
+  const [socialLinks, setSocialLinks] = useState("");
+  const [experience, setExperience] = useState("");
+  const [whyJoin, setWhyJoin] = useState("");
+  const [strategy, setStrategy] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  
   const { toast } = useToast();
-
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    country: "",
-    telegram: "",
-    twitter: "",
-    instagram: "",
-    youtube: "",
-    audienceSize: "",
-    platform: "",
-    experience: "",
-    why: "",
-    referralMethod: "",
-    agreement: false,
-  });
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.agreement) {
-      toast({
-        title: "Agreement Required",
-        description: "Please agree to the terms and conditions.",
-        variant: "destructive",
-      });
-      return;
-    }
+    setLoading(true);
 
-    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .insert({
+          user_id: user?.id || null,
+          full_name: fullName,
+          email,
+          phone: phone || null,
+          telegram_username: telegram || null,
+          social_media_links: socialLinks ? JSON.parse(`{"links": "${socialLinks}"}`) : null,
+          experience,
+          why_join: whyJoin,
+          referral_strategy: strategy,
+        });
 
-    // Simulate submission - will be replaced with actual API call
-    setTimeout(() => {
+      if (error) throw error;
+
+      setSubmitted(true);
       toast({
         title: "Application Submitted!",
-        description: "We'll review your application and get back to you within 48 hours.",
+        description: "We'll review your application and get back to you soon.",
       });
-      navigate("/");
-      setIsLoading(false);
-    }, 1500);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to submit application. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <div className="min-h-screen py-12 px-4 bg-background">
-      <div className="container mx-auto max-w-3xl">
-        <Card className="p-8 md:p-12 shadow-card">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Ambassador Application</h1>
-            <p className="text-muted-foreground text-sm">
-              Join our community and start earning. Applications reviewed within 48 hours.
-            </p>
+  if (submitted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
+        <Card className="w-full max-w-md p-12 text-center">
+          <div className="inline-flex p-4 rounded-full bg-success/10 mb-6">
+            <CheckCircle2 className="h-12 w-12 text-success" />
           </div>
-
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Personal Information */}
-            <div className="space-y-6">
-              <h2 className="text-2xl font-semibold">Personal Information</h2>
-              
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name *</Label>
-                  <Input
-                    id="fullName"
-                    placeholder="John Doe"
-                    value={formData.fullName}
-                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="john@example.com"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="country">Country *</Label>
-                <Input
-                  id="country"
-                  placeholder="United States"
-                  value={formData.country}
-                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Social Media */}
-            <div className="space-y-6">
-              <h2 className="text-2xl font-semibold">Social Media Presence</h2>
-              
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="telegram">Telegram Username *</Label>
-                  <Input
-                    id="telegram"
-                    placeholder="@username"
-                    value={formData.telegram}
-                    onChange={(e) => setFormData({ ...formData, telegram: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="twitter">Twitter/X Handle</Label>
-                  <Input
-                    id="twitter"
-                    placeholder="@username"
-                    value={formData.twitter}
-                    onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="instagram">Instagram Handle</Label>
-                  <Input
-                    id="instagram"
-                    placeholder="@username"
-                    value={formData.instagram}
-                    onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="youtube">YouTube Channel</Label>
-                  <Input
-                    id="youtube"
-                    placeholder="Channel URL or @handle"
-                    value={formData.youtube}
-                    onChange={(e) => setFormData({ ...formData, youtube: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Primary Platform *</Label>
-                <RadioGroup 
-                  value={formData.platform}
-                  onValueChange={(value) => setFormData({ ...formData, platform: value })}
-                  required
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="telegram" id="telegram-radio" />
-                    <Label htmlFor="telegram-radio" className="font-normal cursor-pointer">Telegram</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="twitter" id="twitter-radio" />
-                    <Label htmlFor="twitter-radio" className="font-normal cursor-pointer">Twitter/X</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="instagram" id="instagram-radio" />
-                    <Label htmlFor="instagram-radio" className="font-normal cursor-pointer">Instagram</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="youtube" id="youtube-radio" />
-                    <Label htmlFor="youtube-radio" className="font-normal cursor-pointer">YouTube</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="other" id="other-radio" />
-                    <Label htmlFor="other-radio" className="font-normal cursor-pointer">Other</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="audienceSize">Total Audience Size *</Label>
-                <Select 
-                  value={formData.audienceSize}
-                  onValueChange={(value) => setFormData({ ...formData, audienceSize: value })}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your audience size" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0-1k">Less than 1,000</SelectItem>
-                    <SelectItem value="1k-10k">1,000 - 10,000</SelectItem>
-                    <SelectItem value="10k-50k">10,000 - 50,000</SelectItem>
-                    <SelectItem value="50k-100k">50,000 - 100,000</SelectItem>
-                    <SelectItem value="100k+">100,000+</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Ambassador Experience */}
-            <div className="space-y-6">
-              <h2 className="text-2xl font-semibold">Ambassador Experience</h2>
-              
-              <div className="space-y-2">
-                <Label htmlFor="experience">Previous Ambassador/Affiliate Experience</Label>
-                <Textarea
-                  id="experience"
-                  placeholder="Tell us about your previous ambassador or affiliate marketing experience..."
-                  value={formData.experience}
-                  onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
-                  rows={4}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="why">Why do you want to become a StarStore Ambassador? *</Label>
-                <Textarea
-                  id="why"
-                  placeholder="Share your motivation and what makes you a great fit for our program..."
-                  value={formData.why}
-                  onChange={(e) => setFormData({ ...formData, why: e.target.value })}
-                  rows={5}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="referralMethod">How will you promote StarStore? *</Label>
-                <Textarea
-                  id="referralMethod"
-                  placeholder="Describe your promotion strategy (e.g., content creation, community engagement, etc.)"
-                  value={formData.referralMethod}
-                  onChange={(e) => setFormData({ ...formData, referralMethod: e.target.value })}
-                  rows={4}
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Agreement */}
-            <div className="space-y-4">
-              <div className="flex items-start space-x-3 p-4 rounded-lg bg-muted/50">
-                <Checkbox
-                  id="agreement"
-                  checked={formData.agreement}
-                  onCheckedChange={(checked) => 
-                    setFormData({ ...formData, agreement: checked as boolean })
-                  }
-                />
-                <Label htmlFor="agreement" className="text-sm font-normal cursor-pointer leading-relaxed">
-                  I agree to the StarStore Ambassador Program terms and conditions. I understand that 
-                  my application will be reviewed and I may be contacted for additional information. 
-                  I commit to promoting StarStore authentically and in accordance with program guidelines.
-                </Label>
-              </div>
-            </div>
-
-            {/* Submit */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Button type="submit" size="lg" className="flex-1" disabled={isLoading}>
-                {isLoading ? "Submitting..." : "Submit Application"}
-              </Button>
-              <Link to="/" className="flex-1">
-                <Button type="button" variant="outline" size="lg" className="w-full">
-                  Cancel
-                </Button>
+          <h1 className="text-3xl font-bold mb-4">Application Submitted!</h1>
+          <p className="text-muted-foreground mb-8">
+            Thank you for applying to become a StarStore Ambassador. We'll review your application and contact you within 48 hours.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Link to="/">
+              <Button>Back to Home</Button>
+            </Link>
+            {user && (
+              <Link to="/dashboard">
+                <Button variant="outline">Go to Dashboard</Button>
               </Link>
+            )}
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background py-12 px-4">
+      <div className="container mx-auto max-w-3xl">
+        <div className="text-center mb-8">
+          <Sparkles className="h-12 w-12 text-primary mx-auto mb-4" />
+          <h1 className="text-4xl font-bold mb-2">Become an Ambassador</h1>
+          <p className="text-muted-foreground">
+            Join our program and start earning up to 75% commission
+          </p>
+        </div>
+
+        <Card className="p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="fullName">Full Name *</Label>
+                <Input
+                  id="fullName"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  placeholder="John Doe"
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="you@example.com"
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+1 (555) 000-0000"
+                />
+              </div>
+              <div>
+                <Label htmlFor="telegram">Telegram Username</Label>
+                <Input
+                  id="telegram"
+                  value={telegram}
+                  onChange={(e) => setTelegram(e.target.value)}
+                  placeholder="@username"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="socialLinks">Social Media Links</Label>
+              <Textarea
+                id="socialLinks"
+                value={socialLinks}
+                onChange={(e) => setSocialLinks(e.target.value)}
+                placeholder="Instagram: @yourhandle&#10;TikTok: @yourhandle&#10;YouTube: channel link"
+                rows={3}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                List your social media profiles (one per line)
+              </p>
+            </div>
+
+            <div>
+              <Label htmlFor="experience">Previous Marketing Experience *</Label>
+              <Textarea
+                id="experience"
+                value={experience}
+                onChange={(e) => setExperience(e.target.value)}
+                required
+                placeholder="Tell us about your experience with affiliate marketing, social media promotion, or similar activities..."
+                rows={4}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="whyJoin">Why do you want to join our program? *</Label>
+              <Textarea
+                id="whyJoin"
+                value={whyJoin}
+                onChange={(e) => setWhyJoin(e.target.value)}
+                required
+                placeholder="Share your motivation for becoming a StarStore Ambassador..."
+                rows={4}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="strategy">How would you promote StarStore? *</Label>
+              <Textarea
+                id="strategy"
+                value={strategy}
+                onChange={(e) => setStrategy(e.target.value)}
+                required
+                placeholder="Describe your promotional strategy, target audience, and planned activities..."
+                rows={4}
+              />
+            </div>
+
+            <div className="border-t pt-6">
+              <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit Application"
+                )}
+              </Button>
+              <p className="text-xs text-center text-muted-foreground mt-4">
+                By submitting, you agree to our Terms of Service and Privacy Policy
+              </p>
             </div>
           </form>
         </Card>
+
+        <div className="text-center mt-6">
+          <Link to="/" className="text-primary hover:underline">
+            ← Back to Home
+          </Link>
+        </div>
       </div>
     </div>
   );
