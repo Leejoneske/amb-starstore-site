@@ -15,7 +15,6 @@ import {
   Trophy
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import Navbar from "@/components/Navbar";
 
 const Home = () => {
   const tiers = [
@@ -115,8 +114,6 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      
       {/* Hero Section */}
       <section className="border-b border-border">
         <div className="container mx-auto px-4 py-20 md:py-28">
