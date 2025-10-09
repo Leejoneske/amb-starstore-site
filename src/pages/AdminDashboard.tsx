@@ -70,62 +70,41 @@ const AdminDashboard = () => {
   const handleApplicationAction = async (applicationId: string, action: 'approve' | 'reject') => {
     setActionLoading(applicationId);
     try {
-      // Update application status
-      const { error: updateError } = await supabase
-        .from('applications')
-        .update({ 
-          status: action === 'approve' ? 'approved' : 'rejected',
-          reviewed_by: user?.id,
-          reviewed_at: new Date().toISOString(),
-          rejection_reason: action === 'reject' ? 'Application rejected by admin' : null
-        })
-        .eq('id', applicationId);
+      const application = applications?.find(app => app.id === applicationId);
+      if (!application) throw new Error('Application not found');
+
+      // Update application status using admin function
+      const { error: updateError } = await supabase.rpc('update_application_as_admin', {
+        application_id: applicationId,
+        new_status: action === 'approve' ? 'approved' : 'rejected',
+        reviewed_by: user?.id,
+        rejection_reason: action === 'reject' ? 'Application rejected by admin' : null
+      });
 
       if (updateError) throw updateError;
 
       // If approved, create ambassador profile
       if (action === 'approve') {
-        const application = applications?.find(app => app.id === applicationId);
-        if (application) {
-          // Check if user profile exists
-          let { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('email', application.email)
-            .single();
+        // Generate a UUID for the profile
+        const profileId = crypto.randomUUID();
+        
+        // Create profile using admin function
+        const { data: profileData, error: profileError } = await supabase.rpc('create_profile_as_admin', {
+          profile_id: profileId,
+          profile_email: application.email,
+          profile_name: application.full_name
+        });
 
-          // If profile doesn't exist, create it
-          if (profileError && profileError.code === 'PGRST116') {
-            const { data: newProfile, error: createError } = await supabase
-              .from('profiles')
-              .insert({
-                email: application.email,
-                full_name: application.full_name
-              })
-              .select('id')
-              .single();
+        if (profileError) throw profileError;
 
-            if (createError) throw createError;
-            profile = newProfile;
-          } else if (profileError) {
-            throw profileError;
-          }
+        // Create ambassador profile using admin function
+        const { error: ambassadorError } = await supabase.rpc('create_ambassador_as_admin', {
+          user_id: profileId,
+          referral_code: Math.random().toString(36).substring(2, 10).toUpperCase(),
+          approved_by: user?.id
+        });
 
-          if (profile) {
-            // Create ambassador profile
-            const { error: ambassadorError } = await supabase
-              .from('ambassador_profiles')
-              .insert({
-                user_id: profile.id,
-                referral_code: Math.random().toString(36).substring(2, 10).toUpperCase(),
-                status: 'active',
-                approved_at: new Date().toISOString(),
-                approved_by: user?.id
-              });
-
-            if (ambassadorError) throw ambassadorError;
-          }
-        }
+        if (ambassadorError) throw ambassadorError;
       }
 
       // Show success message
