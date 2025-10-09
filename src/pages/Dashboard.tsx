@@ -80,7 +80,7 @@ const Dashboard = () => {
 
         {/* Earnings Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+          <Card className="p-6 bg-primary/5 border-primary/20">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-lg bg-primary/20">
                 <DollarSign className="h-6 w-6 text-primary" />
@@ -92,7 +92,7 @@ const Dashboard = () => {
             <div className="text-sm text-muted-foreground">Total Earnings</div>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-success/10 to-success/5 border-success/20">
+          <Card className="p-6 bg-success/5 border-success/20">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-lg bg-success/20">
                 <Users className="h-6 w-6 text-success" />
@@ -104,7 +104,7 @@ const Dashboard = () => {
             <div className="text-sm text-muted-foreground">Total Referrals</div>
           </Card>
 
-          <Card className="p-6 bg-gradient-to-br from-warning/10 to-warning/5 border-warning/20">
+          <Card className="p-6 bg-warning/5 border-warning/20">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 rounded-lg bg-warning/20">
                 <Clock className="h-6 w-6 text-warning" />

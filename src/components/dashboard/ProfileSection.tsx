@@ -23,8 +23,8 @@ export const ProfileSection = ({ user, tier, isAdmin }: ProfileSectionProps) => 
   
   const getTierColor = (tier: string) => {
     switch (tier) {
-      case 'elite': return 'bg-warning/10 text-warning border-warning/20';
-      case 'advanced': return 'bg-info/10 text-info border-info/20';
+      case 'elite': return 'bg-primary/10 text-primary border-primary/20';
+      case 'advanced': return 'bg-primary/10 text-primary border-primary/20';
       case 'growing': return 'bg-primary/10 text-primary border-primary/20';
       default: return 'bg-muted text-muted-foreground';
     }
