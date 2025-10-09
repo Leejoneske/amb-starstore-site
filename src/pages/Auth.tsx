@@ -7,22 +7,40 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, AlertCircle, CheckCircle2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp, user } = useAuth();
+  const [isFirstLogin, setIsFirstLogin] = useState(false);
+  const { signIn, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
-      navigate("/dashboard");
+      // Check if this is a first-time login (temporary password)
+      checkFirstLogin();
     }
   }, [user, navigate]);
+
+  const checkFirstLogin = async () => {
+    if (!user) return;
+    
+    // Check if user needs to change password (you can implement this logic)
+    // For now, we'll check if the user has a specific metadata field
+    const needsPasswordChange = user.user_metadata?.needs_password_change === true;
+    
+    if (needsPasswordChange) {
+      setIsFirstLogin(true);
+    } else {
+      navigate("/dashboard");
+    }
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,34 +59,125 @@ const Auth = () => {
         title: "Success!",
         description: "You have been signed in successfully.",
       });
-      navigate("/dashboard");
+      // The useEffect will handle navigation
     }
 
     setLoading(false);
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
-    const { error } = await signUp(email, password, fullName);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+        data: { needs_password_change: false }
+      });
 
-    if (error) {
+      if (error) throw error;
+
       toast({
-        title: "Error signing up",
+        title: "Success!",
+        description: "Password updated successfully. Welcome to your dashboard!",
+      });
+
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast({
+        title: "Error",
         description: error.message,
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Success!",
-        description: "Please check your email to confirm your account.",
-      });
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
+  // Show password change form for first-time login
+  if (isFirstLogin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center gap-2 mb-4">
+              <CheckCircle2 className="h-8 w-8 text-success" />
+              <h1 className="text-3xl font-bold">Welcome to StarStore!</h1>
+            </div>
+            <p className="text-muted-foreground">Please set your new password to continue</p>
+          </div>
+
+          <Card className="p-8 border-border backdrop-blur-sm bg-card/95">
+            <form onSubmit={handlePasswordChange} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="new-password">New Password</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  placeholder="Enter your new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="h-11"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  placeholder="Confirm your new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="h-11"
+                />
+              </div>
+              <Button type="submit" className="w-full h-11 mt-6" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Updating password...
+                  </>
+                ) : (
+                  "Set Password & Continue"
+                )}
+              </Button>
+            </form>
+          </Card>
+
+          <div className="text-center mt-6">
+            <p className="text-sm text-muted-foreground">
+              🔒 Your account security is important to us
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show regular login form
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-md">
@@ -81,107 +190,53 @@ const Auth = () => {
         </div>
 
         <Card className="p-8 border-border backdrop-blur-sm bg-card/95">
-          <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
-                  <Input
-                    id="signin-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="h-11"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
-                  <Input
-                    id="signin-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="h-11"
-                  />
-                </div>
-                <Button type="submit" className="w-full h-11 mt-6" disabled={loading}>
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Signing in...
-                    </>
-                  ) : (
-                    "Sign In"
-                  )}
-                </Button>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name">Full Name</Label>
-                  <Input
-                    id="signup-name"
-                    type="text"
-                    placeholder="John Doe"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                    className="h-11"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="h-11"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    className="h-11"
-                  />
-                </div>
-                <Button type="submit" className="w-full h-11 mt-6" disabled={loading}>
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating account...
-                    </>
-                  ) : (
-                    "Create Account"
-                  )}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+          <form onSubmit={handleSignIn} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="signin-email">Email</Label>
+              <Input
+                id="signin-email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="h-11"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="signin-password">Password</Label>
+              <Input
+                id="signin-password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="h-11"
+              />
+            </div>
+            <Button type="submit" className="w-full h-11 mt-6" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                "Sign In"
+              )}
+            </Button>
+          </form>
         </Card>
 
         <div className="text-center mt-6">
-          <Button variant="ghost" onClick={() => navigate("/")} className="text-muted-foreground">
+          <div className="p-4 bg-muted/50 rounded-lg">
+            <AlertCircle className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">
+              <strong>New to StarStore?</strong><br />
+              Apply to become an ambassador first, then you'll receive login credentials via email.
+            </p>
+          </div>
+          <Button variant="ghost" onClick={() => navigate("/")} className="text-muted-foreground mt-4">
             Back to home
           </Button>
         </div>

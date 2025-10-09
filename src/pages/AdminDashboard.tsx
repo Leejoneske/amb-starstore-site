@@ -22,6 +22,7 @@ import {
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { sendApprovalEmailWithResend } from "@/lib/emailService";
 
 interface Application {
   id: string;
@@ -87,6 +88,8 @@ const AdminDashboard = () => {
       if (action === 'approve') {
         // Generate a UUID for the profile
         const profileId = crypto.randomUUID();
+        const referralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+        const tempPassword = 'STAR' + Math.random().toString(36).substring(2, 8).toUpperCase();
         
         // Create profile using admin function
         const { data: profileData, error: profileError } = await supabase.rpc('create_profile_as_admin', {
@@ -100,16 +103,32 @@ const AdminDashboard = () => {
         // Create ambassador profile using admin function
         const { data: ambassadorData, error: ambassadorError } = await supabase.rpc('create_ambassador_as_admin', {
           user_id: profileId,
-          referral_code: Math.random().toString(36).substring(2, 10).toUpperCase(),
+          referral_code: referralCode,
           approved_by: user?.id
         });
 
         if (ambassadorError) throw ambassadorError;
 
-        toast({
-          title: "Application Approved!",
-          description: `Ambassador profile created successfully. Referral code: ${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+        // Send approval email with credentials
+        const emailResult = await sendApprovalEmailWithResend({
+          userEmail: application.email,
+          userName: application.full_name,
+          tempPassword: tempPassword,
+          referralCode: referralCode
         });
+
+        if (emailResult.success) {
+          toast({
+            title: "Application Approved!",
+            description: `Ambassador profile created and welcome email sent to ${application.email}`,
+          });
+        } else {
+          toast({
+            title: "Application Approved!",
+            description: `Ambassador profile created. Email sending failed: ${emailResult.error}`,
+            variant: "destructive",
+          });
+        }
       } else {
         toast({
           title: "Application Rejected",
