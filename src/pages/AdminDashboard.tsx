@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Application {
   id: string;
@@ -53,6 +54,8 @@ const AdminDashboard = () => {
   const { data: userRole } = useUserRole(user?.id);
   const { applications, isLoading: appsLoading, updateApplicationStatus } = useApplications();
   const { ambassadors, isLoading: ambLoading } = useAllAmbassadors();
+  const { toast } = useToast();
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const loading = appsLoading || ambLoading;
 
@@ -65,27 +68,52 @@ const AdminDashboard = () => {
   };
 
   const handleApplicationAction = async (applicationId: string, action: 'approve' | 'reject') => {
+    setActionLoading(applicationId);
     try {
-      await updateApplicationStatus.mutateAsync({
-        applicationId,
-        status: action === 'approve' ? 'approved' : 'rejected',
-        rejectionReason: action === 'reject' ? 'Application rejected by admin' : undefined
-      });
+      // Update application status
+      const { error: updateError } = await supabase
+        .from('applications')
+        .update({ 
+          status: action === 'approve' ? 'approved' : 'rejected',
+          reviewed_by: user?.id,
+          reviewed_at: new Date().toISOString(),
+          rejection_reason: action === 'reject' ? 'Application rejected by admin' : null
+        })
+        .eq('id', applicationId);
+
+      if (updateError) throw updateError;
 
       // If approved, create ambassador profile
       if (action === 'approve') {
         const application = applications?.find(app => app.id === applicationId);
         if (application) {
-          // First, get or create user profile
-          const { data: profile } = await supabase
+          // Check if user profile exists
+          let { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('id')
             .eq('email', application.email)
             .single();
 
+          // If profile doesn't exist, create it
+          if (profileError && profileError.code === 'PGRST116') {
+            const { data: newProfile, error: createError } = await supabase
+              .from('profiles')
+              .insert({
+                email: application.email,
+                full_name: application.full_name
+              })
+              .select('id')
+              .single();
+
+            if (createError) throw createError;
+            profile = newProfile;
+          } else if (profileError) {
+            throw profileError;
+          }
+
           if (profile) {
             // Create ambassador profile
-            await supabase
+            const { error: ambassadorError } = await supabase
               .from('ambassador_profiles')
               .insert({
                 user_id: profile.id,
@@ -94,12 +122,147 @@ const AdminDashboard = () => {
                 approved_at: new Date().toISOString(),
                 approved_by: user?.id
               });
+
+            if (ambassadorError) throw ambassadorError;
           }
         }
       }
-    } catch (error) {
+
+      // Show success message
+      toast({
+        title: "Success!",
+        description: `Application ${action === 'approve' ? 'approved' : 'rejected'} successfully.`,
+      });
+
+      // Refresh data
+      window.location.reload();
+    } catch (error: any) {
       console.error('Error updating application:', error);
+      toast({
+        title: "Error",
+        description: `Failed to ${action === 'approve' ? 'approve' : 'reject'} application: ${error.message}`,
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
     }
+  };
+
+  const handleDatabaseReset = async () => {
+    if (!confirm('Are you sure you want to reset the database? This will delete ALL data and cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setActionLoading('reset');
+      
+      // Clear all data
+      const tables = [
+        'analytics_events',
+        'payouts', 
+        'transactions',
+        'social_posts',
+        'referrals',
+        'applications',
+        'ambassador_profiles',
+        'user_roles',
+        'profiles'
+      ];
+
+      for (const table of tables) {
+        const { error } = await supabase
+          .from(table)
+          .delete()
+          .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all rows
+        
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Success!",
+        description: "Database has been reset successfully.",
+      });
+
+      // Refresh page
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Error resetting database:', error);
+      toast({
+        title: "Error",
+        description: `Failed to reset database: ${error.message}`,
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleExportData = () => {
+    try {
+      // Export applications
+      const applicationsData = applications?.map(app => ({
+        'Full Name': app.full_name,
+        'Email': app.email,
+        'Status': app.status,
+        'Applied Date': new Date(app.created_at).toLocaleDateString(),
+        'Experience': app.experience,
+        'Why Join': app.why_join,
+        'Strategy': app.referral_strategy
+      })) || [];
+
+      // Export ambassadors
+      const ambassadorsData = ambassadors?.map(amb => ({
+        'Name': amb.profiles.full_name,
+        'Email': amb.profiles.email,
+        'Tier': amb.current_tier,
+        'Referrals': amb.total_referrals,
+        'Earnings': amb.total_earnings,
+        'Status': amb.status,
+        'Referral Code': amb.referral_code
+      })) || [];
+
+      // Create CSV content
+      const applicationsCSV = convertToCSV(applicationsData);
+      const ambassadorsCSV = convertToCSV(ambassadorsData);
+
+      // Download files
+      downloadCSV(applicationsCSV, 'applications.csv');
+      downloadCSV(ambassadorsCSV, 'ambassadors.csv');
+
+      toast({
+        title: "Success!",
+        description: "Data exported successfully.",
+      });
+    } catch (error: any) {
+      console.error('Error exporting data:', error);
+      toast({
+        title: "Error",
+        description: `Failed to export data: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const convertToCSV = (data: any[]) => {
+    if (data.length === 0) return '';
+    
+    const headers = Object.keys(data[0]);
+    const csvContent = [
+      headers.join(','),
+      ...data.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+    ].join('\n');
+    
+    return csvContent;
+  };
+
+  const downloadCSV = (csvContent: string, filename: string) => {
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   if (userRole !== 'admin') {
@@ -238,17 +401,19 @@ const AdminDashboard = () => {
                             size="sm" 
                             onClick={() => handleApplicationAction(app.id, 'approve')}
                             className="bg-success hover:bg-success/90"
+                            disabled={actionLoading === app.id}
                           >
                             <UserCheck className="h-4 w-4 mr-1" />
-                            Approve
+                            {actionLoading === app.id ? 'Processing...' : 'Approve'}
                           </Button>
                           <Button 
                             size="sm" 
                             variant="destructive"
                             onClick={() => handleApplicationAction(app.id, 'reject')}
+                            disabled={actionLoading === app.id}
                           >
                             <UserX className="h-4 w-4 mr-1" />
-                            Reject
+                            {actionLoading === app.id ? 'Processing...' : 'Reject'}
                           </Button>
                         </div>
                       )}
@@ -323,8 +488,13 @@ const AdminDashboard = () => {
                   <p className="text-sm text-muted-foreground mb-3">
                     Clear all data and reset the system to initial state.
                   </p>
-                  <Button variant="destructive" size="sm">
-                    Reset Database
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={handleDatabaseReset}
+                    disabled={actionLoading === 'reset'}
+                  >
+                    {actionLoading === 'reset' ? 'Resetting...' : 'Reset Database'}
                   </Button>
                 </div>
                 
@@ -333,7 +503,11 @@ const AdminDashboard = () => {
                   <p className="text-sm text-muted-foreground mb-3">
                     Export all applications and ambassador data.
                   </p>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleExportData}
+                  >
                     Export CSV
                   </Button>
                 </div>
