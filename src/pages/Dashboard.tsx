@@ -19,7 +19,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProfileSection } from "@/components/dashboard/ProfileSection";
 import { ReferralTools } from "@/components/dashboard/ReferralTools";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import AdminDashboard from "./AdminDashboard";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -29,6 +30,11 @@ const Dashboard = () => {
   const { data: payouts } = usePayouts(ambassadorProfile?.id);
   
   const isAdmin = userRole === 'admin';
+
+  // Redirect admins to admin dashboard
+  if (isAdmin) {
+    return <AdminDashboard />;
+  }
 
   if (profileLoading) {
     return (
