@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -70,33 +70,27 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-md">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate("/")} 
-          className="mb-6 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-
-        <Card className="p-8 border-border">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Welcome</h1>
-            <p className="text-muted-foreground">Sign in to your account or create a new one</p>
+        <div className="text-center mb-8 animate-fade-in">
+          <div className="inline-flex items-center justify-center gap-2 mb-4">
+            <Sparkles className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold">StarStore</h1>
           </div>
+          <p className="text-muted-foreground">Ambassador Portal</p>
+        </div>
 
+        <Card className="p-8 border-border backdrop-blur-sm bg-card/95">
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsList className="grid w-full grid-cols-2 mb-8">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div>
-                  <Label htmlFor="signin-email" className="text-foreground">Email</Label>
+              <form onSubmit={handleSignIn} className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="signin-email">Email</Label>
                   <Input
                     id="signin-email"
                     type="email"
@@ -104,11 +98,11 @@ const Auth = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="mt-2"
+                    className="h-11"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="signin-password" className="text-foreground">Password</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="signin-password">Password</Label>
                   <Input
                     id="signin-password"
                     type="password"
@@ -116,10 +110,10 @@ const Auth = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="mt-2"
+                    className="h-11"
                   />
                 </div>
-                <Button type="submit" className="w-full mt-6" disabled={loading}>
+                <Button type="submit" className="w-full h-11 mt-6" disabled={loading}>
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -133,9 +127,9 @@ const Auth = () => {
             </TabsContent>
 
             <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div>
-                  <Label htmlFor="signup-name" className="text-foreground">Full Name</Label>
+              <form onSubmit={handleSignUp} className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-name">Full Name</Label>
                   <Input
                     id="signup-name"
                     type="text"
@@ -143,11 +137,11 @@ const Auth = () => {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
-                    className="mt-2"
+                    className="h-11"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="signup-email" className="text-foreground">Email</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">Email</Label>
                   <Input
                     id="signup-email"
                     type="email"
@@ -155,11 +149,11 @@ const Auth = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="mt-2"
+                    className="h-11"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="signup-password" className="text-foreground">Password</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">Password</Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -168,10 +162,10 @@ const Auth = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     minLength={6}
-                    className="mt-2"
+                    className="h-11"
                   />
                 </div>
-                <Button type="submit" className="w-full mt-6" disabled={loading}>
+                <Button type="submit" className="w-full h-11 mt-6" disabled={loading}>
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -185,6 +179,12 @@ const Auth = () => {
             </TabsContent>
           </Tabs>
         </Card>
+
+        <div className="text-center mt-6">
+          <Button variant="ghost" onClick={() => navigate("/")} className="text-muted-foreground">
+            Back to home
+          </Button>
+        </div>
       </div>
     </div>
   );
