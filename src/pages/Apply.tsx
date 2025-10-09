@@ -93,7 +93,6 @@ const Apply = () => {
     <div className="min-h-screen bg-background py-12 px-4">
       <div className="container mx-auto max-w-3xl">
         <div className="text-center mb-8">
-          <Sparkles className="h-12 w-12 text-primary mx-auto mb-4" />
           <h1 className="text-4xl font-bold mb-2">Become an Ambassador</h1>
           <p className="text-muted-foreground">
             Join our program and start earning up to 75% commission

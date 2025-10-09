@@ -24,7 +24,7 @@ const Home = () => {
       icon: <Star className="h-6 w-6" />,
       color: "text-muted-foreground",
       borderColor: "border-border",
-      bgColor: "bg-secondary/50",
+      bgColor: "bg-card",
       threshold: 30,
       commission: "6%",
       baseEarnings: 13,
@@ -43,7 +43,7 @@ const Home = () => {
       name: "Growing Ambassador",
       icon: <TrendingUp className="h-6 w-6" />,
       color: "text-primary",
-      borderColor: "border-primary/30",
+      borderColor: "border-primary",
       bgColor: "bg-primary/5",
       threshold: 50,
       commission: "70%",
@@ -66,9 +66,9 @@ const Home = () => {
       level: 3,
       name: "Advanced Ambassador",
       icon: <Sparkles className="h-6 w-6" />,
-      color: "text-info",
-      borderColor: "border-info/30",
-      bgColor: "bg-info/5",
+      color: "text-primary",
+      borderColor: "border-primary",
+      bgColor: "bg-primary/10",
       threshold: 70,
       commission: "75%",
       baseEarnings: 52.5,
@@ -90,9 +90,9 @@ const Home = () => {
       level: 4,
       name: "Elite Ambassador",
       icon: <Trophy className="h-6 w-6" />,
-      color: "text-warning",
-      borderColor: "border-warning/30",
-      bgColor: "bg-warning/5",
+      color: "text-primary",
+      borderColor: "border-primary",
+      bgColor: "bg-primary/15",
       threshold: 100,
       commission: "30%",
       baseEarnings: 30,
@@ -117,7 +117,7 @@ const Home = () => {
       {/* Hero Section */}
       <section className="border-b border-border">
         <div className="container mx-auto px-4 py-20 md:py-28">
-          <div className="text-center max-w-4xl mx-auto animate-fade-in">
+          <div className="text-center max-w-4xl mx-auto">
             <Badge className="mb-6" variant="secondary">
               <Star className="h-3 w-3 mr-1" />
               4-Tier Progressive Program
@@ -179,8 +179,7 @@ const Home = () => {
           {tiers.map((tier, index) => (
             <Card 
               key={index} 
-              className={`p-6 border-2 ${tier.borderColor} ${tier.bgColor} hover:shadow-lg transition-all duration-300 animate-slide-up`}
-              style={{ animationDelay: `${index * 0.1}s` }}
+              className={`p-6 border ${tier.borderColor} ${tier.bgColor} hover:shadow-md transition-shadow duration-200`}
             >
               <div className="mb-6">
                 <div className={`inline-flex p-3 rounded-lg bg-background border ${tier.borderColor} ${tier.color} mb-4`}>
@@ -325,7 +324,7 @@ const Home = () => {
               desc: "Unlock better rates as you grow" 
             }
           ].map((benefit, index) => (
-            <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
+            <Card key={index} className="p-6 hover:shadow-md transition-shadow duration-200">
               <div className="inline-flex p-3 rounded-lg bg-primary/10 text-primary mb-4">
                 {benefit.icon}
               </div>
@@ -339,7 +338,7 @@ const Home = () => {
       {/* CTA */}
       <section className="border-t border-border">
         <div className="container mx-auto px-4 py-20">
-          <Card className="p-12 text-center bg-gradient-to-br from-primary to-accent text-primary-foreground max-w-3xl mx-auto">
+          <Card className="p-12 text-center bg-primary text-primary-foreground max-w-3xl mx-auto">
             <Sparkles className="h-12 w-12 mx-auto mb-6 opacity-90" />
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Start Earning?</h2>
             <p className="text-lg mb-8 opacity-90 max-w-xl mx-auto">
