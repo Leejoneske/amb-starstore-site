@@ -23,322 +23,239 @@ import {
   ChevronRight,
   Quote,
   PlayCircle,
-  ExternalLink
+  ExternalLink,
+  Lock,
+  Crown,
+  Rocket,
+  UserPlus
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Home = () => {
-  const tiers = [
+  const coreBenefits = [
     {
-      level: 1,
-      name: "Entry Level",
-      icon: <Star className="h-8 w-8" />,
-      color: "text-blue-600",
-      borderColor: "border-blue-200",
-      bgColor: "bg-gradient-to-br from-blue-50 to-blue-100",
-      threshold: 30,
-      commission: "6%",
-      baseEarnings: 13,
-      qualityBonus: 30,
-      features: [
-        "6% commission rate",
-        "$13 base earnings",
-        "$30 quality bonus",
-        "Ambassador dashboard access",
-        "Marketing materials",
-        "Basic support"
-      ],
-      requirements: ["Complete application", "Social media presence"],
-      popular: false
+      icon: <Lock className="h-8 w-8 text-blue-600" />,
+      title: "Exclusive Access",
+      description: "Private ambassador channels, early product access, and closed community events",
+      features: ["Private Discord channels", "Early product launches", "Exclusive events"]
     },
     {
-      level: 2,
-      name: "Growing Ambassador",
-      icon: <TrendingUp className="h-8 w-8" />,
-      color: "text-green-600",
-      borderColor: "border-green-200",
-      bgColor: "bg-gradient-to-br from-green-50 to-green-100",
-      threshold: 50,
-      commission: "7%",
-      baseEarnings: 35,
-      qualityBonus: 50,
-      features: [
-        "7% commission rate",
-        "$35 base earnings",
-        "$50 quality bonus",
-        "Priority support",
-        "Advanced analytics",
-        "Exclusive content",
-        "Monthly webinars"
-      ],
-      requirements: ["30+ referrals", "4 social posts/month"],
-      popular: true
+      icon: <Crown className="h-8 w-8 text-purple-600" />,
+      title: "Premium Rewards",
+      description: "Unique merchandise, special bonuses, and enhanced referral conditions",
+      features: ["Custom ambassador merch", "Special bonuses", "Higher commission rates"]
     },
     {
-      level: 3,
-      name: "Advanced Ambassador",
-      icon: <Trophy className="h-8 w-8" />,
-      color: "text-purple-600",
-      borderColor: "border-purple-200",
-      bgColor: "bg-gradient-to-br from-purple-50 to-purple-100",
-      threshold: 100,
-      commission: "8%",
-      baseEarnings: 70,
-      qualityBonus: 100,
-      features: [
-        "8% commission rate",
-        "$70 base earnings",
-        "$100 quality bonus",
-        "VIP support",
-        "Custom marketing tools",
-        "Direct manager access",
-        "Exclusive events"
-      ],
-      requirements: ["50+ referrals", "6 social posts/month"],
-      popular: false
-    },
-    {
-      level: 4,
-      name: "Elite Ambassador",
-      icon: <Award className="h-8 w-8" />,
-      color: "text-yellow-600",
-      borderColor: "border-yellow-200",
-      bgColor: "bg-gradient-to-br from-yellow-50 to-yellow-100",
-      threshold: 200,
-      commission: "10%",
-      baseEarnings: 140,
-      qualityBonus: 200,
-      features: [
-        "10% commission rate",
-        "$140 base earnings",
-        "$200 quality bonus",
-        "White-glove support",
-        "Co-marketing opportunities",
-        "Revenue sharing",
-        "Ambassador advisory board"
-      ],
-      requirements: ["100+ referrals", "8 social posts/month"],
-      popular: false
+      icon: <Rocket className="h-8 w-8 text-green-600" />,
+      title: "Growth Program",
+      description: "Share your expertise and grow with us through our enhanced ambassador program",
+      features: ["Personal growth opportunities", "Skill development", "Community recognition"]
     }
   ];
 
-  const stats = [
-    { label: "Active Ambassadors", value: "2,500+", icon: <Users className="h-6 w-6" /> },
-    { label: "Total Earnings Paid", value: "$1.2M+", icon: <DollarSign className="h-6 w-6" /> },
-    { label: "Success Rate", value: "94%", icon: <TrendingUp className="h-6 w-6" /> },
-    { label: "Countries", value: "45+", icon: <Globe className="h-6 w-6" /> }
+  const earningRanges = [
+    { tier: "Starter", range: "$50 - $200", referrals: "5-15", commission: "5%" },
+    { tier: "Growing", range: "$200 - $500", referrals: "15-30", commission: "7%" },
+    { tier: "Advanced", range: "$500 - $1,200", referrals: "30-50", commission: "9%" },
+    { tier: "Elite", range: "$1,200+", referrals: "50+", commission: "12%" }
   ];
 
   const testimonials = [
     {
-      name: "Sarah Johnson",
+      name: "Sarah M.",
       role: "Elite Ambassador",
-      avatar: "SJ",
-      content: "StarStore's ambassador program changed my life. I've earned over $15,000 in just 6 months while helping others discover amazing products.",
-      earnings: "$15,000+",
-      tier: "Elite"
+      earnings: "$1,400/month",
+      content: "StarStore's ambassador program changed everything for me. The exclusive access and community support is incredible.",
+      avatar: "SM"
     },
     {
       name: "Mike Chen",
-      role: "Advanced Ambassador",
-      avatar: "MC",
-      content: "The support team is incredible and the commission structure is very fair. I love being part of this community!",
-      earnings: "$8,500+",
-      tier: "Advanced"
+      role: "Advanced Ambassador", 
+      earnings: "$800/month",
+      content: "I love being part of the StarStore family. The rewards are great and the community is amazing.",
+      avatar: "MC"
     },
     {
-      name: "Emily Rodriguez",
+      name: "Emma R.",
       role: "Growing Ambassador",
-      avatar: "ER",
-      content: "Even as a new ambassador, I was able to start earning within my first month. The training materials are excellent.",
-      earnings: "$3,200+",
-      tier: "Growing"
+      earnings: "$350/month", 
+      content: "Even as a new ambassador, I felt welcomed and supported. The earning potential is real!",
+      avatar: "ER"
     }
   ];
 
-  const features = [
+  const applicationSteps = [
     {
-      icon: <Shield className="h-8 w-8 text-blue-600" />,
-      title: "Secure & Reliable",
-      description: "Your earnings are protected with industry-leading security and guaranteed monthly payouts."
-    },
-    {
-      icon: <Zap className="h-8 w-8 text-yellow-600" />,
-      title: "Quick Setup",
-      description: "Get started in minutes with our streamlined onboarding process and instant access to materials."
-    },
-    {
-      icon: <Target className="h-8 w-8 text-green-600" />,
-      title: "Proven Results",
-      description: "Join thousands of successful ambassadors who have built sustainable income streams."
-    },
-    {
-      icon: <Heart className="h-8 w-8 text-red-600" />,
-      title: "Community Support",
-      description: "Connect with fellow ambassadors, share strategies, and grow together in our exclusive community."
-    }
-  ];
-
-  const steps = [
-    {
-      number: "01",
+      step: "1",
       title: "Apply",
-      description: "Submit your application and tell us about your social media presence and marketing experience.",
-      icon: <MessageSquare className="h-6 w-6" />
+      description: "Fill out our simple application form and tell us about your community"
     },
     {
-      number: "02",
-      title: "Get Approved",
-      description: "Our team reviews your application and sends you login credentials via email within 24 hours.",
-      icon: <CheckCircle2 className="h-6 w-6" />
+      step: "2", 
+      title: "Get Accepted",
+      description: "Our team reviews your application and sends you exclusive access within 24 hours"
     },
     {
-      number: "03",
-      title: "Start Earning",
-      description: "Access your dashboard, get your referral links, and start sharing to earn commissions immediately.",
-      icon: <DollarSign className="h-6 w-6" />
+      step: "3",
+      title: "Start Earning", 
+      description: "Receive your unique referral links and start sharing with your community"
+    },
+    {
+      step: "4",
+      title: "Grow Together",
+      description: "Join our exclusive community and unlock premium benefits as you grow"
     }
+  ];
+
+  const trustElements = [
+    { label: "Active Ambassadors", value: "500+", icon: <Users className="h-5 w-5" /> },
+    { label: "Total Rewards Paid", value: "$250K+", icon: <DollarSign className="h-5 w-5" /> },
+    { label: "Success Rate", value: "96%", icon: <TrendingUp className="h-5 w-5" /> },
+    { label: "Countries", value: "25+", icon: <Globe className="h-5 w-5" /> }
   ];
 
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/10">
-        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-accent/5">
         <div className="container mx-auto px-4 py-20 lg:py-32">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <Badge variant="secondary" className="w-fit">
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Join 2,500+ Successful Ambassadors
-                </Badge>
-                <h1 className="text-4xl lg:text-6xl font-bold tracking-tight">
-                  Turn Your
-                  <span className="text-primary block">Influence Into</span>
-                  <span className="text-accent block">Income</span>
-                </h1>
-                <p className="text-xl text-muted-foreground max-w-2xl">
-                  Join StarStore's Ambassador Program and earn up to 10% commission 
-                  by sharing products you love. Start earning today!
-                </p>
+          <div className="text-center space-y-8 max-w-4xl mx-auto">
+            {/* Logo/Brand */}
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-3 text-2xl font-bold">
+                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                  <Star className="h-6 w-6 text-primary-foreground" />
+                </div>
+                StarStore
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" asChild className="text-lg px-8 py-6">
-                  <Link to="/apply">
-                    Start Earning Now
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-                <Button size="lg" variant="outline" className="text-lg px-8 py-6">
-                  <PlayCircle className="mr-2 h-5 w-5" />
-                  Watch Demo
-                </Button>
-              </div>
-
-              <div className="flex items-center gap-8 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  No upfront costs
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  Instant payouts
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  Global program
-                </div>
-              </div>
+              {/* Main Headline */}
+              <h1 className="text-4xl lg:text-6xl font-bold tracking-tight">
+                WELCOME TO STARSTORE
+                <span className="block text-primary">AMBASSADOR PROGRAM</span>
+              </h1>
+              
+              {/* Sub-headline */}
+              <p className="text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto">
+                Join StarStore Ambassador Program and unlock exclusive opportunities 
+                in the world of e-commerce and community building.
+              </p>
             </div>
 
-            <div className="relative">
-              <div className="relative z-10">
-                <Card className="p-8 bg-gradient-to-br from-primary/5 to-accent/5 border-2 border-primary/20">
-                  <div className="space-y-6">
-                    <div className="text-center">
-                      <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
-                        <Trophy className="h-8 w-8 text-primary" />
-                      </div>
-                      <h3 className="text-2xl font-bold">Elite Ambassador</h3>
-                      <p className="text-muted-foreground">Sarah Johnson</p>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="text-center p-4 bg-background/50 rounded-lg">
-                        <div className="text-2xl font-bold text-green-600">$15,000+</div>
-                        <div className="text-sm text-muted-foreground">Total Earnings</div>
-                      </div>
-                      <div className="text-center p-4 bg-background/50 rounded-lg">
-                        <div className="text-2xl font-bold text-blue-600">10%</div>
-                        <div className="text-sm text-muted-foreground">Commission Rate</div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>This Month</span>
-                        <span className="font-semibold">$2,340</span>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div className="bg-gradient-to-r from-primary to-accent h-2 rounded-full w-3/4"></div>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-              
-              {/* Floating elements */}
-              <div className="absolute -top-4 -right-4 w-8 h-8 bg-yellow-400 rounded-full animate-bounce"></div>
-              <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-green-400 rounded-full animate-pulse"></div>
+            {/* CTA */}
+            <div className="space-y-4">
+              <Button size="lg" asChild className="text-lg px-8 py-6 bg-primary hover:bg-primary/90">
+                <Link to="/apply">
+                  Become an Ambassador
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                Join 500+ successful ambassadors worldwide
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-muted/30">
+      {/* Core Benefits Section */}
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center space-y-2">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4">
-                  {stat.icon}
+          <div className="text-center space-y-4 mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold">What You'll Unlock</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Exclusive access, premium rewards, and growth opportunities await
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {coreBenefits.map((benefit, index) => (
+              <Card key={index} className="p-8 text-center hover:shadow-lg transition-shadow">
+                <div className="space-y-6">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-background rounded-full">
+                    {benefit.icon}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-3">{benefit.title}</h3>
+                    <p className="text-muted-foreground mb-4">{benefit.description}</p>
+                    <ul className="space-y-2 text-sm">
+                      {benefit.features.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-                <div className="text-3xl font-bold text-primary">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
-              </div>
+              </Card>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
+      {/* Earning Potential Section */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold">How It Works</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold">Earning Potential</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Get started in just 3 simple steps and begin earning immediately
+              See what our ambassadors are earning monthly
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {steps.map((step, index) => (
-              <div key={index} className="relative">
-                <Card className="p-8 text-center h-full">
-                  <div className="space-y-4">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full">
-                      {step.icon}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {earningRanges.map((tier, index) => (
+              <Card key={index} className={`p-6 text-center ${
+                tier.tier === 'Elite' ? 'ring-2 ring-primary ring-offset-2' : ''
+              }`}>
+                <div className="space-y-4">
+                  <Badge variant={tier.tier === 'Elite' ? 'default' : 'secondary'}>
+                    {tier.tier}
+                  </Badge>
+                  <div className="text-2xl font-bold text-primary">{tier.range}</div>
+                  <div className="text-sm text-muted-foreground">per month</div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Commission:</span>
+                      <span className="font-semibold">{tier.commission}</span>
                     </div>
-                    <div className="text-4xl font-bold text-primary/20">{step.number}</div>
-                    <h3 className="text-xl font-semibold">{step.title}</h3>
-                    <p className="text-muted-foreground">{step.description}</p>
+                    <div className="flex justify-between">
+                      <span>Referrals:</span>
+                      <span className="font-semibold">{tier.referrals}</span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Application Process */}
+      <section className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center space-y-4 mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold">How to Get Started</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Simple steps to join our exclusive ambassador community
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {applicationSteps.map((step, index) => (
+              <div key={index} className="relative">
+                <Card className="p-6 text-center h-full">
+                  <div className="space-y-4">
+                    <div className="inline-flex items-center justify-center w-12 h-12 bg-primary text-primary-foreground rounded-full text-lg font-bold">
+                      {step.step}
+                    </div>
+                    <h3 className="text-lg font-semibold">{step.title}</h3>
+                    <p className="text-muted-foreground text-sm">{step.description}</p>
                   </div>
                 </Card>
-                {index < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2">
+                {index < applicationSteps.length - 1 && (
+                  <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2">
                     <ChevronRight className="h-6 w-6 text-muted-foreground" />
                   </div>
                 )}
@@ -348,121 +265,19 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold">Why Choose StarStore?</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              We provide everything you need to succeed as an ambassador
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <Card key={index} className="p-6 text-center hover:shadow-lg transition-shadow">
-                <div className="space-y-4">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-background rounded-full">
-                    {feature.icon}
-                  </div>
-                  <h3 className="text-lg font-semibold">{feature.title}</h3>
-                  <p className="text-muted-foreground text-sm">{feature.description}</p>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Tier System Section */}
+      {/* Testimonials */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold">Ambassador Tiers</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold">What Our Ambassadors Say</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Earn more as you grow. Higher tiers unlock better commissions and exclusive benefits.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {tiers.map((tier, index) => (
-              <Card 
-                key={index} 
-                className={`relative p-6 h-full ${tier.bgColor} ${tier.borderColor} border-2 hover:shadow-xl transition-all duration-300 ${
-                  tier.popular ? 'ring-2 ring-primary ring-offset-2 scale-105' : ''
-                }`}
-              >
-                {tier.popular && (
-                  <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground">
-                    Most Popular
-                  </Badge>
-                )}
-                
-                <div className="space-y-6">
-                  <div className="text-center">
-                    <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${tier.bgColor}`}>
-                      <div className={tier.color}>
-                        {tier.icon}
-                      </div>
-                    </div>
-                    <h3 className="text-xl font-bold">{tier.name}</h3>
-                    <div className="text-3xl font-bold text-primary mt-2">{tier.commission}</div>
-                    <div className="text-sm text-muted-foreground">Commission Rate</div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
-                      <span className="text-sm">Base Earnings</span>
-                      <span className="font-semibold">${tier.baseEarnings}</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
-                      <span className="text-sm">Quality Bonus</span>
-                      <span className="font-semibold">${tier.qualityBonus}</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
-                      <span className="text-sm">Min Referrals</span>
-                      <span className="font-semibold">{tier.threshold}+</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <h4 className="font-semibold text-sm">Features:</h4>
-                    <ul className="space-y-1">
-                      {tier.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-center gap-2 text-sm">
-                          <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <Button 
-                    className={`w-full ${tier.popular ? 'bg-primary hover:bg-primary/90' : 'bg-muted hover:bg-muted/80'}`}
-                    variant={tier.popular ? 'default' : 'secondary'}
-                  >
-                    {tier.level === 1 ? 'Get Started' : 'Upgrade Now'}
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold">Success Stories</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Hear from our top-performing ambassadors
+              Real stories from our community
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
+              <Card key={index} className="p-6">
                 <div className="space-y-4">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
@@ -472,7 +287,7 @@ const Home = () => {
                       <h4 className="font-semibold">{testimonial.name}</h4>
                       <div className="flex items-center gap-2">
                         <Badge variant="secondary" className="text-xs">
-                          {testimonial.tier} Ambassador
+                          {testimonial.role}
                         </Badge>
                         <span className="text-sm text-green-600 font-semibold">
                           {testimonial.earnings}
@@ -494,24 +309,41 @@ const Home = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Trust Elements */}
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+            {trustElements.map((element, index) => (
+              <div key={index} className="text-center space-y-2">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4">
+                  {element.icon}
+                </div>
+                <div className="text-2xl font-bold text-primary">{element.value}</div>
+                <div className="text-sm text-muted-foreground">{element.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <Card className="p-12 text-center bg-gradient-to-br from-primary/5 to-accent/5 border-2 border-primary/20">
             <div className="space-y-6 max-w-3xl mx-auto">
               <h2 className="text-3xl lg:text-4xl font-bold">
-                Ready to Start Your Ambassador Journey?
+                Ready to Join Our Ambassador Program?
               </h2>
               <p className="text-xl text-muted-foreground">
-                Join thousands of successful ambassadors and start earning today. 
-                No experience required - we'll guide you every step of the way.
+                Unlock exclusive opportunities, premium rewards, and grow with our community. 
+                Apply now and start your ambassador journey today.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" asChild className="text-lg px-8 py-6">
                   <Link to="/apply">
-                    Apply Now - It's Free
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    Become an Ambassador
+                    <UserPlus className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" className="text-lg px-8 py-6">
@@ -522,16 +354,16 @@ const Home = () => {
 
               <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground pt-4">
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  <span>Quick approval</span>
+                  <Shield className="h-4 w-4" />
+                  <span>Secure & Trusted</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  <span>Secure payments</span>
+                  <Clock className="h-4 w-4" />
+                  <span>Quick Approval</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  <span>Community support</span>
+                  <span>Active Community</span>
                 </div>
               </div>
             </div>
