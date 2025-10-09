@@ -73,45 +73,32 @@ const AdminDashboard = () => {
       const application = applications?.find(app => app.id === applicationId);
       if (!application) throw new Error('Application not found');
 
-      // Update application status using admin function
-      const { error: updateError } = await supabase.rpc('update_application_as_admin', {
-        application_id: applicationId,
-        new_status: action === 'approve' ? 'approved' : 'rejected',
-        reviewed_by: user?.id,
-        rejection_reason: action === 'reject' ? 'Application rejected by admin' : null
-      });
+      // Update application status
+      const { error: updateError } = await supabase
+        .from('applications')
+        .update({ 
+          status: action === 'approve' ? 'approved' : 'rejected',
+          reviewed_by: user?.id,
+          reviewed_at: new Date().toISOString(),
+          rejection_reason: action === 'reject' ? 'Application rejected by admin' : null
+        })
+        .eq('id', applicationId);
 
       if (updateError) throw updateError;
 
-      // If approved, create ambassador profile
+      // If approved, we'll create the profile and ambassador manually
       if (action === 'approve') {
-        // Generate a UUID for the profile
-        const profileId = crypto.randomUUID();
-        
-        // Create profile using admin function
-        const { data: profileData, error: profileError } = await supabase.rpc('create_profile_as_admin', {
-          profile_id: profileId,
-          profile_email: application.email,
-          profile_name: application.full_name
+        // For now, just show a message that manual setup is needed
+        toast({
+          title: "Application Approved",
+          description: "Application approved. You may need to manually create the ambassador profile in Supabase.",
         });
-
-        if (profileError) throw profileError;
-
-        // Create ambassador profile using admin function
-        const { error: ambassadorError } = await supabase.rpc('create_ambassador_as_admin', {
-          user_id: profileId,
-          referral_code: Math.random().toString(36).substring(2, 10).toUpperCase(),
-          approved_by: user?.id
+      } else {
+        toast({
+          title: "Application Rejected",
+          description: "Application rejected successfully.",
         });
-
-        if (ambassadorError) throw ambassadorError;
       }
-
-      // Show success message
-      toast({
-        title: "Success!",
-        description: `Application ${action === 'approve' ? 'approved' : 'rejected'} successfully.`,
-      });
 
       // Refresh data
       window.location.reload();
@@ -489,6 +476,16 @@ const AdminDashboard = () => {
                   >
                     Export CSV
                   </Button>
+                </div>
+
+                <div className="p-4 border border-border rounded-lg">
+                  <h4 className="font-medium mb-2">RLS Policy Fix</h4>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Run the simple-rls-fix.sql script in Supabase SQL Editor to fix admin permissions.
+                  </p>
+                  <div className="text-xs bg-muted p-2 rounded font-mono">
+                    Copy and run: simple-rls-fix.sql
+                  </div>
                 </div>
               </div>
             </Card>
