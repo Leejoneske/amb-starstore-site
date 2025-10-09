@@ -73,25 +73,42 @@ const AdminDashboard = () => {
       const application = applications?.find(app => app.id === applicationId);
       if (!application) throw new Error('Application not found');
 
-      // Update application status
-      const { error: updateError } = await supabase
-        .from('applications')
-        .update({ 
-          status: action === 'approve' ? 'approved' : 'rejected',
-          reviewed_by: user?.id,
-          reviewed_at: new Date().toISOString(),
-          rejection_reason: action === 'reject' ? 'Application rejected by admin' : null
-        })
-        .eq('id', applicationId);
+      // Update application status using admin function
+      const { error: updateError } = await supabase.rpc('update_application_as_admin', {
+        application_id: applicationId,
+        new_status: action === 'approve' ? 'approved' : 'rejected',
+        reviewed_by: user?.id,
+        rejection_reason: action === 'reject' ? 'Application rejected by admin' : null
+      });
 
       if (updateError) throw updateError;
 
-      // If approved, we'll create the profile and ambassador manually
+      // If approved, create complete ambassador setup
       if (action === 'approve') {
-        // For now, just show a message that manual setup is needed
+        // Generate a UUID for the profile
+        const profileId = crypto.randomUUID();
+        
+        // Create profile using admin function
+        const { data: profileData, error: profileError } = await supabase.rpc('create_profile_as_admin', {
+          profile_id: profileId,
+          profile_email: application.email,
+          profile_name: application.full_name
+        });
+
+        if (profileError) throw profileError;
+
+        // Create ambassador profile using admin function
+        const { data: ambassadorData, error: ambassadorError } = await supabase.rpc('create_ambassador_as_admin', {
+          user_id: profileId,
+          referral_code: Math.random().toString(36).substring(2, 10).toUpperCase(),
+          approved_by: user?.id
+        });
+
+        if (ambassadorError) throw ambassadorError;
+
         toast({
-          title: "Application Approved",
-          description: "Application approved. You may need to manually create the ambassador profile in Supabase.",
+          title: "Application Approved!",
+          description: `Ambassador profile created successfully. Referral code: ${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
         });
       } else {
         toast({
