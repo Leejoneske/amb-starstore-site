@@ -19,7 +19,8 @@ import {
   CheckCircle2,
   Clock
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { sendApprovalEmailWithResend } from "@/lib/emailService";
@@ -52,8 +53,9 @@ interface Ambassador {
 
 const AdminDashboard = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { data: userRole } = useUserRole(user?.id);
-  const { applications, isLoading: appsLoading, updateApplicationStatus } = useApplications();
+  const { applications, isLoading: appsLoading } = useApplications();
   const { ambassadors, isLoading: ambLoading } = useAllAmbassadors();
   const { toast } = useToast();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -75,7 +77,7 @@ const AdminDashboard = () => {
       if (!application) throw new Error('Application not found');
 
       // Update application status using admin function
-      const { error: updateError } = await supabase.rpc('update_application_as_admin', {
+      const { error: updateError } = await supabase.rpc('update_application_as_admin' as any, {
         application_id: applicationId,
         new_status: action === 'approve' ? 'approved' : 'rejected',
         reviewed_by: user?.id,
@@ -92,7 +94,7 @@ const AdminDashboard = () => {
         const tempPassword = 'STAR' + Math.random().toString(36).substring(2, 8).toUpperCase();
         
         // Create profile using admin function
-        const { data: profileData, error: profileError } = await supabase.rpc('create_profile_as_admin', {
+        const { data: profileData, error: profileError } = await supabase.rpc('create_profile_as_admin' as any, {
           profile_id: profileId,
           profile_email: application.email,
           profile_name: application.full_name
@@ -101,7 +103,7 @@ const AdminDashboard = () => {
         if (profileError) throw profileError;
 
         // Create ambassador profile using admin function
-        const { data: ambassadorData, error: ambassadorError } = await supabase.rpc('create_ambassador_as_admin', {
+        const { data: ambassadorData, error: ambassadorError } = await supabase.rpc('create_ambassador_as_admin' as any, {
           user_id: profileId,
           referral_code: referralCode,
           approved_by: user?.id
@@ -136,10 +138,14 @@ const AdminDashboard = () => {
         });
       }
 
-      // Refresh data
-      window.location.reload();
+      // Invalidate queries to refresh data
+      await queryClient.invalidateQueries({ queryKey: ['applications'] });
+      await queryClient.invalidateQueries({ queryKey: ['all-ambassadors'] });
     } catch (error: any) {
-      console.error('Error updating application:', error);
+      // Error handling - log only in development
+      if (import.meta.env.DEV) {
+        console.error('Error updating application:', error);
+      }
       toast({
         title: "Error",
         description: `Failed to ${action === 'approve' ? 'approve' : 'reject'} application: ${error.message}`,
@@ -173,9 +179,9 @@ const AdminDashboard = () => {
 
       for (const table of tables) {
         const { error } = await supabase
-          .from(table)
+          .from(table as any)
           .delete()
-          .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all rows
+          .neq('id', '00000000-0000-0000-0000-000000000000');
         
         if (error) throw error;
       }
@@ -185,10 +191,12 @@ const AdminDashboard = () => {
         description: "Database has been reset successfully.",
       });
 
-      // Refresh page
-      window.location.reload();
+      // Refresh queries
+      await queryClient.invalidateQueries();
     } catch (error: any) {
-      console.error('Error resetting database:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error resetting database:', error);
+      }
       toast({
         title: "Error",
         description: `Failed to reset database: ${error.message}`,
@@ -214,8 +222,8 @@ const AdminDashboard = () => {
 
       // Export ambassadors
       const ambassadorsData = ambassadors?.map(amb => ({
-        'Name': amb.profiles.full_name,
-        'Email': amb.profiles.email,
+        'Name': amb.profiles?.full_name || 'N/A',
+        'Email': amb.profiles?.email || 'N/A',
         'Tier': amb.current_tier,
         'Referrals': amb.total_referrals,
         'Earnings': amb.total_earnings,
@@ -236,7 +244,9 @@ const AdminDashboard = () => {
         description: "Data exported successfully.",
       });
     } catch (error: any) {
-      console.error('Error exporting data:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error exporting data:', error);
+      }
       toast({
         title: "Error",
         description: `Failed to export data: ${error.message}`,
@@ -447,13 +457,13 @@ const AdminDashboard = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h4 className="font-semibold">{amb.profiles.full_name}</h4>
+                          <h4 className="font-semibold">{amb.profiles?.full_name || 'Unknown'}</h4>
                           <Badge variant="outline">{amb.current_tier}</Badge>
                           <Badge variant={amb.status === 'active' ? 'default' : 'secondary'}>
                             {amb.status}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-2">{amb.profiles.email}</p>
+                        <p className="text-sm text-muted-foreground mb-2">{amb.profiles?.email || 'No email'}</p>
                         <div className="grid grid-cols-3 gap-4 text-sm">
                           <div>
                             <span className="text-muted-foreground">Referrals:</span> {amb.total_referrals}

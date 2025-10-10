@@ -6,9 +6,22 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { z } from "zod";
+
+// Validation schema
+const applicationSchema = z.object({
+  fullName: z.string().trim().min(2, "Name must be at least 2 characters").max(100),
+  email: z.string().trim().email("Invalid email address").max(255),
+  phone: z.string().trim().optional(),
+  telegram: z.string().trim().optional(),
+  socialLinks: z.string().trim().max(1000).optional(),
+  experience: z.string().trim().min(10, "Please provide more detail").max(2000),
+  whyJoin: z.string().trim().min(10, "Please provide more detail").max(2000),
+  strategy: z.string().trim().min(10, "Please provide more detail").max(2000),
+});
 
 const Apply = () => {
   const [fullName, setFullName] = useState("");
@@ -21,6 +34,7 @@ const Apply = () => {
   const [strategy, setStrategy] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -29,20 +43,63 @@ const Apply = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrors({});
 
     try {
+      // Validate input
+      const validatedData = applicationSchema.parse({
+        fullName,
+        email,
+        phone,
+        telegram,
+        socialLinks,
+        experience,
+        whyJoin,
+        strategy,
+      });
+
+      // Check for existing application
+      const { data: existing } = await supabase
+        .from('applications')
+        .select('id')
+        .eq('email', validatedData.email)
+        .eq('status', 'pending')
+        .maybeSingle();
+
+      if (existing) {
+        toast({
+          title: "Application Already Exists",
+          description: "You have already submitted an application. Please wait for review.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Parse social links safely
+      let parsedSocialLinks = null;
+      if (validatedData.socialLinks) {
+        try {
+          // Split by newlines and create object
+          const links = validatedData.socialLinks.split('\n').filter(l => l.trim());
+          parsedSocialLinks = { links };
+        } catch {
+          parsedSocialLinks = { raw: validatedData.socialLinks };
+        }
+      }
+
       const { error } = await supabase
         .from('applications')
         .insert({
           user_id: user?.id || null,
-          full_name: fullName,
-          email,
-          phone: phone || null,
-          telegram_username: telegram || null,
-          social_media_links: socialLinks ? JSON.parse(`{"links": "${socialLinks}"}`) : null,
-          experience,
-          why_join: whyJoin,
-          referral_strategy: strategy,
+          full_name: validatedData.fullName,
+          email: validatedData.email,
+          phone: validatedData.phone || null,
+          telegram_username: validatedData.telegram || null,
+          social_media_links: parsedSocialLinks,
+          experience: validatedData.experience,
+          why_join: validatedData.whyJoin,
+          referral_strategy: validatedData.strategy,
         });
 
       if (error) throw error;
@@ -53,11 +110,26 @@ const Apply = () => {
         description: "We'll review your application and get back to you soon.",
       });
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to submit application. Please try again.",
-        variant: "destructive",
-      });
+      if (error instanceof z.ZodError) {
+        const fieldErrors: Record<string, string> = {};
+        error.errors.forEach((err) => {
+          if (err.path[0]) {
+            fieldErrors[err.path[0] as string] = err.message;
+          }
+        });
+        setErrors(fieldErrors);
+        toast({
+          title: "Validation Error",
+          description: "Please check the form for errors.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error?.message || "Failed to submit application. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -110,7 +182,12 @@ const Apply = () => {
                   onChange={(e) => setFullName(e.target.value)}
                   required
                   placeholder="John Doe"
+                  aria-invalid={errors.fullName ? 'true' : 'false'}
+                  aria-describedby={errors.fullName ? 'fullName-error' : undefined}
                 />
+                {errors.fullName && (
+                  <p id="fullName-error" className="text-sm text-destructive mt-1">{errors.fullName}</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="email">Email *</Label>
@@ -121,7 +198,12 @@ const Apply = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="you@example.com"
+                  aria-invalid={errors.email ? 'true' : 'false'}
+                  aria-describedby={errors.email ? 'email-error' : undefined}
                 />
+                {errors.email && (
+                  <p id="email-error" className="text-sm text-destructive mt-1">{errors.email}</p>
+                )}
               </div>
             </div>
 
@@ -170,7 +252,12 @@ const Apply = () => {
                 required
                 placeholder="Tell us about your experience with affiliate marketing, social media promotion, or similar activities..."
                 rows={4}
+                aria-invalid={errors.experience ? 'true' : 'false'}
+                aria-describedby={errors.experience ? 'experience-error' : undefined}
               />
+              {errors.experience && (
+                <p id="experience-error" className="text-sm text-destructive mt-1">{errors.experience}</p>
+              )}
             </div>
 
             <div>
@@ -182,7 +269,12 @@ const Apply = () => {
                 required
                 placeholder="Share your motivation for becoming a StarStore Ambassador..."
                 rows={4}
+                aria-invalid={errors.whyJoin ? 'true' : 'false'}
+                aria-describedby={errors.whyJoin ? 'whyJoin-error' : undefined}
               />
+              {errors.whyJoin && (
+                <p id="whyJoin-error" className="text-sm text-destructive mt-1">{errors.whyJoin}</p>
+              )}
             </div>
 
             <div>
@@ -194,7 +286,12 @@ const Apply = () => {
                 required
                 placeholder="Describe your promotional strategy, target audience, and planned activities..."
                 rows={4}
+                aria-invalid={errors.strategy ? 'true' : 'false'}
+                aria-describedby={errors.strategy ? 'strategy-error' : undefined}
               />
+              {errors.strategy && (
+                <p id="strategy-error" className="text-sm text-destructive mt-1">{errors.strategy}</p>
+              )}
             </div>
 
             <div className="border-t pt-6">

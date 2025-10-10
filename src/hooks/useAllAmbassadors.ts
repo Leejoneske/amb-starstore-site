@@ -9,7 +9,7 @@ export const useAllAmbassadors = () => {
         .from('ambassador_profiles')
         .select(`
           *,
-          profiles!inner(full_name, email, created_at)
+          profiles!ambassador_profiles_user_id_fkey(full_name, email, created_at)
         `)
         .order('created_at', { ascending: false });
       
