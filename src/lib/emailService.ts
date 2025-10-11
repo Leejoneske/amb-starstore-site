@@ -11,15 +11,33 @@ export const sendApprovalEmailWithResend = async (data: ApprovalEmailData) => {
   const { userEmail, userName, tempPassword, referralCode } = data;
 
   try {
-    // In production, this would call a Supabase Edge Function that handles email sending
-    // For now, we'll simulate the email sending
     console.log('Sending approval email to:', userEmail);
-    console.log('Credentials:', { tempPassword, referralCode });
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Call the Supabase Edge Function
+    const response = await fetch(
+      'https://jrtqbntwwkqxpexpplly.supabase.co/functions/v1/send-approval-email',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userEmail,
+          userName,
+          tempPassword,
+          referralCode,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to send email');
+    }
+
+    const result = await response.json();
+    console.log('Email sent successfully:', result);
     
-    // Return success for now - in production, implement actual email service
     return { success: true };
   } catch (error: any) {
     console.error('Email sending error:', error);
