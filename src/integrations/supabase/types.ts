@@ -554,16 +554,36 @@ export type Database = {
         Args: { referral_count: number }
         Returns: Database["public"]["Enums"]["app_tier"]
       }
+      create_ambassador_as_admin: {
+        Args: { approved_by?: string; referral_code: string; user_id: string }
+        Returns: Json
+      }
+      create_profile_as_admin: {
+        Args: {
+          profile_email: string
+          profile_id: string
+          profile_name: string
+        }
+        Returns: Json
+      }
       generate_referral_code: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
       has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
+        Args:
+          | { _role: Database["public"]["Enums"]["app_role"]; _user_id: string }
+          | { check_user_id: string; role_name: string }
         Returns: boolean
+      }
+      update_application_as_admin: {
+        Args: {
+          application_id: string
+          new_status: string
+          rejection_reason?: string
+          reviewed_by?: string
+        }
+        Returns: Json
       }
     }
     Enums: {
