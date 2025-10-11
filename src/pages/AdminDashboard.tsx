@@ -23,7 +23,7 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { sendApprovalEmailWithResend } from "@/lib/emailService";
+
 
 interface Application {
   id: string;
@@ -86,51 +86,25 @@ const AdminDashboard = () => {
 
       if (updateError) throw updateError;
 
-      // If approved, create complete ambassador setup
+      // If approved, create complete ambassador setup via Edge Function
       if (action === 'approve') {
-        // Generate a UUID for the profile
-        const profileId = crypto.randomUUID();
-        const referralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
-        const tempPassword = 'STAR' + Math.random().toString(36).substring(2, 8).toUpperCase();
-        
-        // Create profile using admin function
-        const { data: profileData, error: profileError } = await supabase.rpc('create_profile_as_admin' as any, {
-          profile_id: profileId,
-          profile_email: application.email,
-          profile_name: application.full_name
+        const { data, error: fnError } = await supabase.functions.invoke('admin-approve-application', {
+          body: {
+            applicationId,
+            applicantEmail: application.email,
+            applicantName: application.full_name,
+          },
         });
 
-        if (profileError) throw profileError;
+        if (fnError) throw fnError;
 
-        // Create ambassador profile using admin function
-        const { data: ambassadorData, error: ambassadorError } = await supabase.rpc('create_ambassador_as_admin' as any, {
-          user_id: profileId,
-          referral_code: referralCode,
-          approved_by: user?.id
+        toast({
+          title: "Application Approved!",
+          description: data?.emailSent
+            ? `Ambassador created and email sent to ${application.email}`
+            : `Ambassador created. Email delivery failed, please check function logs.`,
+          variant: data?.emailSent ? "default" : "destructive",
         });
-
-        if (ambassadorError) throw ambassadorError;
-
-        // Send approval email with credentials
-        const emailResult = await sendApprovalEmailWithResend({
-          userEmail: application.email,
-          userName: application.full_name,
-          tempPassword: tempPassword,
-          referralCode: referralCode
-        });
-
-        if (emailResult.success) {
-          toast({
-            title: "Application Approved!",
-            description: `Ambassador profile created and welcome email sent to ${application.email}`,
-          });
-        } else {
-          toast({
-            title: "Application Approved!",
-            description: `Ambassador profile created. Email sending failed: ${emailResult.error}`,
-            variant: "destructive",
-          });
-        }
       } else {
         toast({
           title: "Application Rejected",
