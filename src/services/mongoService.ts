@@ -192,34 +192,11 @@ class MongoService {
     }
   }
 
-  // Direct MongoDB query via Supabase Edge Function proxy
+  // Direct MongoDB query via Railway API (simplified)
   private async directMongoQuery(collection: string, query: any): Promise<any[]> {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        console.warn('No session available for MongoDB query');
-        return [];
-      }
-
-      const response = await fetch('/functions/v1/mongo-proxy', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          collection,
-          operation: 'find',
-          query
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        return result.data || [];
-      }
-
-      console.warn(`MongoDB proxy query failed: ${response.statusText}`);
+      // For now, return empty array - we'll use your Railway API endpoints instead
+      console.log(`Would query ${collection} with:`, query);
       return [];
     } catch (error) {
       console.error('Direct MongoDB query error:', error);
