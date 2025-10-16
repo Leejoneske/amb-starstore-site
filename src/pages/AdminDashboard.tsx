@@ -12,6 +12,7 @@ import { AnalyticsCharts } from "@/components/dashboard/AnalyticsCharts";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { LiveActivityFeed } from "@/components/dashboard/LiveActivityFeed";
 import { AmbassadorStatusList } from "@/components/dashboard/AmbassadorStatusList";
+import { ManualEmailSender } from "@/components/dashboard/ManualEmailSender";
 import { 
   Users, 
   FileText, 
@@ -27,7 +28,8 @@ import {
   Activity,
   Shield,
   Zap,
-  Award
+  Award,
+  Mail
 } from "lucide-react";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -70,6 +72,7 @@ const AdminDashboard = () => {
   const { data: analyticsData, isLoading: analyticsLoading } = useAnalytics(true);
   const { toast } = useToast();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [emailFailures, setEmailFailures] = useState<Map<string, { name: string; email: string; tempPassword?: string; referralCode?: string }>>(new Map());
 
   const loading = appsLoading || ambLoading;
 
@@ -109,11 +112,21 @@ const AdminDashboard = () => {
 
         if (fnError) throw fnError;
 
+        // Store email failure info for manual sending
+        if (!data?.emailSent) {
+          setEmailFailures(prev => new Map(prev.set(applicationId, {
+            name: application.full_name,
+            email: application.email,
+            tempPassword: data?.tempPassword,
+            referralCode: data?.referralCode
+          })));
+        }
+
         toast({
           title: "Application Approved!",
           description: data?.emailSent
             ? `Ambassador created and email sent to ${application.email}`
-            : `Ambassador created. Email delivery failed, please check function logs.`,
+            : data?.message || `Ambassador created. ${data?.emailError ? `Email failed: ${data.emailError}` : 'Email delivery failed.'}`,
           variant: data?.emailSent ? "default" : "destructive",
         });
       } else {
@@ -572,28 +585,46 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                       
-                      {app.status === 'pending' && (
-                        <div className="flex gap-2 ml-4">
-                          <Button 
-                            size="sm" 
-                            onClick={() => handleApplicationAction(app.id, 'approve')}
-                            className="bg-success hover:bg-success/90"
-                            disabled={actionLoading === app.id}
-                          >
-                            <UserCheck className="h-4 w-4 mr-1" />
-                            {actionLoading === app.id ? 'Processing...' : 'Approve'}
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
-                            onClick={() => handleApplicationAction(app.id, 'reject')}
-                            disabled={actionLoading === app.id}
-                          >
-                            <UserX className="h-4 w-4 mr-1" />
-                            {actionLoading === app.id ? 'Processing...' : 'Reject'}
-                          </Button>
-                        </div>
-                      )}
+                      <div className="flex flex-col gap-2 ml-4">
+                        {app.status === 'pending' && (
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleApplicationAction(app.id, 'approve')}
+                              className="bg-success hover:bg-success/90"
+                              disabled={actionLoading === app.id}
+                            >
+                              <UserCheck className="h-4 w-4 mr-1" />
+                              {actionLoading === app.id ? 'Processing...' : 'Approve'}
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              onClick={() => handleApplicationAction(app.id, 'reject')}
+                              disabled={actionLoading === app.id}
+                            >
+                              <UserX className="h-4 w-4 mr-1" />
+                              {actionLoading === app.id ? 'Processing...' : 'Reject'}
+                            </Button>
+                          </div>
+                        )}
+                        
+                        {/* Show manual email sender if email failed */}
+                        {emailFailures.has(app.id) && (
+                          <ManualEmailSender
+                            applicantName={emailFailures.get(app.id)!.name}
+                            applicantEmail={emailFailures.get(app.id)!.email}
+                            tempPassword={emailFailures.get(app.id)!.tempPassword}
+                            referralCode={emailFailures.get(app.id)!.referralCode}
+                            trigger={
+                              <Button size="sm" variant="outline" className="text-orange-600 border-orange-300">
+                                <Mail className="h-4 w-4 mr-1" />
+                                Send Manual Email
+                              </Button>
+                            }
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

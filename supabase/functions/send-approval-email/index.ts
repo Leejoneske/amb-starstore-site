@@ -24,7 +24,37 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { userEmail, userName, tempPassword, referralCode }: ApprovalEmailRequest = await req.json();
 
-    // Sending approval email
+    // Check if RESEND_API_KEY is configured
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendApiKey) {
+      console.error('RESEND_API_KEY environment variable is not set');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Email service not configured. Please set RESEND_API_KEY environment variable.' 
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Validate required fields
+    if (!userEmail || !userName || !tempPassword || !referralCode) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Missing required fields: userEmail, userName, tempPassword, or referralCode' 
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    console.log(`Sending approval email to ${userEmail} for ${userName}`);
 
     const emailResponse = await resend.emails.send({
       from: "StarStore Ambassador Program <onboarding@resend.dev>",
@@ -90,9 +120,27 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    // Email sent successfully
+    if (emailResponse.error) {
+      console.error('Resend API error:', emailResponse.error);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Email delivery failed: ${emailResponse.error.message || 'Unknown Resend error'}` 
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
-    return new Response(JSON.stringify({ success: true, data: emailResponse }), {
+    console.log(`Email sent successfully to ${userEmail}. Message ID: ${emailResponse.data?.id}`);
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      data: emailResponse.data,
+      message: `Approval email sent successfully to ${userEmail}`
+    }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -100,9 +148,14 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: unknown) {
-    // Error in send-approval-email function
+    console.error('Error in send-approval-email function:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ 
+        success: false, 
+        error: `Email function error: ${errorMessage}` 
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

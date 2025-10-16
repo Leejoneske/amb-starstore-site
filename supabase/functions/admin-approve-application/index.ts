@@ -121,18 +121,34 @@ serve(async (req) => {
 
     // 5) Send approval email (best-effort)
     let emailSent = false;
+    let emailError = null;
     try {
       const fnRes = await serviceClient.functions.invoke('send-approval-email', {
         body: { userEmail: applicantEmail, userName: applicantName, tempPassword, referralCode },
       });
-      emailSent = !fnRes.error;
-      // Email function error handling
+      
+      if (fnRes.error) {
+        emailError = fnRes.error.message || 'Email function returned error';
+        console.error('Email function error:', fnRes.error);
+      } else {
+        emailSent = true;
+      }
     } catch (e) {
-      // Email invoke error
+      emailError = e instanceof Error ? e.message : 'Email invoke failed';
+      console.error('Email invoke error:', e);
     }
 
     return new Response(
-      JSON.stringify({ success: true, userId: newUserId, referralCode, emailSent }),
+      JSON.stringify({ 
+        success: true, 
+        userId: newUserId, 
+        referralCode, 
+        emailSent,
+        emailError: emailError,
+        message: emailSent 
+          ? 'Ambassador approved and email sent successfully' 
+          : `Ambassador approved but email failed: ${emailError}. Please send credentials manually.`
+      }),
       { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
   } catch (error: unknown) {
