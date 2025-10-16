@@ -22,13 +22,6 @@ const Auth = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user) {
-      // Check if this is a first-time login (temporary password)
-      checkFirstLogin();
-    }
-  }, [user, checkFirstLogin]);
-
   const checkFirstLogin = useCallback(async () => {
     if (!user) return;
     
@@ -43,6 +36,13 @@ const Auth = () => {
       navigate("/dashboard");
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    if (user) {
+      // Check if this is a first-time login (temporary password)
+      checkFirstLogin();
+    }
+  }, [user, checkFirstLogin]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
