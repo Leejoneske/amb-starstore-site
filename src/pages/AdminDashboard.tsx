@@ -123,11 +123,16 @@ const AdminDashboard = () => {
           })));
         }
 
+        // Check for specific Resend domain verification error
+        const isDomainError = data?.emailError?.includes('verify a domain') || data?.emailError?.includes('testing emails');
+        
         toast({
           title: "Application Approved!",
           description: data?.emailSent
             ? `Ambassador created and email sent to ${application.email}`
-            : data?.message || `Ambassador created. ${data?.emailError ? `Email failed: ${data.emailError}` : 'Email delivery failed.'}`,
+            : isDomainError 
+              ? `Ambassador created. Email requires domain verification - use Manual Email Sender below.`
+              : data?.message || `Ambassador created. ${data?.emailError ? `Email failed: ${data.emailError}` : 'Email delivery failed.'}`,
           variant: data?.emailSent ? "default" : "destructive",
         });
       } else {
