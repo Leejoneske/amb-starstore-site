@@ -176,7 +176,7 @@ const Dashboard = () => {
 
         {/* Tier Progress & Referral Tools */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="starstore-card p-6">
+          <Card className="p-6">
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-lg font-semibold font-serif">Tier Progress</h3>

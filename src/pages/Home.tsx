@@ -209,7 +209,7 @@ const Home = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {earningRanges.map((tier, index) => (
-              <Card key={index} className={`starstore-card p-6 text-center ${
+              <Card key={index} className={`p-6 text-center ${
                 tier.tier === 'Elite' ? 'ring-2 ring-primary ring-offset-2' : ''
               }`}>
                 <div className="space-y-4">
