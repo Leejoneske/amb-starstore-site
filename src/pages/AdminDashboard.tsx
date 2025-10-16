@@ -11,6 +11,7 @@ import { NotificationCenter } from "@/components/dashboard/NotificationCenter";
 import { AnalyticsCharts } from "@/components/dashboard/AnalyticsCharts";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { LiveActivityFeed } from "@/components/dashboard/LiveActivityFeed";
+import { AmbassadorStatusList } from "@/components/dashboard/AmbassadorStatusList";
 import { 
   Users, 
   FileText, 
@@ -609,49 +610,7 @@ const AdminDashboard = () => {
 
           {/* Ambassadors Tab */}
           <TabsContent value="ambassadors" className="space-y-6">
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold">Ambassador Management</h3>
-                <Badge variant="outline">{ambassadors?.length || 0} active</Badge>
-              </div>
-
-              <div className="space-y-4">
-                {ambassadors?.map((amb) => (
-                  <div key={amb.id} className="border border-border rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h4 className="font-semibold">{amb.profiles?.full_name || 'Unknown'}</h4>
-                          <Badge variant="outline">{amb.current_tier}</Badge>
-                          <Badge variant={amb.status === 'active' ? 'default' : 'secondary'}>
-                            {amb.status}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-2">{amb.profiles?.email || 'No email'}</p>
-                        <div className="grid grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">Referrals:</span> {amb.total_referrals}
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Earnings:</span> ${amb.total_earnings.toFixed(2)}
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Code:</span> {amb.referral_code}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {(!ambassadors || ambassadors.length === 0) && (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <Users className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                    <p>No ambassadors found</p>
-                  </div>
-                )}
-              </div>
-            </Card>
+            <AmbassadorStatusList isAdmin={true} />
           </TabsContent>
 
           {/* Settings Tab */}

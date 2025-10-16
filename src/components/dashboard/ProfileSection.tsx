@@ -1,7 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { PasswordChangeDialog } from "@/components/dashboard/PasswordChangeDialog";
 import { User } from "@supabase/supabase-js";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProfileSectionProps {
   user: User;
@@ -10,6 +13,21 @@ interface ProfileSectionProps {
 }
 
 export const ProfileSection = ({ user, tier, isAdmin }: ProfileSectionProps) => {
+  // Check if user needs to change password
+  const { data: ambassadorProfile } = useQuery({
+    queryKey: ['ambassador-profile-password', user.id],
+    queryFn: async () => {
+      if (isAdmin) return null;
+      const { data } = await supabase
+        .from('ambassador_profiles')
+        .select('password_change_required')
+        .eq('user_id', user.id)
+        .single();
+      return data;
+    },
+    enabled: !isAdmin && !!user.id,
+  });
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -46,11 +64,23 @@ export const ProfileSection = ({ user, tier, isAdmin }: ProfileSectionProps) => 
                 Admin
               </Badge>
             )}
+            {ambassadorProfile?.password_change_required && (
+              <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-300">
+                Temp Password
+              </Badge>
+            )}
           </div>
           <p className="text-sm text-muted-foreground mb-2">{user.email}</p>
-          <Badge className={getTierColor(tier)}>
-            {tier.charAt(0).toUpperCase() + tier.slice(1)} Ambassador
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge className={getTierColor(tier)}>
+              {tier.charAt(0).toUpperCase() + tier.slice(1)} Ambassador
+            </Badge>
+            {!isAdmin && (
+              <PasswordChangeDialog 
+                isUsingTempPassword={ambassadorProfile?.password_change_required || false}
+              />
+            )}
+          </div>
         </div>
       </div>
     </Card>

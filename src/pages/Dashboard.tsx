@@ -4,6 +4,7 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { usePayouts } from "@/hooks/usePayouts";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useAmbassadorAnalytics } from "@/hooks/useAnalytics";
+import { useFirstLoginTracker } from "@/hooks/useFirstLoginTracker";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -43,6 +44,9 @@ const Dashboard = () => {
   const { data: transactions, isLoading: transactionsLoading } = useTransactions(ambassadorProfile?.id);
   const { data: payouts } = usePayouts(ambassadorProfile?.id);
   const { data: analyticsData, isLoading: analyticsLoading } = useAmbassadorAnalytics(ambassadorProfile?.id);
+  
+  // Track first login for new ambassadors
+  useFirstLoginTracker();
   
   const isAdmin = userRole === 'admin';
 
