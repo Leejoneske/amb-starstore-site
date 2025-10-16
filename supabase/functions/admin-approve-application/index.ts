@@ -143,6 +143,7 @@ serve(async (req) => {
         success: true, 
         userId: newUserId, 
         referralCode, 
+        tempPassword, // Include temp password for manual email fallback
         emailSent,
         emailError: emailError,
         message: emailSent 
