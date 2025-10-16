@@ -588,7 +588,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "ambassador" | "pending"
-      app_tier: "entry" | "growing" | "advanced" | "elite"
+      app_tier: "explorer" | "connector" | "pioneer" | "elite"
       payout_status: "pending" | "processing" | "completed" | "failed"
       transaction_status: "pending" | "completed" | "cancelled" | "refunded"
     }
@@ -719,7 +719,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "ambassador", "pending"],
-      app_tier: ["entry", "growing", "advanced", "elite"],
+      app_tier: ["explorer", "connector", "pioneer", "elite"],
       payout_status: ["pending", "processing", "completed", "failed"],
       transaction_status: ["pending", "completed", "cancelled", "refunded"],
     },

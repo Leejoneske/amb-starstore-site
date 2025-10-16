@@ -21,6 +21,7 @@ import { ProfileSection } from "@/components/dashboard/ProfileSection";
 import { ReferralTools } from "@/components/dashboard/ReferralTools";
 import { Link, Navigate } from "react-router-dom";
 import AdminDashboard from "./AdminDashboard";
+import { getTierInfo, getNextTier, getTierBadgeClass } from "@/lib/tier-utils";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -71,8 +72,10 @@ const Dashboard = () => {
     );
   }
 
-  const tierProgress = tierConfig ? 
-    Math.min(100, (ambassadorProfile.total_referrals / tierConfig.referral_threshold) * 100) : 0;
+  const currentTierInfo = getTierInfo(ambassadorProfile?.current_tier || 'explorer');
+  const nextTierInfo = getNextTier(ambassadorProfile?.current_tier || 'explorer');
+  const tierProgress = nextTierInfo ? 
+    Math.min(100, ((ambassadorProfile?.total_referrals || 0) / nextTierInfo.requirements.referrals) * 100) : 100;
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
@@ -173,40 +176,47 @@ const Dashboard = () => {
 
         {/* Tier Progress & Referral Tools */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {tierConfig && (
-            <Card className="p-6">
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg font-semibold">Tier Progress</h3>
-                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                    {ambassadorProfile.current_tier.charAt(0).toUpperCase() + ambassadorProfile.current_tier.slice(1)}
-                  </Badge>
-                </div>
-                <div className="text-sm text-muted-foreground mb-4">
-                  {ambassadorProfile.total_referrals} / {tierConfig.referral_threshold} referrals to next tier
-                </div>
-                <Progress value={tierProgress} className="h-3" />
+          <Card className="starstore-card p-6">
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-semibold font-serif">Tier Progress</h3>
+                <Badge 
+                  variant="outline" 
+                  className={`text-white border-none ${getTierBadgeClass(ambassadorProfile.current_tier)}`}
+                >
+                  {currentTierInfo.icon} {currentTierInfo.displayName}
+                </Badge>
               </div>
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
-                <div className="space-y-1">
-                  <div className="text-xs text-muted-foreground">Commission Rate</div>
-                  <div className="text-xl font-semibold text-primary">{tierConfig.commission_rate}%</div>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-xs text-muted-foreground">Base Earnings</div>
-                  <div className="text-xl font-semibold">${tierConfig.base_earnings}</div>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-xs text-muted-foreground">Quality Bonus</div>
-                  <div className="text-xl font-semibold">${tierConfig.quality_bonus}</div>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-xs text-muted-foreground">Social Posts</div>
-                  <div className="text-xl font-semibold">{ambassadorProfile.social_posts_this_month}/{tierConfig.social_posts_required}</div>
-                </div>
+              <div className="text-sm text-muted-foreground mb-4">
+                {nextTierInfo ? (
+                  <>
+                    {ambassadorProfile.total_referrals} / {nextTierInfo.requirements.referrals} referrals to {nextTierInfo.displayName}
+                  </>
+                ) : (
+                  "Maximum tier achieved! 🎉"
+                )}
               </div>
-            </Card>
-          )}
+              <Progress value={tierProgress} className="h-3" />
+            </div>
+            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
+              <div className="space-y-1">
+                <div className="text-xs text-muted-foreground">Min Earnings</div>
+                <div className="text-xl font-semibold text-primary">${currentTierInfo.benefits.minEarnings}+</div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-xs text-muted-foreground">NFT Level</div>
+                <div className="text-xl font-semibold">Level {currentTierInfo.benefits.nftLevel}</div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-xs text-muted-foreground">Free Stars</div>
+                <div className="text-xl font-semibold">{currentTierInfo.benefits.freeStars}/month</div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-xs text-muted-foreground">Social Posts</div>
+                <div className="text-xl font-semibold">{ambassadorProfile.social_posts_this_month}/{currentTierInfo.requirements.socialPosts}</div>
+              </div>
+            </div>
+          </Card>
 
           <ReferralTools referralCode={ambassadorProfile.referral_code} />
         </div>

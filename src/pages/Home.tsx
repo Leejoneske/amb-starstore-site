@@ -30,6 +30,7 @@ import {
   UserPlus
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { TIER_INFO } from "@/lib/tier-utils";
 
 const Home = () => {
   const coreBenefits = [
@@ -54,10 +55,10 @@ const Home = () => {
   ];
 
   const earningRanges = [
-    { tier: "Starter", range: "$50 - $200", referrals: "5-15", commission: "5%" },
-    { tier: "Growing", range: "$200 - $500", referrals: "15-30", commission: "7%" },
-    { tier: "Advanced", range: "$500 - $1,200", referrals: "30-50", commission: "9%" },
-    { tier: "Elite", range: "$1,200+", referrals: "50+", commission: "12%" }
+    { tier: "Explorer", range: "$30+", referrals: "30", commission: "15%", icon: "🧭" },
+    { tier: "Connector", range: "$60+", referrals: "50", commission: "18%", icon: "🤝" },
+    { tier: "Pioneer", range: "$80+", referrals: "70", commission: "20%", icon: "🚀" },
+    { tier: "Elite", range: "$110+", referrals: "100", commission: "25%", icon: "🏆" }
   ];
 
   const testimonials = [
@@ -70,14 +71,14 @@ const Home = () => {
     },
     {
       name: "Mike Chen",
-      role: "Advanced Ambassador", 
+      role: "Pioneer Ambassador", 
       earnings: "$800/month",
       content: "I love being part of the StarStore family. The rewards are great and the community is amazing.",
       avatar: "MC"
     },
     {
       name: "Emma R.",
-      role: "Growing Ambassador",
+      role: "Connector Ambassador",
       earnings: "$350/month", 
       content: "Even as a new ambassador, I felt welcomed and supported. The earning potential is real!",
       avatar: "ER"
@@ -132,7 +133,7 @@ const Home = () => {
               </div>
               
               {/* Main Headline */}
-              <h1 className="text-4xl lg:text-6xl font-bold tracking-tight">
+              <h1 className="text-4xl lg:text-6xl font-bold tracking-tight font-serif">
                 WELCOME TO STARSTORE
                 <span className="block text-primary">AMBASSADOR PROGRAM</span>
               </h1>
@@ -200,7 +201,7 @@ const Home = () => {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold">Earning Potential</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold font-serif">Earning Potential</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               See what our ambassadors are earning monthly
             </p>
@@ -208,22 +209,25 @@ const Home = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {earningRanges.map((tier, index) => (
-              <Card key={index} className={`p-6 text-center ${
+              <Card key={index} className={`starstore-card p-6 text-center ${
                 tier.tier === 'Elite' ? 'ring-2 ring-primary ring-offset-2' : ''
               }`}>
                 <div className="space-y-4">
-                  <Badge variant={tier.tier === 'Elite' ? 'default' : 'secondary'}>
-                    {tier.tier}
+                  <Badge 
+                    variant={tier.tier === 'Elite' ? 'default' : 'secondary'}
+                    className={`text-white border-none level-${tier.tier.toLowerCase()}`}
+                  >
+                    {tier.icon} {tier.tier}
                   </Badge>
                   <div className="text-2xl font-bold text-primary">{tier.range}</div>
-                  <div className="text-sm text-muted-foreground">per month</div>
+                  <div className="text-sm text-muted-foreground">minimum monthly</div>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>Commission:</span>
                       <span className="font-semibold">{tier.commission}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Referrals:</span>
+                      <span>Referrals needed:</span>
                       <span className="font-semibold">{tier.referrals}</span>
                     </div>
                   </div>

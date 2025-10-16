@@ -1,0 +1,752 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarStore Ambassador Program - Join the Waitlist</title>
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #A8D8E8 0%, #8BC6DB 100%);
+            color: #2C3E50;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 60px 20px 40px;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+        
+        .hero {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .hero h1 {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 3.5rem;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+        
+        .hero .subtitle {
+            font-size: 1.3rem;
+            color: #34495E;
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+        
+        .hero .highlight {
+            font-weight: 700;
+            color: #2C3E50;
+        }
+        
+        .main-card {
+            background: #F5EFE7;
+            border-radius: 24px;
+            padding: 60px 40px;
+            margin: 40px auto;
+            max-width: 900px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        
+        .benefits {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+        
+        .benefit-card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .benefit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .benefit-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .benefit-card h3 {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #2C3E50;
+        }
+        
+        .benefit-card p {
+            color: #5D6D7E;
+            font-size: 0.95rem;
+        }
+        
+        .waitlist-form {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            margin: 40px auto;
+            max-width: 600px;
+        }
+        
+        .waitlist-form h2 {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2C3E50;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2C3E50;
+            font-size: 0.95rem;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #E0E0E0;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #5DADE2;
+        }
+        
+        /* Remove old textarea/select spacing */
+        
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #5DADE2 0%, #3498DB 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 10px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        .perks-section {
+            background: #F5EFE7;
+            padding: 40px;
+            border-radius: 20px;
+            margin: 40px 0;
+        }
+        /* Communication flow */
+        .flow-section {
+            background: #ffffff;
+            padding: 28px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            margin: 32px auto;
+        }
+        .flow-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+        .flow-step {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            background: #f9fafb;
+            border: 1px solid #eef2f7;
+            border-radius: 12px;
+            padding: 14px;
+        }
+        .flow-emoji {
+            font-size: 20px;
+        }
+        .flow-title {
+            font-weight: 700;
+            color: #111827;
+            font-size: 0.98rem;
+        }
+        .flow-desc {
+            color: #4b5563;
+            font-size: 0.9rem;
+        }
+        /* Levels UI */
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+        .level-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+        .level-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .level-badge { width: 36px; height: 36px; border-radius: 10px; color: #fff; font-weight: 700; display:flex; align-items:center; justify-content:center; }
+        .material-symbols-rounded { font-variation-settings: 'FILL' 0, 'wght' 600, 'GRAD' 0, 'opsz' 24; font-size: 22px; line-height: 1; }
+        .level-title { font-family: 'Libre Baskerville', serif; font-size: 1.05rem; color: #2C3E50; }
+        .level-section-title { font-weight: 600; margin-top: 10px; color: #34495E; font-size: 0.95rem; }
+        .level-list { margin: 6px 0 0 18px; color: #5D6D7E; font-size: 0.92rem; }
+        .level-list li { margin: 4px 0; }
+        
+        .perks-section h2 {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 35px;
+            color: #2C3E50;
+        }
+        
+        .perks-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .perk-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+        }
+        
+        .perk-check {
+            color: #5DADE2;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        .perk-text {
+            font-size: 0.95rem;
+            color: #5D6D7E;
+        }
+        
+        .stats-section {
+            text-align: center;
+            margin: 60px 0;
+            padding: 40px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-top: 30px;
+        }
+        
+        .stat-item {
+            padding: 20px;
+        }
+        
+        .stat-number {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: #2C3E50;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            color: #5D6D7E;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #2C3E50;
+            font-size: 0.9rem;
+        }
+        
+        .success-message {
+            display: none;
+            background: #D5F4E6;
+            border: 2px solid #52C788;
+            color: #155724;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .error-message {
+            display: none;
+            background: #FDE2E1;
+            border: 2px solid #E74C3C;
+            color: #7B241C;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .main-card {
+                padding: 40px 25px;
+            }
+            
+            .waitlist-form {
+                padding: 30px 20px;
+            }
+            
+            .benefits {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <img src="/favicon.png" alt="StarStore" style="height:48px;width:48px;vertical-align:middle;margin-right:8px;border-radius:8px;">
+                <span>StarStore</span>
+            </div>
+        </header>
+        
+        <div class="hero">
+            <h1>Become a StarStore<br>Ambassador</h1>
+            <p class="subtitle">Join our exclusive community and <span class="highlight">earn while you promote</span> products you love</p>
+        </div>
+        
+        <div class="main-card">
+            <div class="benefits">
+                <div class="benefit-card">
+                    <div class="benefit-icon">💰</div>
+                    <h3>Earn Commission</h3>
+                    <p>Get competitive commissions on every sale you generate through your unique referral link</p>
+                </div>
+                
+                <div class="benefit-card">
+                    <div class="benefit-icon">🎁</div>
+                    <h3>Exclusive Perks</h3>
+                    <p>Access to exclusive products, early launches, and special ambassador-only discounts</p>
+                </div>
+                
+                <div class="benefit-card">
+                    <div class="benefit-icon">📈</div>
+                    <h3>Growth Support</h3>
+                    <p>Get marketing materials, training, and dedicated support to help you succeed</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-section">
+            <h2 style="font-family: 'Libre Baskerville', serif; font-size: 2.2rem; margin-bottom: 20px;">Join Successful Ambassadors</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Active Ambassadors</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">$50K+</div>
+                    <div class="stat-label">Paid in Commissions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">20%</div>
+                    <div class="stat-label">Average Commission</div>
+                </div>
+            </div>
+        </div>
+        
+        
+        
+        <div class="perks-section">
+            <h2>Ambassador Levels</h2>
+            <div class="levels-grid">
+                <div class="level-card">
+                    <div class="level-header">
+                        <div class="level-badge" style="background: linear-gradient(135deg,#A78BFA 0%,#7C3AED 100%)"><span class="material-symbols-rounded">explore</span></div>
+                        <div class="level-title">Explorer · 30 referrals</div>
+                    </div>
+                    <div class="level-section-title">Requirements</div>
+                    <ul class="level-list">
+                        <li>30+ successful transactions/month</li>
+                        <li>4 social media posts/month</li>
+                        <li>Active in community</li>
+                        <li>Average transaction 350+ Stars</li>
+                    </ul>
+                    <div class="level-section-title">Benefits</div>
+                    <ul class="level-list">
+                        <li>$30 minimum earnings</li>
+                        <li>Level 1 NFT</li>
+                        <li>50 free Stars monthly</li>
+                        <li>Access to ambassador group</li>
+                        <li>Basic analytics dashboard</li>
+                    </ul>
+                </div>
+                <div class="level-card">
+                    <div class="level-header">
+                        <div class="level-badge" style="background: linear-gradient(135deg,#34D399 0%,#059669 100%)"><span class="material-symbols-rounded">handshake</span></div>
+                        <div class="level-title">Connector · 50 referrals</div>
+                    </div>
+                    <div class="level-section-title">Requirements</div>
+                    <ul class="level-list">
+                        <li>50+ transactions/month</li>
+                        <li>6 social posts/month</li>
+                        <li>Average transaction 400+ Stars</li>
+                    </ul>
+                    <div class="level-section-title">Benefits</div>
+                    <ul class="level-list">
+                        <li>$60+ earnings</li>
+                        <li>Level 2 NFT</li>
+                        <li>100 free Stars monthly</li>
+                    </ul>
+                </div>
+                <div class="level-card">
+                    <div class="level-header">
+                        <div class="level-badge" style="background: linear-gradient(135deg,#60A5FA 0%,#2563EB 100%)"><span class="material-symbols-rounded">rocket_launch</span></div>
+                        <div class="level-title">Pioneer · 70 referrals</div>
+                    </div>
+                    <div class="level-section-title">Requirements</div>
+                    <ul class="level-list">
+                        <li>70+ transactions/month</li>
+                        <li>8 social posts/month (incl. 1 video)</li>
+                        <li>Average transaction 450+ Stars</li>
+                        <li>Mentor 1 Level 1 ambassador</li>
+                    </ul>
+                    <div class="level-section-title">Benefits</div>
+                    <ul class="level-list">
+                        <li>$80+ earnings</li>
+                        <li>Level 3 NFT</li>
+                        <li>150 free Stars monthly</li>
+                        <li>Priority support</li>
+                        <li>Co-marketing opportunities</li>
+                    </ul>
+                </div>
+                <div class="level-card">
+                    <div class="level-header">
+                        <div class="level-badge" style="background: linear-gradient(135deg,#F59E0B 0%,#D97706 100%)"><span class="material-symbols-rounded">emoji_events</span></div>
+                        <div class="level-title">Elite · 100 referrals</div>
+                    </div>
+                    <div class="level-section-title">Requirements</div>
+                    <ul class="level-list">
+                        <li>100+ transactions/month</li>
+                        <li>10 social posts/month (incl. 2 videos)</li>
+                        <li>Average transaction 500+ Stars</li>
+                        <li>Lead monthly community event</li>
+                    </ul>
+                    <div class="level-section-title">Benefits</div>
+                    <ul class="level-list">
+                        <li>$110+ earnings</li>
+                        <li>Level 4 NFT</li>
+                        <li>200 free Stars monthly</li>
+                        <li>Revenue share participation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Application form moved below program info for better flow -->
+        <div class="waitlist-form">
+            <h2>Join the Ambassador Program</h2>
+            <form id="ambassadorForm">
+                <div class="form-group">
+                    <label for="fullName">Full Name *</label>
+                    <input type="text" id="fullName" name="fullName" required placeholder="Jane Doe">
+                </div>
+                <div class="form-group">
+                    <label for="username">Telegram Username (optional)</label>
+                    <input type="text" id="username" name="username" placeholder="@yourusername">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" required placeholder="john@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label>Where will you post? (links only, no @ usernames) <span style="color:#dc2626">*</span></label>
+                    <div style="display:grid; gap:10px;">
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <input type="checkbox" id="cbInstagram" style="width:16px;height:16px;" />
+                            <label for="instagram" style="min-width:120px;">Instagram</label>
+                            <input type="text" id="instagram" placeholder="https://instagram.com/username" style="flex:1;" />
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <input type="checkbox" id="cbTikTok" style="width:16px;height:16px;" />
+                            <label for="tiktok" style="min-width:120px;">TikTok</label>
+                            <input type="text" id="tiktok" placeholder="https://tiktok.com/@username" style="flex:1;" />
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <input type="checkbox" id="cbX" style="width:16px;height:16px;" />
+                            <label for="x" style="min-width:120px;">X (Twitter)</label>
+                            <input type="text" id="x" placeholder="https://x.com/username" style="flex:1;" />
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <input type="checkbox" id="cbYouTube" style="width:16px;height:16px;" />
+                            <label for="youtube" style="min-width:120px;">YouTube</label>
+                            <input type="text" id="youtube" placeholder="https://youtube.com/@channel" style="flex:1;" />
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <input type="checkbox" id="cbFacebook" style="width:16px;height:16px;" />
+                            <label for="facebook" style="min-width:120px;">Facebook</label>
+                            <input type="text" id="facebook" placeholder="https://facebook.com/yourpage" style="flex:1;" />
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <input type="checkbox" id="cbTelegram" style="width:16px;height:16px;" />
+                            <label for="telegram" style="min-width:120px;">Telegram Channel</label>
+                            <input type="text" id="telegram" placeholder="https://t.me/yourchannel" style="flex:1;" />
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <input type="checkbox" id="cbOther" style="width:16px;height:16px;" />
+                            <label for="other" style="min-width:120px;">Other</label>
+                            <input type="text" id="other" placeholder="https://example.com/profile" style="flex:1;" />
+                        </div>
+                        <small style="color:#5D6D7E;">Add at least one platform you use or plan to use.</small>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn">Join the Program</button>
+                
+                <div class="success-message" id="successMessage">
+                    <strong>🎉 Application received!</strong><br>
+                    Thank you for applying to the Ambassador Program. We'll contact you soon. If you're on Telegram, a confirmation was sent to your DM.
+                </div>
+                <div class="error-message" id="errorMessage"></div>
+            </form>
+        </div>
+        
+        <footer>
+            <p>&copy; 2025 StarStore. All rights reserved.</p>
+            <p style="margin-top: 10px; color: #5D6D7E;">Questions? Email us at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1a696f6a6a75686e5a696e7b68696e75687f3469736e7f">[email&#160;protected]</a></p>
+        </footer>
+    </div>
+    
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        (function() {
+            const form = document.getElementById('ambassadorForm');
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            const fullNameInput = document.getElementById('fullName');
+            const usernameInput = document.getElementById('username');
+            const emailInput = document.getElementById('email');
+            const submitBtn = form.querySelector('.submit-btn');
+
+            // Auto-fill name/username from Telegram WebApp or URL param
+            async function attemptAutofill() {
+                try {
+                    if (window.Telegram?.WebApp) {
+                        try { window.Telegram.WebApp.ready(); } catch (_) {}
+                    }
+                    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user || {};
+                    const tgUsername = tgUser.username || '';
+                    const tgFirst = tgUser.first_name || '';
+                    const tgLast = tgUser.last_name || '';
+                    const tgFull = [tgFirst, tgLast].filter(Boolean).join(' ').trim();
+                    const qp = new URLSearchParams(window.location.search);
+                    const qpUsername = (qp.get('username') || '').trim();
+                    const auto = (tgUsername || qpUsername).replace(/^@+/, '');
+                    if (auto && !usernameInput.value) {
+                        usernameInput.value = auto;
+                    }
+                    if (tgFull && !fullNameInput.value) {
+                        fullNameInput.value = tgFull;
+                    }
+                    // Fallback: ask backend if it knows the username
+                    if (!usernameInput.value) {
+                        try {
+                            const me = await fetch('/api/me', { headers: buildHeaders() }).then(r=>r.json()).catch(()=>({}));
+                            if (me?.username && !usernameInput.value) usernameInput.value = me.username;
+                        } catch(_) {}
+                    }
+                } catch (_) {}
+            }
+            function buildHeaders() {
+                const h = { 'Content-Type': 'application/json' };
+                if (window.Telegram?.WebApp?.initData) h['x-telegram-init-data'] = window.Telegram.WebApp.initData;
+                const id = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+                if (id) h['x-telegram-id'] = String(id);
+                return h;
+            }
+            attemptAutofill();
+            // Retry once shortly after in case Telegram SDK initializes slightly later
+            setTimeout(attemptAutofill, 300);
+
+            async function submitForm(e) {
+                e.preventDefault();
+                errorMessage.style.display = 'none';
+                errorMessage.textContent = '';
+                successMessage.style.display = 'none';
+
+                const formData = {
+                    fullName: (fullNameInput.value || '').trim(),
+                    username: (usernameInput.value || '').trim(),
+                    email: (emailInput.value || '').trim(),
+                    socials: {}
+                };
+
+                if (!formData.fullName || formData.fullName.length < 2) {
+                    errorMessage.textContent = 'Please enter your full name.';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+                if (!formData.email || !formData.email.includes('@')) {
+                    errorMessage.textContent = 'Please enter a valid email address.';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+
+                // Helpers for URL validation
+                function normalizeUrl(value) {
+                    const raw = (value || '').trim();
+                    if (!raw || raw.startsWith('@')) return null;
+                    let candidate = raw;
+                    if (!/^https?:\/\//i.test(candidate)) {
+                        // Allow bare domains like t.me/..., instagram.com/...
+                        candidate = 'https://' + candidate;
+                    }
+                    try {
+                        const u = new URL(candidate);
+                        if (!u.hostname || !u.protocol.startsWith('http')) return null;
+                        return u.href;
+                    } catch { return null; }
+                }
+
+                // Collect socials (only valid links and box-checked)
+                const socialsMap = [
+                    ['instagram','cbInstagram'],
+                    ['tiktok','cbTikTok'],
+                    ['x','cbX'],
+                    ['youtube','cbYouTube'],
+                    ['facebook','cbFacebook'],
+                    ['telegram','cbTelegram'],
+                    ['other','cbOther']
+                ];
+                let socialsCount = 0;
+                socialsMap.forEach(([id, cb]) => {
+                    const checked = document.getElementById(cb)?.checked;
+                    const val = (document.getElementById(id)?.value || '').trim();
+                    if (checked) {
+                        const normalized = normalizeUrl(val);
+                        if (normalized) {
+                            formData.socials[id] = normalized;
+                            socialsCount++;
+                        } else if (val) {
+                            throw new Error(`Please enter a valid link for ${id}.`);
+                        }
+                    }
+                });
+                if (socialsCount === 0) {
+                    errorMessage.textContent = 'Please add at least one social platform (handle or link).';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+
+                const headers = { 'Content-Type': 'application/json' };
+                if (window.Telegram?.WebApp?.initData) {
+                    headers['x-telegram-init-data'] = window.Telegram.WebApp.initData;
+                }
+                if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+                    headers['x-telegram-id'] = String(window.Telegram.WebApp.initDataUnsafe.user.id);
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+                try {
+                    const resp = await fetch('/api/ambassador/waitlist', {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify(formData)
+                    });
+                    const result = await resp.json().catch(() => ({}));
+                    if (!resp.ok || !result.success) {
+                        let friendly;
+                        switch (resp.status) {
+                            case 400:
+                                friendly = 'Please check your input and try again.'; break;
+                            case 401:
+                            case 403:
+                                friendly = 'You are not authorized. Please open from the app or try again later.'; break;
+                            case 404:
+                                friendly = 'Service temporarily unavailable. Please try again shortly.'; break;
+                            case 409:
+                                friendly = 'This email is already registered on the waitlist.'; break;
+                            case 429:
+                                friendly = 'Too many attempts. Please wait a minute and try again.'; break;
+                            case 500:
+                            default:
+                                friendly = 'Something went wrong on our side. Please try again later.'; break;
+                        }
+                        const msg = result?.error || friendly;
+                        throw new Error(msg);
+                    }
+                    successMessage.style.display = 'block';
+                    form.reset();
+                    successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } catch (err) {
+                    errorMessage.textContent = err.message || 'Something went wrong. Please try again later.';
+                    errorMessage.style.display = 'block';
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Join the Waitlist';
+                }
+            }
+
+            form.addEventListener('submit', submitForm);
+        })();
+    </script>
+</body>
+</html>
