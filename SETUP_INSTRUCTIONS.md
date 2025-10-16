@@ -7,10 +7,10 @@
 ```typescript
 export const TELEGRAM_CONFIG = {
   // 👇 CHANGE THIS TO YOUR ACTUAL BOT USERNAME
-  BOT_USERNAME: 'YourActualBotUsername', // Remove @ symbol, just the username
+  BOT_USERNAME: 'TgStarStore_bot', // Remove @ symbol, just the username
   
   // 👇 CHANGE THIS IF YOUR DATABASE NAME IS DIFFERENT
-  DATABASE_NAME: 'your-database-name',
+  DATABASE_NAME: 'amb.starstore.site',
   
   // These should be correct already
   SERVER_URL: 'https://tg-star-store-production.up.railway.app',
