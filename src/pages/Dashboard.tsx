@@ -33,6 +33,7 @@ import { AmbassadorAnalytics } from "@/components/dashboard/AmbassadorAnalytics"
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { LiveActivityFeed } from "@/components/dashboard/LiveActivityFeed";
 import { PerformanceGoals } from "@/components/dashboard/PerformanceGoals";
+import { MongoIntegration } from "@/components/dashboard/MongoIntegration";
 import { Link, Navigate } from "react-router-dom";
 import AdminDashboard from "./AdminDashboard";
 import { getTierInfo, getNextTier, getTierBadgeClass } from "@/lib/tier-utils";
@@ -192,7 +193,7 @@ const Dashboard = () => {
 
         {/* Enhanced Dashboard Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Overview
@@ -201,9 +202,13 @@ const Dashboard = () => {
               <TrendingUp className="h-4 w-4" />
               Analytics
             </TabsTrigger>
+            <TabsTrigger value="telegram" className="flex items-center gap-2">
+              <Activity className="h-4 w-4" />
+              Telegram
+            </TabsTrigger>
             <TabsTrigger value="actions" className="flex items-center gap-2">
               <Zap className="h-4 w-4" />
-              Quick Actions
+              Actions
             </TabsTrigger>
             <TabsTrigger value="performance" className="flex items-center gap-2">
               <Award className="h-4 w-4" />
@@ -413,6 +418,15 @@ const Dashboard = () => {
           {/* Analytics Tab */}
           <TabsContent value="analytics" id="analytics-section">
             <AmbassadorAnalytics data={analyticsData} isLoading={analyticsLoading} />
+          </TabsContent>
+
+          {/* Telegram Integration Tab */}
+          <TabsContent value="telegram">
+            <MongoIntegration 
+              ambassadorId={ambassadorProfile.id}
+              referralCode={ambassadorProfile.referral_code}
+              isAdmin={isAdmin}
+            />
           </TabsContent>
 
           {/* Quick Actions Tab */}
