@@ -13,6 +13,7 @@ import { QuickActions } from "@/components/dashboard/QuickActions";
 import { LiveActivityFeed } from "@/components/dashboard/LiveActivityFeed";
 import { AmbassadorStatusList } from "@/components/dashboard/AmbassadorStatusList";
 import { ManualEmailSender } from "@/components/dashboard/ManualEmailSender";
+import { SetupChecker } from "@/components/dashboard/SetupChecker";
 import { 
   Users, 
   FileText, 
@@ -646,6 +647,8 @@ const AdminDashboard = () => {
 
           {/* Settings Tab */}
           <TabsContent value="settings" className="space-y-6">
+            <SetupChecker />
+            
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-6">System Settings</h3>
               <div className="space-y-4">

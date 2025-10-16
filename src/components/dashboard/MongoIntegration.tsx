@@ -21,6 +21,7 @@ import { useMongoUsers, useMongoReferrals, useMongoTransactions, useDataSync, us
 import { mongoService } from '@/services/mongoService';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
+import { TELEGRAM_CONFIG } from '@/config/telegram';
 
 interface MongoIntegrationProps {
   ambassadorId?: string;
@@ -29,7 +30,7 @@ interface MongoIntegrationProps {
 }
 
 export const MongoIntegration = ({ ambassadorId, referralCode, isAdmin = false }: MongoIntegrationProps) => {
-  const [botUsername, setBotUsername] = useState('StarStoreBot'); // Replace with your actual bot username
+  const [botUsername] = useState(TELEGRAM_CONFIG.BOT_USERNAME);
   const { toast } = useToast();
   
   const { data: mongoUsers, isLoading: usersLoading, refetch: refetchUsers } = useMongoUsers();

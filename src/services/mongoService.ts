@@ -2,6 +2,7 @@
 // Connects to your existing MongoDB database to sync referral data
 
 import { supabase } from '@/integrations/supabase/client';
+import { TELEGRAM_CONFIG } from '@/config/telegram';
 
 interface MongoUser {
   _id: string;
@@ -40,8 +41,8 @@ interface MongoTransaction {
 }
 
 class MongoService {
-  private baseUrl = 'https://tg-star-store-production.up.railway.app';
-  private mongoConnectionString = 'mongodb+srv://LeeJonesKE:rxov9FDs8LIxoOOZ@tg-star-store.l1jsj.mongodb.net/?retryWrites=true&w=majority&appName=Tg-Star-Store';
+  private baseUrl = TELEGRAM_CONFIG.SERVER_URL;
+  private mongoConnectionString = TELEGRAM_CONFIG.MONGO_CONNECTION_STRING;
 
   // Fetch users from MongoDB
   async getUsers(): Promise<MongoUser[]> {
@@ -257,8 +258,9 @@ class MongoService {
   }
 
   // Generate Telegram bot referral link
-  generateTelegramReferralLink(referralCode: string, botUsername: string = 'your_bot_username'): string {
-    return `https://t.me/${botUsername}?start=${referralCode}`;
+  generateTelegramReferralLink(referralCode: string, botUsername?: string): string {
+    const username = botUsername || TELEGRAM_CONFIG.BOT_USERNAME;
+    return `https://t.me/${username}?start=${referralCode}`;
   }
 
   // Validate referral code format
