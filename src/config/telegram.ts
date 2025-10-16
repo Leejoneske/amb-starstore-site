@@ -8,8 +8,8 @@ export const TELEGRAM_CONFIG = {
   // Your MongoDB database name (if different from 'tg-star-store')
   DATABASE_NAME: 'tg-star-store', // 👈 CHANGE THIS IF YOUR DB NAME IS DIFFERENT
   
-  // Your Railway server URL
-  SERVER_URL: 'https://tg-star-store-production.up.railway.app',
+  // Your main StarStore app URL (MongoDB connected)
+  SERVER_URL: 'https://starstore.site',
   
   // MongoDB connection string (this will be set in environment variables)
   MONGO_CONNECTION_STRING: 'mongodb+srv://LeeJonesKE:rxov9FDs8LIxoOOZ@tg-star-store.l1jsj.mongodb.net/?retryWrites=true&w=majority&appName=Tg-Star-Store'
