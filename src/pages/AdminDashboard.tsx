@@ -77,7 +77,7 @@ const AdminDashboard = () => {
       if (!application) throw new Error('Application not found');
 
       // Update application status using admin function
-      const { error: updateError } = await supabase.rpc('update_application_as_admin' as any, {
+      const { error: updateError } = await supabase.rpc('update_application_as_admin', {
         application_id: applicationId,
         new_status: action === 'approve' ? 'approved' : 'rejected',
         reviewed_by: user?.id,
@@ -115,14 +115,10 @@ const AdminDashboard = () => {
       // Invalidate queries to refresh data
       await queryClient.invalidateQueries({ queryKey: ['applications'] });
       await queryClient.invalidateQueries({ queryKey: ['all-ambassadors'] });
-    } catch (error: any) {
-      // Error handling - log only in development
-      if (import.meta.env.DEV) {
-        console.error('Error updating application:', error);
-      }
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: `Failed to ${action === 'approve' ? 'approve' : 'reject'} application: ${error.message}`,
+        description: `Failed to ${action === 'approve' ? 'approve' : 'reject'} application: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
     } finally {
@@ -153,7 +149,7 @@ const AdminDashboard = () => {
 
       for (const table of tables) {
         const { error } = await supabase
-          .from(table as any)
+          .from(table)
           .delete()
           .neq('id', '00000000-0000-0000-0000-000000000000');
         
@@ -167,13 +163,10 @@ const AdminDashboard = () => {
 
       // Refresh queries
       await queryClient.invalidateQueries();
-    } catch (error: any) {
-      if (import.meta.env.DEV) {
-        console.error('Error resetting database:', error);
-      }
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: `Failed to reset database: ${error.message}`,
+        description: `Failed to reset database: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
     } finally {
@@ -217,19 +210,16 @@ const AdminDashboard = () => {
         title: "Success!",
         description: "Data exported successfully.",
       });
-    } catch (error: any) {
-      if (import.meta.env.DEV) {
-        console.error('Error exporting data:', error);
-      }
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: `Failed to export data: ${error.message}`,
+        description: `Failed to export data: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
     }
   };
 
-  const convertToCSV = (data: any[]) => {
+  const convertToCSV = (data: Record<string, unknown>[]) => {
     if (data.length === 0) return '';
     
     const headers = Object.keys(data[0]);

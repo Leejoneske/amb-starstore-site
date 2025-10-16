@@ -11,7 +11,7 @@ export const sendApprovalEmailWithResend = async (data: ApprovalEmailData) => {
   const { userEmail, userName, tempPassword, referralCode } = data;
 
   try {
-    console.log('Sending approval email to:', userEmail);
+    // Sending approval email
     
     // Call the Supabase Edge Function
     const response = await fetch(
@@ -36,11 +36,11 @@ export const sendApprovalEmailWithResend = async (data: ApprovalEmailData) => {
     }
 
     const result = await response.json();
-    console.log('Email sent successfully:', result);
+    // Email sent successfully
     
     return { success: true };
-  } catch (error: any) {
-    console.error('Email sending error:', error);
+  } catch (error: unknown) {
+    // Email sending error occurred
     return { success: false, error: error?.message || 'Unknown error' };
   }
 };

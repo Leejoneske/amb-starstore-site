@@ -24,7 +24,7 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { userEmail, userName, tempPassword, referralCode }: ApprovalEmailRequest = await req.json();
 
-    console.log('Sending approval email to:', userEmail);
+    // Sending approval email
 
     const emailResponse = await resend.emails.send({
       from: "StarStore Ambassador Program <onboarding@resend.dev>",
@@ -90,7 +90,7 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    // Email sent successfully
 
     return new Response(JSON.stringify({ success: true, data: emailResponse }), {
       status: 200,
@@ -99,8 +99,8 @@ const handler = async (req: Request): Promise<Response> => {
         ...corsHeaders,
       },
     });
-  } catch (error: any) {
-    console.error("Error in send-approval-email function:", error);
+  } catch (error: unknown) {
+    // Error in send-approval-email function
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       {

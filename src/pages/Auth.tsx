@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -26,9 +26,9 @@ const Auth = () => {
       // Check if this is a first-time login (temporary password)
       checkFirstLogin();
     }
-  }, [user, navigate]);
+  }, [user, navigate, checkFirstLogin]);
 
-  const checkFirstLogin = async () => {
+  const checkFirstLogin = useCallback(async () => {
     if (!user) return;
     
     // Check if user needs to change password (you can implement this logic)
@@ -40,7 +40,7 @@ const Auth = () => {
     } else {
       navigate("/dashboard");
     }
-  };
+  }, [user, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,10 +102,10 @@ const Auth = () => {
       });
 
       navigate("/dashboard");
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive",
       });
     } finally {

@@ -75,9 +75,9 @@ serve(async (req) => {
     if (createRes.error) {
       // If already exists, fetch by email (scan first page)
       const list = await serviceClient.auth.admin.listUsers({ page: 1, perPage: 200 });
-      const existing = list.data?.users?.find((u: any) => u.email?.toLowerCase() === applicantEmail.toLowerCase());
+      const existing = list.data?.users?.find((u: { email?: string }) => u.email?.toLowerCase() === applicantEmail.toLowerCase());
       if (!existing) {
-        console.error('Admin create user failed:', createRes.error);
+        // Admin create user failed
         return new Response(JSON.stringify({ error: 'Failed to create user' }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
       }
       newUserId = existing.id;
@@ -95,7 +95,7 @@ serve(async (req) => {
       .upsert({ id: newUserId, email: applicantEmail, full_name: applicantName })
       .eq('id', newUserId);
     if (profileErr) {
-      console.error('Profile upsert error:', profileErr);
+      // Profile upsert error
       return new Response(JSON.stringify({ error: 'Failed to create profile' }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
     }
 
@@ -105,7 +105,7 @@ serve(async (req) => {
       .upsert({ user_id: newUserId, referral_code: referralCode, status: 'active', approved_at: new Date().toISOString(), approved_by: adminId })
       .eq('user_id', newUserId);
     if (ambErr) {
-      console.error('Ambassador upsert error:', ambErr);
+      // Ambassador upsert error
       return new Response(JSON.stringify({ error: 'Failed to create ambassador profile' }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
     }
 
@@ -115,7 +115,7 @@ serve(async (req) => {
       .update({ status: 'approved', reviewed_at: new Date().toISOString(), reviewed_by: adminId })
       .eq('id', applicationId);
     if (appErr) {
-      console.error('Application update error:', appErr);
+      // Application update error
       return new Response(JSON.stringify({ error: 'Failed to update application' }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
     }
 
@@ -126,17 +126,17 @@ serve(async (req) => {
         body: { userEmail: applicantEmail, userName: applicantName, tempPassword, referralCode },
       });
       emailSent = !fnRes.error;
-      if (fnRes.error) console.error('Email function error:', fnRes.error);
+      // Email function error handling
     } catch (e) {
-      console.error('Email invoke error:', e);
+      // Email invoke error
     }
 
     return new Response(
       JSON.stringify({ success: true, userId: newUserId, referralCode, emailSent }),
       { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
-  } catch (error: any) {
-    console.error('admin-approve-application error:', error);
-    return new Response(JSON.stringify({ error: error?.message || 'Unknown error' }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+  } catch (error: unknown) {
+    // admin-approve-application error
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
   }
 });

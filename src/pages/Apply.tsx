@@ -109,7 +109,7 @@ const Apply = () => {
         title: "Application Submitted!",
         description: "We'll review your application and get back to you soon.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof z.ZodError) {
         const fieldErrors: Record<string, string> = {};
         error.errors.forEach((err) => {
