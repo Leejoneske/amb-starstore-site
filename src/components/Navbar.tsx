@@ -4,12 +4,15 @@ import { Sparkles, LogOut, Moon, Sun } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useToast } from "@/hooks/use-toast";
+import { NotificationCenter } from "@/components/dashboard/NotificationCenter";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const location = useLocation();
+  const { data: userRole } = useUserRole(user?.id);
 
   const handleSignOut = async () => {
     await signOut();
@@ -36,9 +39,12 @@ const Navbar = () => {
           </Link>
           <div className="flex items-center gap-3">
             {isAppRoute && user && (
-              <Button variant="ghost" size="sm" onClick={toggleTheme}>
-                {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </Button>
+              <>
+                <NotificationCenter userId={user.id} isAdmin={userRole === 'admin'} />
+                <Button variant="ghost" size="sm" onClick={toggleTheme}>
+                  {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                </Button>
+              </>
             )}
             {user ? (
               <>

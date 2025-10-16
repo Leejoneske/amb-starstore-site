@@ -2,10 +2,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useApplications } from "@/hooks/useApplications";
 import { useAllAmbassadors } from "@/hooks/useAllAmbassadors";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { NotificationCenter } from "@/components/dashboard/NotificationCenter";
+import { AnalyticsCharts } from "@/components/dashboard/AnalyticsCharts";
+import { QuickActions } from "@/components/dashboard/QuickActions";
+import { LiveActivityFeed } from "@/components/dashboard/LiveActivityFeed";
 import { 
   Users, 
   FileText, 
@@ -17,7 +22,11 @@ import {
   BarChart3,
   AlertCircle,
   CheckCircle2,
-  Clock
+  Clock,
+  Activity,
+  Shield,
+  Zap,
+  Award
 } from "lucide-react";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -57,6 +66,7 @@ const AdminDashboard = () => {
   const { data: userRole } = useUserRole(user?.id);
   const { applications, isLoading: appsLoading } = useApplications();
   const { ambassadors, isLoading: ambLoading } = useAllAmbassadors();
+  const { data: analyticsData, isLoading: analyticsLoading } = useAnalytics(true);
   const { toast } = useToast();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -273,85 +283,268 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
+        {/* Enhanced Header */}
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <img 
-                src="/favicon.ico" 
-                alt="StarStore" 
-                className="w-8 h-8"
-              />
-              <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+              <div className="p-2 rounded-lg bg-destructive/10">
+                <Shield className="h-8 w-8 text-destructive" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+                <p className="text-muted-foreground">Comprehensive system management and analytics</p>
+              </div>
             </div>
-            <p className="text-muted-foreground">Manage applications, ambassadors, and system settings</p>
           </div>
-          <Badge variant="destructive" className="text-sm">
-            Admin Access
-          </Badge>
+          <div className="flex items-center gap-3">
+            <NotificationCenter userId={user?.id} isAdmin={true} />
+            <Badge variant="destructive" className="flex items-center gap-1">
+              <Activity className="h-3 w-3" />
+              Admin Access
+            </Badge>
+          </div>
         </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="p-6">
+        {/* Enhanced Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-primary/10">
+              <div className="p-3 rounded-lg bg-primary/20">
                 <FileText className="h-6 w-6 text-primary" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{stats.totalApplications}</div>
                 <div className="text-sm text-muted-foreground">Total Applications</div>
+                {stats.pendingApplications > 0 && (
+                  <div className="text-xs text-primary mt-1">
+                    {stats.pendingApplications} pending review
+                  </div>
+                )}
               </div>
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 bg-gradient-to-br from-warning/10 to-warning/5 border-warning/20">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-warning/10">
+              <div className="p-3 rounded-lg bg-warning/20">
                 <Clock className="h-6 w-6 text-warning" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{stats.pendingApplications}</div>
                 <div className="text-sm text-muted-foreground">Pending Review</div>
+                {stats.pendingApplications > 0 && (
+                  <Badge variant="outline" className="text-xs mt-1">
+                    Action Required
+                  </Badge>
+                )}
               </div>
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 bg-gradient-to-br from-success/10 to-success/5 border-success/20">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-success/10">
+              <div className="p-3 rounded-lg bg-success/20">
                 <Users className="h-6 w-6 text-success" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{stats.totalAmbassadors}</div>
                 <div className="text-sm text-muted-foreground">Active Ambassadors</div>
+                {analyticsData?.performanceMetrics.activeAmbassadors && (
+                  <div className="text-xs text-success mt-1">
+                    {analyticsData.performanceMetrics.activeAmbassadors} currently active
+                  </div>
+                )}
               </div>
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 bg-gradient-to-br from-info/10 to-info/5 border-info/20">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-info/10">
+              <div className="p-3 rounded-lg bg-info/20">
                 <DollarSign className="h-6 w-6 text-info" />
               </div>
               <div>
-                <div className="text-2xl font-bold">${stats.totalEarnings.toFixed(2)}</div>
-                <div className="text-sm text-muted-foreground">Total Paid Out</div>
+                <div className="text-2xl font-bold">
+                  ${analyticsData?.totalRevenue.toFixed(2) || stats.totalEarnings.toFixed(2)}
+                </div>
+                <div className="text-sm text-muted-foreground">Total Revenue</div>
+                {analyticsData?.monthlyRevenue && (
+                  <div className="text-xs text-info mt-1">
+                    +${analyticsData.monthlyRevenue.toFixed(2)} this month
+                  </div>
+                )}
               </div>
             </div>
           </Card>
         </div>
 
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="applications" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="applications">Applications</TabsTrigger>
-            <TabsTrigger value="ambassadors">Ambassadors</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
+        {/* Enhanced System Performance Metrics */}
+        {analyticsData && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">Conversion Rate</span>
+              </div>
+              <div className="text-2xl font-bold text-primary">
+                {analyticsData.conversionRate.toFixed(1)}%
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Referral to transaction
+              </div>
+            </Card>
+
+            <Card className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <BarChart3 className="h-4 w-4 text-success" />
+                <span className="text-sm font-medium">Avg Transaction</span>
+              </div>
+              <div className="text-2xl font-bold text-success">
+                ${analyticsData.performanceMetrics.avgTransactionValue.toFixed(0)}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Per transaction value
+              </div>
+            </Card>
+
+            <Card className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Award className="h-4 w-4 text-warning" />
+                <span className="text-sm font-medium">Commission Rate</span>
+              </div>
+              <div className="text-2xl font-bold text-warning">
+                {analyticsData.performanceMetrics.avgCommissionRate.toFixed(1)}%
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Average across all tiers
+              </div>
+            </Card>
+
+            <Card className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle2 className="h-4 w-4 text-info" />
+                <span className="text-sm font-medium">Total Transactions</span>
+              </div>
+              <div className="text-2xl font-bold text-info">
+                {analyticsData.performanceMetrics.totalTransactions.toLocaleString()}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                All time completed
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* Enhanced Main Content Tabs */}
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="applications" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Applications
+            </TabsTrigger>
+            <TabsTrigger value="ambassadors" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Ambassadors
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Settings
+            </TabsTrigger>
           </TabsList>
 
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <QuickActions isAdmin={true} />
+              
+              <Card className="p-6">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold">System Health</h3>
+                  <p className="text-sm text-muted-foreground">Real-time system status</p>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-success/5">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-success" />
+                      <span className="text-sm">Database Connection</span>
+                    </div>
+                    <Badge variant="outline" className="text-success border-success">Online</Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-success/5">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-success" />
+                      <span className="text-sm">Real-time Updates</span>
+                    </div>
+                    <Badge variant="outline" className="text-success border-success">Active</Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5">
+                    <div className="flex items-center gap-2">
+                      <Activity className="h-4 w-4 text-primary" />
+                      <span className="text-sm">API Performance</span>
+                    </div>
+                    <Badge variant="outline" className="text-primary border-primary">Optimal</Badge>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Recent Activity Summary */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <LiveActivityFeed isAdmin={true} limit={15} />
+              
+              <Card className="p-6">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold">Top Performers</h3>
+                  <p className="text-sm text-muted-foreground">Highest earning ambassadors</p>
+                </div>
+                
+                <div className="space-y-3">
+                  {analyticsData?.topPerformers.slice(0, 5).map((performer, index) => (
+                    <div key={performer.id} className="flex items-center justify-between p-3 rounded-lg border">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <div className="font-medium text-sm">{performer.name}</div>
+                          <div className="text-xs text-muted-foreground">{performer.referrals} referrals</div>
+                        </div>
+                      </div>
+                      <div className="text-sm font-bold text-success">
+                        ${performer.earnings.toFixed(2)}
+                      </div>
+                    </div>
+                  )) || (
+                    <div className="text-center py-6 text-muted-foreground">
+                      <Award className="h-8 w-8 mx-auto mb-2 opacity-20" />
+                      <p className="text-sm">No performance data yet</p>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics" id="admin-analytics">
+            {analyticsData && (
+              <AnalyticsCharts data={analyticsData} isLoading={analyticsLoading} />
+            )}
+          </TabsContent>
+
           {/* Applications Tab */}
-          <TabsContent value="applications" className="space-y-6">
+          <TabsContent value="applications" className="space-y-6" data-tab="applications">
             <Card className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold">Application Management</h3>
