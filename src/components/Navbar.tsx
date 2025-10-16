@@ -1,15 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
-import { Sparkles, LogOut, Moon, Sun } from "lucide-react";
+import { Sparkles, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useToast } from "@/hooks/use-toast";
 import { NotificationCenter } from "@/components/dashboard/NotificationCenter";
 import { useUserRole } from "@/hooks/useUserRole";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const location = useLocation();
   const { data: userRole } = useUserRole(user?.id);
@@ -41,9 +40,7 @@ const Navbar = () => {
             {isAppRoute && user && (
               <>
                 <NotificationCenter userId={user.id} isAdmin={userRole === 'admin'} />
-                <Button variant="ghost" size="sm" onClick={toggleTheme}>
-                  {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                </Button>
+                <ThemeToggle />
               </>
             )}
             {user ? (

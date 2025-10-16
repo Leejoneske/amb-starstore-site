@@ -14,6 +14,8 @@ import { LiveActivityFeed } from "@/components/dashboard/LiveActivityFeed";
 import { AmbassadorStatusList } from "@/components/dashboard/AmbassadorStatusList";
 import { ManualEmailSender } from "@/components/dashboard/ManualEmailSender";
 import { SetupChecker } from "@/components/dashboard/SetupChecker";
+import { AdvancedFilters, FilterConfig } from "@/components/dashboard/AdvancedFilters";
+import { ExportDialog } from "@/components/dashboard/ExportDialog";
 import { 
   Users, 
   FileText, 
@@ -30,7 +32,8 @@ import {
   Shield,
   Zap,
   Award,
-  Mail
+  Mail,
+  Download
 } from "lucide-react";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -74,6 +77,8 @@ const AdminDashboard = () => {
   const { toast } = useToast();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [emailFailures, setEmailFailures] = useState<Map<string, { name: string; email: string; tempPassword?: string; referralCode?: string }>>(new Map());
+  const [applicationFilters, setApplicationFilters] = useState<FilterConfig>({});
+  const [ambassadorFilters, setAmbassadorFilters] = useState<FilterConfig>({});
 
   const loading = appsLoading || ambLoading;
 
@@ -568,8 +573,29 @@ const AdminDashboard = () => {
             <Card className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold">Application Management</h3>
-                <Badge variant="outline">{applications?.length || 0} total</Badge>
+                <div className="flex items-center gap-3">
+                  <ExportDialog 
+                    data={applications} 
+                    dataType="applications"
+                    trigger={
+                      <Button variant="outline" size="sm">
+                        <Download className="h-4 w-4 mr-2" />
+                        Export
+                      </Button>
+                    }
+                  />
+                  <Badge variant="outline">{applications?.length || 0} total</Badge>
+                </div>
               </div>
+
+              <AdvancedFilters
+                filters={applicationFilters}
+                onFiltersChange={setApplicationFilters}
+                showTierFilter={false}
+                showAmountFilter={false}
+                placeholder="Search applications..."
+                className="mb-6"
+              />
 
               <div className="space-y-4">
                 {applications?.map((app) => (
