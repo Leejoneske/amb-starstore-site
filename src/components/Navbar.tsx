@@ -27,7 +27,11 @@ const Navbar = () => {
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2 group">
-            <Sparkles className="h-5 w-5 text-primary group-hover:text-primary/80 transition-colors" />
+            <img 
+              src="/favicon.ico" 
+              alt="StarStore" 
+              className="w-5 h-5 group-hover:opacity-80 transition-opacity"
+            />
             <div className="text-lg font-semibold">StarStore</div>
           </Link>
           <div className="flex items-center gap-3">

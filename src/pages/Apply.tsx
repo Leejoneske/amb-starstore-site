@@ -165,7 +165,14 @@ const Apply = () => {
     <div className="min-h-screen bg-background py-12 px-4">
       <div className="container mx-auto max-w-3xl">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2">Become an Ambassador</h1>
+          <div className="inline-flex items-center gap-3 mb-4">
+            <img 
+              src="/favicon.ico" 
+              alt="StarStore" 
+              className="w-10 h-10"
+            />
+            <h1 className="text-4xl font-bold">Become an Ambassador</h1>
+          </div>
           <p className="text-muted-foreground">
             Join our program and start earning up to 75% commission
           </p>

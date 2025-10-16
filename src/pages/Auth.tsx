@@ -17,7 +17,8 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [isFirstLogin, setIsFirstLogin] = useState(false);
-  const { signIn, user } = useAuth();
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const { signIn, user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -26,7 +27,7 @@ const Auth = () => {
       // Check if this is a first-time login (temporary password)
       checkFirstLogin();
     }
-  }, [user, navigate, checkFirstLogin]);
+  }, [user, checkFirstLogin]);
 
   const checkFirstLogin = useCallback(async () => {
     if (!user) return;
@@ -38,6 +39,7 @@ const Auth = () => {
     if (needsPasswordChange) {
       setIsFirstLogin(true);
     } else {
+      setIsRedirecting(true);
       navigate("/dashboard");
     }
   }, [user, navigate]);
@@ -113,6 +115,20 @@ const Auth = () => {
     }
   };
 
+  // Show loading while auth is initializing or redirecting
+  if (authLoading || isRedirecting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">
+            {isRedirecting ? "Redirecting to dashboard..." : "Loading..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Show password change form for first-time login
   if (isFirstLogin) {
     return (
@@ -120,7 +136,11 @@ const Auth = () => {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center gap-2 mb-4">
-              <CheckCircle2 className="h-8 w-8 text-success" />
+              <img 
+                src="/favicon.ico" 
+                alt="StarStore" 
+                className="w-8 h-8"
+              />
               <h1 className="text-3xl font-bold">Welcome to StarStore!</h1>
             </div>
             <p className="text-muted-foreground">Please set your new password to continue</p>
@@ -183,7 +203,11 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center gap-2 mb-4">
-            <Sparkles className="h-8 w-8 text-primary" />
+            <img 
+              src="/favicon.ico" 
+              alt="StarStore" 
+              className="w-8 h-8"
+            />
             <h1 className="text-3xl font-bold">StarStore</h1>
           </div>
           <p className="text-muted-foreground">Ambassador Portal</p>

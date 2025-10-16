@@ -276,7 +276,14 @@ const AdminDashboard = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+            <div className="flex items-center gap-3 mb-2">
+              <img 
+                src="/favicon.ico" 
+                alt="StarStore" 
+                className="w-8 h-8"
+              />
+              <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+            </div>
             <p className="text-muted-foreground">Manage applications, ambassadors, and system settings</p>
           </div>
           <Badge variant="destructive" className="text-sm">
