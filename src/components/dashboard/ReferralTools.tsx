@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Copy, Share2, Check } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/lib/logger";
 
 interface ReferralToolsProps {
   referralCode: string;
@@ -34,7 +35,7 @@ export const ReferralTools = ({ referralCode }: ReferralToolsProps) => {
           url: referralUrl,
         });
       } catch (err) {
-        console.log('Share cancelled');
+        logger.info('Share operation cancelled by user');
       }
     } else {
       copyToClipboard(referralUrl);

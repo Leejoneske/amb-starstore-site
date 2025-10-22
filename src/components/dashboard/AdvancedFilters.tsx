@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useState } from "react";
+import type { FilterConfig } from '@/types';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -62,7 +63,7 @@ export function AdvancedFilters({
 }: AdvancedFiltersProps) {
   const [isOpen, setIsOpen] = useState(false)
 
-  const updateFilter = (key: keyof FilterConfig, value: any) => {
+  const updateFilter = (key: keyof FilterConfig, value: string | { from: Date; to: Date } | { min: number; max: number }) => {
     onFiltersChange({ ...filters, [key]: value })
   }
 

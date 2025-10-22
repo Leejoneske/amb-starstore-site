@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useState } from "react";
+import type { ExportConfig } from '@/types';
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -47,7 +48,7 @@ interface ExportConfig {
 }
 
 interface ExportDialogProps {
-  data?: any[]
+  data?: Record<string, unknown>[]
   dataType?: "applications" | "ambassadors" | "transactions"
   trigger?: React.ReactNode
   onExport?: (config: ExportConfig) => void
@@ -170,7 +171,7 @@ export function ExportDialog({
 
     // Filter fields
     const filteredData = exportData.map(item => {
-      const filtered: any = {}
+      const filtered: Record<string, unknown> = {}
       exportConfig.includeFields.forEach(field => {
         filtered[field] = item[field]
       })
@@ -213,7 +214,7 @@ export function ExportDialog({
     window.URL.revokeObjectURL(url)
   }
 
-  const convertToCSV = (data: any[]) => {
+  const convertToCSV = (data: Record<string, unknown>[]) => {
     if (data.length === 0) return ""
     
     const headers = Object.keys(data[0])
@@ -256,7 +257,7 @@ export function ExportDialog({
               value={config.dataType}
               onValueChange={(value) => setConfig(prev => ({ 
                 ...prev, 
-                dataType: value as any,
+                dataType: value as ExportConfig['dataType'],
                 includeFields: [] // Reset fields when changing data type
               }))}
             >
@@ -291,7 +292,7 @@ export function ExportDialog({
             <Label>Export Format</Label>
             <Select
               value={config.format}
-              onValueChange={(value) => setConfig(prev => ({ ...prev, format: value as any }))}
+              onValueChange={(value) => setConfig(prev => ({ ...prev, format: value as ExportConfig['format'] }))}
             >
               <SelectTrigger>
                 <SelectValue />

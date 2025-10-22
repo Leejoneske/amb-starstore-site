@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useAmbassadorProfile } from '@/hooks/useAmbassadorProfile';
 import { useAuth } from '@/contexts/AuthContext';
+import { logger } from '@/lib/logger';
 import {
   Share2,
   MessageSquare,
@@ -79,7 +80,7 @@ export const QuickActions = ({ referralCode, isAdmin = false }: QuickActionsProp
           url: referralUrl,
         });
       } catch (err) {
-        console.log('Share cancelled');
+        logger.info('Share operation cancelled by user');
       }
     } else {
       await navigator.clipboard.writeText(referralUrl);
