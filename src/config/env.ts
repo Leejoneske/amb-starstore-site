@@ -26,6 +26,17 @@ interface AppConfig {
 // Validate required environment variables
 function validateEnvVar(name: string, value: string | undefined): string {
   if (!value) {
+    // In production builds, we might have hardcoded fallbacks
+    const fallbacks: Record<string, string> = {
+      'VITE_SUPABASE_URL': 'https://jrtqbntwwkqxpexpplly.supabase.co',
+      'VITE_SUPABASE_ANON_KEY': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpydHFibnR3d2txeHBleHBwbGx5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4OTQ5NzEsImV4cCI6MjA3NTQ3MDk3MX0.eVCHDu9w_mOxE0PH_yb0lH1WpmZkmz6AKLC5XBbLeUE'
+    };
+    
+    if (fallbacks[name]) {
+      console.warn(`Using fallback for ${name}`);
+      return fallbacks[name];
+    }
+    
     throw new Error(`Missing required environment variable: ${name}`);
   }
   return value;
