@@ -6,31 +6,21 @@ import { useAnalytics } from "@/hooks/useAnalytics";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { NotificationCenter } from "@/components/dashboard/NotificationCenter";
-import { AnalyticsCharts } from "@/components/dashboard/AnalyticsCharts";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { LiveActivityFeed } from "@/components/dashboard/LiveActivityFeed";
-import { AmbassadorStatusList } from "@/components/dashboard/AmbassadorStatusList";
 import { ManualEmailSender } from "@/components/dashboard/ManualEmailSender";
-import { SetupChecker } from "@/components/dashboard/SetupChecker";
 import { AdvancedFilters, FilterConfig } from "@/components/dashboard/AdvancedFilters";
 import { ExportDialog } from "@/components/dashboard/ExportDialog";
+import { AdminHeader } from "@/components/dashboard/AdminHeader";
+import { AdminStats } from "@/components/dashboard/AdminStats";
+import { AdminPerformanceMetrics } from "@/components/dashboard/AdminPerformanceMetrics";
+import { AdminTabs } from "@/components/dashboard/AdminTabs";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { 
-  Users, 
-  FileText, 
-  DollarSign, 
-  TrendingUp, 
-  Settings,
   UserCheck,
   UserX,
-  BarChart3,
   AlertCircle,
   CheckCircle2,
-  Clock,
-  Activity,
-  Shield,
-  Zap,
   Award,
   Mail,
   Download
@@ -39,33 +29,10 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { logger } from "@/lib/logger";
+import type { Application, Ambassador } from "@/types";
 
 
-interface Application {
-  id: string;
-  full_name: string;
-  email: string;
-  status: string;
-  created_at: string;
-  experience: string;
-  why_join: string;
-  referral_strategy: string;
-}
-
-interface Ambassador {
-  id: string;
-  user_id: string;
-  referral_code: string;
-  current_tier: string;
-  total_referrals: number;
-  total_earnings: number;
-  status: string;
-  created_at: string;
-  profiles: {
-    full_name: string;
-    email: string;
-  };
-}
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -82,13 +49,11 @@ const AdminDashboard = () => {
 
   const loading = appsLoading || ambLoading;
 
-  // Calculate stats
-  const stats = {
-    totalApplications: applications?.length || 0,
-    pendingApplications: applications?.filter(app => app.status === 'pending').length || 0,
-    totalAmbassadors: ambassadors?.length || 0,
-    totalEarnings: ambassadors?.reduce((sum, amb) => sum + amb.total_earnings, 0) || 0
-  };
+  // Log admin access
+  logger.userAction('admin_dashboard_access', user?.id, { 
+    totalApplications: applications?.length,
+    totalAmbassadors: ambassadors?.length 
+  });
 
   const handleApplicationAction = async (applicationId: string, action: 'approve' | 'reject') => {
     setActionLoading(applicationId);
@@ -108,6 +73,8 @@ const AdminDashboard = () => {
 
       // If approved, create complete ambassador setup via Edge Function
       if (action === 'approve') {
+        logger.info('Approving application', { applicationId, email: application.email });
+        
         const { data, error: fnError } = await supabase.functions.invoke('admin-approve-application', {
           body: {
             applicationId,
@@ -140,7 +107,13 @@ const AdminDashboard = () => {
               : data?.message || `Ambassador created. ${data?.emailError ? `Email failed: ${data.emailError}` : 'Email delivery failed.'}`,
           variant: data?.emailSent ? "default" : "destructive",
         });
+
+        logger.info('Application approved successfully', { 
+          applicationId, 
+          emailSent: data?.emailSent 
+        });
       } else {
+        logger.info('Application rejected', { applicationId });
         toast({
           title: "Application Rejected",
           description: "Application rejected successfully.",
@@ -151,6 +124,7 @@ const AdminDashboard = () => {
       await queryClient.invalidateQueries({ queryKey: ['applications'] });
       await queryClient.invalidateQueries({ queryKey: ['all-ambassadors'] });
     } catch (error: unknown) {
+      logger.error(`Failed to ${action} application`, { applicationId, action }, error as Error);
       toast({
         title: "Error",
         description: `Failed to ${action === 'approve' ? 'approve' : 'reject'} application: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -305,428 +279,250 @@ const AdminDashboard = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-background p-4 md:p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Enhanced Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-lg bg-destructive/10">
-                <Shield className="h-8 w-8 text-destructive" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-                <p className="text-muted-foreground">Comprehensive system management and analytics</p>
-              </div>
+  // Create content for tabs
+  const overviewContent = (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <QuickActions isAdmin={true} />
+      
+      <Card className="p-6">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold">System Health</h3>
+          <p className="text-sm text-muted-foreground">Real-time system status</p>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-success/5">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-success" />
+              <span className="text-sm">Database Connection</span>
             </div>
+            <Badge variant="outline" className="text-success border-success">Online</Badge>
           </div>
-          <div className="flex items-center gap-3">
-            <NotificationCenter userId={user?.id} isAdmin={true} />
-            <Badge variant="destructive" className="flex items-center gap-1">
-              <Activity className="h-3 w-3" />
-              Admin Access
-            </Badge>
+          
+          <div className="flex items-center justify-between p-3 rounded-lg bg-success/5">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-success" />
+              <span className="text-sm">Real-time Updates</span>
+            </div>
+            <Badge variant="outline" className="text-success border-success">Active</Badge>
+          </div>
+          
+          <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              <span className="text-sm">API Performance</span>
+            </div>
+            <Badge variant="outline" className="text-primary border-primary">Optimal</Badge>
           </div>
         </div>
+      </Card>
 
-        {/* Enhanced Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-primary/20">
-                <FileText className="h-6 w-6 text-primary" />
+      <LiveActivityFeed isAdmin={true} limit={15} />
+      
+      <Card className="p-6">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold">Top Performers</h3>
+          <p className="text-sm text-muted-foreground">Highest earning ambassadors</p>
+        </div>
+        
+        <div className="space-y-3">
+          {analyticsData?.topPerformers.slice(0, 5).map((performer, index) => (
+            <div key={performer.id} className="flex items-center justify-between p-3 rounded-lg border">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                  {index + 1}
+                </div>
+                <div>
+                  <div className="font-medium text-sm">{performer.name}</div>
+                  <div className="text-xs text-muted-foreground">{performer.referrals} referrals</div>
+                </div>
               </div>
-              <div>
-                <div className="text-2xl font-bold">{stats.totalApplications}</div>
-                <div className="text-sm text-muted-foreground">Total Applications</div>
-                {stats.pendingApplications > 0 && (
-                  <div className="text-xs text-primary mt-1">
-                    {stats.pendingApplications} pending review
-                  </div>
-                )}
+              <div className="text-sm font-bold text-success">
+                ${performer.earnings.toFixed(2)}
               </div>
             </div>
-          </Card>
+          )) || (
+            <div className="text-center py-6 text-muted-foreground">
+              <Award className="h-8 w-8 mx-auto mb-2 opacity-20" />
+              <p className="text-sm">No performance data yet</p>
+            </div>
+          )}
+        </div>
+      </Card>
+    </div>
+  );
 
-          <Card className="p-6 bg-gradient-to-br from-warning/10 to-warning/5 border-warning/20">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-warning/20">
-                <Clock className="h-6 w-6 text-warning" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{stats.pendingApplications}</div>
-                <div className="text-sm text-muted-foreground">Pending Review</div>
-                {stats.pendingApplications > 0 && (
-                  <Badge variant="outline" className="text-xs mt-1">
-                    Action Required
+  const applicationsContent = (
+    <Card className="p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-semibold">Application Management</h3>
+        <div className="flex items-center gap-3">
+          <ExportDialog 
+            data={applications} 
+            dataType="applications"
+            trigger={
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            }
+          />
+          <Badge variant="outline">{applications?.length || 0} total</Badge>
+        </div>
+      </div>
+
+      <AdvancedFilters
+        filters={applicationFilters}
+        onFiltersChange={setApplicationFilters}
+        showTierFilter={false}
+        showAmountFilter={false}
+        placeholder="Search applications..."
+        className="mb-6"
+      />
+
+      <div className="space-y-4">
+        {applications?.map((app) => (
+          <div key={app.id} className="border border-border rounded-lg p-4">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h4 className="font-semibold">{app.full_name}</h4>
+                  <Badge 
+                    variant={app.status === 'pending' ? 'default' : app.status === 'approved' ? 'default' : 'destructive'}
+                  >
+                    {app.status}
                   </Badge>
-                )}
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6 bg-gradient-to-br from-success/10 to-success/5 border-success/20">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-success/20">
-                <Users className="h-6 w-6 text-success" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{stats.totalAmbassadors}</div>
-                <div className="text-sm text-muted-foreground">Active Ambassadors</div>
-                {analyticsData?.performanceMetrics.activeAmbassadors && (
-                  <div className="text-xs text-success mt-1">
-                    {analyticsData.performanceMetrics.activeAmbassadors} currently active
-                  </div>
-                )}
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6 bg-gradient-to-br from-info/10 to-info/5 border-info/20">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-info/20">
-                <DollarSign className="h-6 w-6 text-info" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">
-                  ${analyticsData?.totalRevenue.toFixed(2) || stats.totalEarnings.toFixed(2)}
                 </div>
-                <div className="text-sm text-muted-foreground">Total Revenue</div>
-                {analyticsData?.monthlyRevenue && (
-                  <div className="text-xs text-info mt-1">
-                    +${analyticsData.monthlyRevenue.toFixed(2)} this month
-                  </div>
-                )}
+                <p className="text-sm text-muted-foreground mb-2">{app.email}</p>
+                <p className="text-sm mb-3">{app.experience}</p>
+                <div className="text-xs text-muted-foreground">
+                  Applied: {new Date(app.created_at).toLocaleDateString()}
+                </div>
               </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* Enhanced System Performance Metrics */}
-        {analyticsData && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium">Conversion Rate</span>
-              </div>
-              <div className="text-2xl font-bold text-primary">
-                {analyticsData.conversionRate.toFixed(1)}%
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Referral to transaction
-              </div>
-            </Card>
-
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <BarChart3 className="h-4 w-4 text-success" />
-                <span className="text-sm font-medium">Avg Transaction</span>
-              </div>
-              <div className="text-2xl font-bold text-success">
-                ${analyticsData.performanceMetrics.avgTransactionValue.toFixed(0)}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Per transaction value
-              </div>
-            </Card>
-
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Award className="h-4 w-4 text-warning" />
-                <span className="text-sm font-medium">Commission Rate</span>
-              </div>
-              <div className="text-2xl font-bold text-warning">
-                {analyticsData.performanceMetrics.avgCommissionRate.toFixed(1)}%
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Average across all tiers
-              </div>
-            </Card>
-
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle2 className="h-4 w-4 text-info" />
-                <span className="text-sm font-medium">Total Transactions</span>
-              </div>
-              <div className="text-2xl font-bold text-info">
-                {analyticsData.performanceMetrics.totalTransactions.toLocaleString()}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                All time completed
-              </div>
-            </Card>
-          </div>
-        )}
-
-        {/* Enhanced Main Content Tabs */}
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="applications" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Applications
-            </TabsTrigger>
-            <TabsTrigger value="ambassadors" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Ambassadors
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Settings
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <QuickActions isAdmin={true} />
               
-              <Card className="p-6">
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold">System Health</h3>
-                  <p className="text-sm text-muted-foreground">Real-time system status</p>
-                </div>
+              <div className="flex flex-col gap-2 ml-4">
+                {app.status === 'pending' && (
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm" 
+                      onClick={() => handleApplicationAction(app.id, 'approve')}
+                      className="bg-success hover:bg-success/90"
+                      disabled={actionLoading === app.id}
+                    >
+                      <UserCheck className="h-4 w-4 mr-1" />
+                      {actionLoading === app.id ? 'Processing...' : 'Approve'}
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="destructive"
+                      onClick={() => handleApplicationAction(app.id, 'reject')}
+                      disabled={actionLoading === app.id}
+                    >
+                      <UserX className="h-4 w-4 mr-1" />
+                      {actionLoading === app.id ? 'Processing...' : 'Reject'}
+                    </Button>
+                  </div>
+                )}
                 
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-success/5">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-success" />
-                      <span className="text-sm">Database Connection</span>
-                    </div>
-                    <Badge variant="outline" className="text-success border-success">Online</Badge>
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-success/5">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-success" />
-                      <span className="text-sm">Real-time Updates</span>
-                    </div>
-                    <Badge variant="outline" className="text-success border-success">Active</Badge>
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5">
-                    <div className="flex items-center gap-2">
-                      <Activity className="h-4 w-4 text-primary" />
-                      <span className="text-sm">API Performance</span>
-                    </div>
-                    <Badge variant="outline" className="text-primary border-primary">Optimal</Badge>
-                  </div>
-                </div>
-              </Card>
-            </div>
-
-            {/* Recent Activity Summary */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <LiveActivityFeed isAdmin={true} limit={15} />
-              
-              <Card className="p-6">
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold">Top Performers</h3>
-                  <p className="text-sm text-muted-foreground">Highest earning ambassadors</p>
-                </div>
-                
-                <div className="space-y-3">
-                  {analyticsData?.topPerformers.slice(0, 5).map((performer, index) => (
-                    <div key={performer.id} className="flex items-center justify-between p-3 rounded-lg border">
-                      <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
-                          {index + 1}
-                        </div>
-                        <div>
-                          <div className="font-medium text-sm">{performer.name}</div>
-                          <div className="text-xs text-muted-foreground">{performer.referrals} referrals</div>
-                        </div>
-                      </div>
-                      <div className="text-sm font-bold text-success">
-                        ${performer.earnings.toFixed(2)}
-                      </div>
-                    </div>
-                  )) || (
-                    <div className="text-center py-6 text-muted-foreground">
-                      <Award className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                      <p className="text-sm">No performance data yet</p>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* Analytics Tab */}
-          <TabsContent value="analytics" id="admin-analytics">
-            {analyticsData && (
-              <AnalyticsCharts data={analyticsData} isLoading={analyticsLoading} />
-            )}
-          </TabsContent>
-
-          {/* Applications Tab */}
-          <TabsContent value="applications" className="space-y-6" data-tab="applications">
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold">Application Management</h3>
-                <div className="flex items-center gap-3">
-                  <ExportDialog 
-                    data={applications} 
-                    dataType="applications"
+                {emailFailures.has(app.id) && (
+                  <ManualEmailSender
+                    applicantName={emailFailures.get(app.id)!.name}
+                    applicantEmail={emailFailures.get(app.id)!.email}
+                    tempPassword={emailFailures.get(app.id)!.tempPassword}
+                    referralCode={emailFailures.get(app.id)!.referralCode}
                     trigger={
-                      <Button variant="outline" size="sm">
-                        <Download className="h-4 w-4 mr-2" />
-                        Export
+                      <Button size="sm" variant="outline" className="text-orange-600 border-orange-300">
+                        <Mail className="h-4 w-4 mr-1" />
+                        Send Manual Email
                       </Button>
                     }
                   />
-                  <Badge variant="outline">{applications?.length || 0} total</Badge>
-                </div>
-              </div>
-
-              <AdvancedFilters
-                filters={applicationFilters}
-                onFiltersChange={setApplicationFilters}
-                showTierFilter={false}
-                showAmountFilter={false}
-                placeholder="Search applications..."
-                className="mb-6"
-              />
-
-              <div className="space-y-4">
-                {applications?.map((app) => (
-                  <div key={app.id} className="border border-border rounded-lg p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h4 className="font-semibold">{app.full_name}</h4>
-                          <Badge 
-                            variant={app.status === 'pending' ? 'default' : app.status === 'approved' ? 'default' : 'destructive'}
-                          >
-                            {app.status}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-2">{app.email}</p>
-                        <p className="text-sm mb-3">{app.experience}</p>
-                        <div className="text-xs text-muted-foreground">
-                          Applied: {new Date(app.created_at).toLocaleDateString()}
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-col gap-2 ml-4">
-                        {app.status === 'pending' && (
-                          <div className="flex gap-2">
-                            <Button 
-                              size="sm" 
-                              onClick={() => handleApplicationAction(app.id, 'approve')}
-                              className="bg-success hover:bg-success/90"
-                              disabled={actionLoading === app.id}
-                            >
-                              <UserCheck className="h-4 w-4 mr-1" />
-                              {actionLoading === app.id ? 'Processing...' : 'Approve'}
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="destructive"
-                              onClick={() => handleApplicationAction(app.id, 'reject')}
-                              disabled={actionLoading === app.id}
-                            >
-                              <UserX className="h-4 w-4 mr-1" />
-                              {actionLoading === app.id ? 'Processing...' : 'Reject'}
-                            </Button>
-                          </div>
-                        )}
-                        
-                        {/* Show manual email sender if email failed */}
-                        {emailFailures.has(app.id) && (
-                          <ManualEmailSender
-                            applicantName={emailFailures.get(app.id)!.name}
-                            applicantEmail={emailFailures.get(app.id)!.email}
-                            tempPassword={emailFailures.get(app.id)!.tempPassword}
-                            referralCode={emailFailures.get(app.id)!.referralCode}
-                            trigger={
-                              <Button size="sm" variant="outline" className="text-orange-600 border-orange-300">
-                                <Mail className="h-4 w-4 mr-1" />
-                                Send Manual Email
-                              </Button>
-                            }
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {(!applications || applications.length === 0) && (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <FileText className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                    <p>No applications found</p>
-                  </div>
                 )}
               </div>
-            </Card>
-          </TabsContent>
+            </div>
+          </div>
+        ))}
 
-          {/* Ambassadors Tab */}
-          <TabsContent value="ambassadors" className="space-y-6">
-            <AmbassadorStatusList isAdmin={true} />
-          </TabsContent>
-
-          {/* Settings Tab */}
-          <TabsContent value="settings" className="space-y-6">
-            <SetupChecker />
-            
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-6">System Settings</h3>
-              <div className="space-y-4">
-                <div className="p-4 border border-border rounded-lg">
-                  <h4 className="font-medium mb-2">Database Management</h4>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Clear all data and reset the system to initial state.
-                  </p>
-                  <Button 
-                    variant="destructive" 
-                    size="sm"
-                    onClick={handleDatabaseReset}
-                    disabled={actionLoading === 'reset'}
-                  >
-                    {actionLoading === 'reset' ? 'Resetting...' : 'Reset Database'}
-                  </Button>
-                </div>
-                
-                <div className="p-4 border border-border rounded-lg">
-                  <h4 className="font-medium mb-2">Export Data</h4>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Export all applications and ambassador data.
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleExportData}
-                  >
-                    Export CSV
-                  </Button>
-                </div>
-
-                <div className="p-4 border border-border rounded-lg">
-                  <h4 className="font-medium mb-2">RLS Policy Fix</h4>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Run the simple-rls-fix.sql script in Supabase SQL Editor to fix admin permissions.
-                  </p>
-                  <div className="text-xs bg-muted p-2 rounded font-mono">
-                    Copy and run: simple-rls-fix.sql
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        {(!applications || applications.length === 0) && (
+          <div className="text-center py-12 text-muted-foreground">
+            <AlertCircle className="h-12 w-12 mx-auto mb-3 opacity-20" />
+            <p>No applications found</p>
+          </div>
+        )}
       </div>
-    </div>
+    </Card>
+  );
+
+  const settingsContent = (
+    <Card className="p-6">
+      <h3 className="text-lg font-semibold mb-6">System Settings</h3>
+      <div className="space-y-4">
+        <div className="p-4 border border-border rounded-lg">
+          <h4 className="font-medium mb-2">Database Management</h4>
+          <p className="text-sm text-muted-foreground mb-3">
+            Clear all data and reset the system to initial state.
+          </p>
+          <Button 
+            variant="destructive" 
+            size="sm"
+            onClick={handleDatabaseReset}
+            disabled={actionLoading === 'reset'}
+          >
+            {actionLoading === 'reset' ? 'Resetting...' : 'Reset Database'}
+          </Button>
+        </div>
+        
+        <div className="p-4 border border-border rounded-lg">
+          <h4 className="font-medium mb-2">Export Data</h4>
+          <p className="text-sm text-muted-foreground mb-3">
+            Export all applications and ambassador data.
+          </p>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleExportData}
+          >
+            Export CSV
+          </Button>
+        </div>
+
+        <div className="p-4 border border-border rounded-lg">
+          <h4 className="font-medium mb-2">RLS Policy Fix</h4>
+          <p className="text-sm text-muted-foreground mb-3">
+            Run the simple-rls-fix.sql script in Supabase SQL Editor to fix admin permissions.
+          </p>
+          <div className="text-xs bg-muted p-2 rounded font-mono">
+            Copy and run: simple-rls-fix.sql
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+
+  return (
+    <ErrorBoundary>
+      <div className="min-h-screen bg-background p-4 md:p-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <AdminHeader userId={user?.id} />
+
+          <AdminStats 
+            applications={applications}
+            ambassadors={ambassadors}
+            analyticsData={analyticsData}
+          />
+
+          <AdminPerformanceMetrics analyticsData={analyticsData} />
+
+          <AdminTabs 
+            analyticsData={analyticsData}
+            analyticsLoading={analyticsLoading}
+            overviewContent={overviewContent}
+            applicationsContent={applicationsContent}
+            settingsContent={settingsContent}
+          />
+        </div>
+      </div>
+    </ErrorBoundary>
   );
 };
 

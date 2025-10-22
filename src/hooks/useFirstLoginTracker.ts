@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 import { useToast } from '@/hooks/use-toast';
 
 export const useFirstLoginTracker = () => {
@@ -29,7 +30,7 @@ export const useFirstLoginTracker = () => {
           });
 
           if (updateError) {
-            console.error('Error updating first login:', updateError);
+            logger.error('Error updating first login status', { userId: user.id }, updateError);
             return;
           }
 
@@ -52,7 +53,7 @@ export const useFirstLoginTracker = () => {
           }, 3000);
         }
       } catch (error) {
-        console.error('Error in first login tracking:', error);
+        logger.error('Error in first login tracking', { userId: user?.id }, error as Error);
       }
     };
 
@@ -78,10 +79,10 @@ export const usePasswordChangeTracker = () => {
         .eq('user_id', user.id);
 
       if (error) {
-        console.error('Error updating password change status:', error);
+        logger.error('Error updating password change status', { userId: user?.id }, error as Error);
       }
     } catch (error) {
-      console.error('Error in password change tracking:', error);
+      logger.error('Error in password change tracking', { userId: user?.id }, error as Error);
     }
   };
 

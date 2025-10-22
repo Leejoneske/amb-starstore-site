@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 export interface RealTimeNotification {
   id: string;
@@ -10,7 +12,7 @@ export interface RealTimeNotification {
   message: string;
   timestamp: Date;
   read: boolean;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 export const useRealTimeUpdates = (userId: string | undefined, isAdmin: boolean = false) => {
@@ -23,7 +25,7 @@ export const useRealTimeUpdates = (userId: string | undefined, isAdmin: boolean 
     if (!userId) return;
 
     // Subscribe to real-time changes
-    const channels: any[] = [];
+    const channels: RealtimeChannel[] = [];
 
     // Subscribe to transactions
     const transactionChannel = supabase
@@ -37,7 +39,11 @@ export const useRealTimeUpdates = (userId: string | undefined, isAdmin: boolean 
           ...(isAdmin ? {} : { filter: `ambassador_id=eq.${userId}` })
         },
         (payload) => {
-          console.log('Transaction update:', payload);
+          logger.info('Real-time transaction update received', { 
+          userId, 
+          transactionId: payload.new?.id,
+          eventType: payload.eventType 
+        });
           
           if (payload.eventType === 'INSERT') {
             const newNotification: RealTimeNotification = {
@@ -80,7 +86,7 @@ export const useRealTimeUpdates = (userId: string | undefined, isAdmin: boolean 
           ...(isAdmin ? {} : { filter: `ambassador_id=eq.${userId}` })
         },
         (payload) => {
-          console.log('Referral update:', payload);
+          logger.info('Real-time referral update received', { userId, eventType: payload.eventType });
           
           if (payload.eventType === 'INSERT') {
             const newNotification: RealTimeNotification = {
@@ -121,7 +127,7 @@ export const useRealTimeUpdates = (userId: string | undefined, isAdmin: boolean 
           ...(isAdmin ? {} : { filter: `ambassador_id=eq.${userId}` })
         },
         (payload) => {
-          console.log('Payout update:', payload);
+          logger.info('Real-time payout update received', { userId, eventType: payload.eventType });
           
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const newNotification: RealTimeNotification = {
@@ -162,7 +168,7 @@ export const useRealTimeUpdates = (userId: string | undefined, isAdmin: boolean 
             table: 'applications'
           },
           (payload) => {
-            console.log('Application update:', payload);
+            logger.info('Real-time application update received', { eventType: payload.eventType });
             
             if (payload.eventType === 'INSERT') {
               const newNotification: RealTimeNotification = {
@@ -201,7 +207,7 @@ export const useRealTimeUpdates = (userId: string | undefined, isAdmin: boolean 
             table: 'ambassador_profiles'
           },
           (payload) => {
-            console.log('Ambassador profile update:', payload);
+            logger.info('Real-time ambassador profile update received', { eventType: payload.eventType });
             
             // Check if tier was upgraded
             if (payload.old.current_tier !== payload.new.current_tier) {

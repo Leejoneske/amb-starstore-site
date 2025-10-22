@@ -90,7 +90,7 @@ export const PasswordChangeDialog = ({ trigger, isUsingTempPassword = false }: P
       setConfirmPassword('');
       setIsOpen(false);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
         description: error.message || "Failed to update password",

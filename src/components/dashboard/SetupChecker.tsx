@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { TELEGRAM_CONFIG } from '@/config/telegram';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 interface SetupStatus {
   botUsername: boolean;
@@ -73,11 +74,11 @@ export const SetupChecker = () => {
           newStatus.emailService = emailResponse.status !== 404;
         }
       } catch (error) {
-        console.log('Function check failed:', error);
+        logger.warn('Function check failed', { function: 'setup-check' }, error as Error);
       }
 
     } catch (error) {
-      console.error('Setup check failed:', error);
+      logger.error('Setup check failed', {}, error as Error);
     }
 
     setStatus(newStatus);

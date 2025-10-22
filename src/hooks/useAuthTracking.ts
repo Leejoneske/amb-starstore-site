@@ -1,16 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
+import type { UserAuthStatus, Ambassador } from '@/types';
 
-export interface UserAuthStatus {
+interface AuthUser {
   id: string;
   email: string;
-  full_name: string;
-  created_at: string;
   last_sign_in_at: string | null;
   email_confirmed_at: string | null;
-  is_activated: boolean;
-  days_since_approval: number;
-  password_changed: boolean;
+  created_at: string;
 }
 
 export const useAuthTracking = (isAdmin: boolean = false) => {
@@ -34,12 +32,12 @@ export const useAuthTracking = (isAdmin: boolean = false) => {
       const { data: authUsers, error: authError } = await supabase.rpc('get_auth_users_info');
       
       if (authError) {
-        console.warn('Could not fetch auth user data:', authError);
+        logger.warn('Could not fetch auth user data', { error: authError.message });
         // Fallback to basic data without auth info
-        return ambassadors?.map(ambassador => ({
+        return ambassadors?.map((ambassador: Ambassador) => ({
           id: ambassador.user_id,
-          email: ambassador.profiles.email,
-          full_name: ambassador.profiles.full_name || 'Unknown',
+          email: ambassador.profiles?.email || 'Unknown',
+          full_name: ambassador.profiles?.full_name || 'Unknown',
           created_at: ambassador.created_at,
           last_sign_in_at: null,
           email_confirmed_at: null,
@@ -53,8 +51,8 @@ export const useAuthTracking = (isAdmin: boolean = false) => {
       }
 
       // Merge ambassador data with auth data
-      const userStatuses: UserAuthStatus[] = ambassadors?.map(ambassador => {
-        const authUser = authUsers?.find((user: any) => user.id === ambassador.user_id);
+      const userStatuses: UserAuthStatus[] = ambassadors?.map((ambassador: Ambassador) => {
+        const authUser = (authUsers as AuthUser[])?.find((user: AuthUser) => user.id === ambassador.user_id);
         const approvalDate = new Date(ambassador.approved_at || ambassador.created_at);
         const daysSinceApproval = Math.floor(
           (new Date().getTime() - approvalDate.getTime()) / (1000 * 60 * 60 * 24)

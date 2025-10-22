@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Activity, RefreshCw, Pause, Play } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 interface ActivityItem {
   id: string;
@@ -13,7 +14,7 @@ interface ActivityItem {
   title: string;
   description: string;
   timestamp: Date;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 interface LiveActivityFeedProps {
@@ -149,7 +150,7 @@ export const LiveActivityFeed = ({ isAdmin = false, limit = 20 }: LiveActivityFe
       newActivities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
       setActivities(newActivities.slice(0, limit));
     } catch (error) {
-      console.error('Error fetching activity:', error);
+      logger.error('Error fetching activity feed', { isAdmin, limit }, error as Error);
     } finally {
       setIsLoading(false);
     }
