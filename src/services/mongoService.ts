@@ -312,7 +312,7 @@ class MongoService {
 
   // Generate Telegram bot referral link
   generateTelegramReferralLink(referralCode: string, botUsername?: string): string {
-    const username = botUsername || telegramConfig.botUsername;
+    const username = botUsername || 'TgStarStore_bot';
     return `https://t.me/${username}?start=${referralCode}`;
   }
 
