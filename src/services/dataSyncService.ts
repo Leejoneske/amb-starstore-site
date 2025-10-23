@@ -154,12 +154,10 @@ class DataSyncService {
     return result;
   }
 
-  // Sync users data from Star Store
+  // Sync users data from Star Store - TEMPORARILY DISABLED
   private async syncUsersData(): Promise<number> {
-    const response = await fetch(`${starStoreService['baseUrl']}/api/admin/users-data?limit=500`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    
-    const data = await response.json();
+    console.log('⚠️ StarStore users data sync temporarily disabled');
+    return 0;
     const users: StarStoreUser[] = data.users;
 
     // Clear existing cached users data
@@ -261,10 +259,9 @@ class DataSyncService {
     return transactions.length;
   }
 
-  // Sync analytics data from Star Store
+  // Sync analytics data from Star Store - TEMPORARILY DISABLED
   private async syncAnalyticsData(): Promise<void> {
-    const response = await fetch(`${starStoreService['baseUrl']}/api/admin/analytics`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    console.log('⚠️ StarStore analytics data sync temporarily disabled');
     
     const analytics: StarStoreAnalytics = await response.json();
 
