@@ -54,45 +54,14 @@ export const sendApprovalEmailWithResend = async (
 
   const { userEmail, userName, tempPassword, referralCode } = validationResult.data;
 
-  // Create message record first
-  const messageResult = await messageService.createMessage({
-    recipientEmail: userEmail,
-    recipientName: userName,
-    userId: options.userId,
-    ambassadorId: options.ambassadorId,
-    subject: 'Congratulations! Your Ambassador Application is Approved',
-    messageType: 'approval' as MessageType,
-    templateName: 'approval_email',
-    priority: 'high',
-    sentBy: options.sentBy,
-    sentVia: 'system',
-    variables: {
-      name: userName,
-      email: userEmail,
-      password: tempPassword,
-      referralCode,
-      login_url: `${window.location.origin}/auth`
-    },
-    metadata: {
-      source: 'ambassador_approval',
-      tempPassword: tempPassword, // Store for reference (encrypted in production)
-      referralCode
-    }
-  });
-
-  if (!messageResult.success) {
-    logger.error('Failed to create message record', { error: messageResult.error });
-  }
-
   try {
-    logger.info('Sending approval email', { 
+    logger.info('Sending approval email via old function', { 
       userEmail, 
       userName,
-      messageId: messageResult.messageId,
       action: 'send_approval_email'
     });
     
-    // Call the Supabase Edge Function
+    // Call the existing Supabase Edge Function (fallback)
     const response = await fetch(
       `${supabaseConfig.functionsUrl}/send-approval-email`,
       {
@@ -106,23 +75,12 @@ export const sendApprovalEmailWithResend = async (
           userName,
           tempPassword,
           referralCode,
-          messageId: messageResult.messageId, // Pass message ID for tracking
         }),
       }
     );
 
     if (!response.ok) {
       const errorData = await response.json();
-      
-      // Update message status to failed
-      if (messageResult.messageId) {
-        await messageService.updateMessageStatus(
-          messageResult.messageId, 
-          'failed', 
-          errorData.error || 'Failed to send email'
-        );
-      }
-      
       throw new Error(errorData.error || 'Failed to send email');
     }
 
@@ -131,19 +89,8 @@ export const sendApprovalEmailWithResend = async (
     // Validate API response
     const result = validateApiResponse(rawResult, emailResponseSchema);
     
-    // Update message status to sent
-    if (messageResult.messageId) {
-      await messageService.updateMessageStatus(messageResult.messageId, 'sent');
-      
-      // If we got an external message ID, update it
-      if (result.messageId) {
-        await messageService.updateMessageStatus(messageResult.messageId, 'sent');
-      }
-    }
-    
-    logger.info('Approval email sent successfully', { 
+    logger.info('Approval email sent successfully via old function', { 
       userEmail, 
-      messageId: messageResult.messageId,
       externalMessageId: result.messageId 
     });
     
@@ -151,23 +98,13 @@ export const sendApprovalEmailWithResend = async (
       success: true, 
       data: { 
         success: true, 
-        messageId: messageResult.messageId || result.messageId 
+        messageId: result.messageId 
       }
     };
   } catch (error) {
-    // Update message status to failed
-    if (messageResult.messageId) {
-      await messageService.updateMessageStatus(
-        messageResult.messageId, 
-        'failed', 
-        error instanceof Error ? error.message : 'Unknown error'
-      );
-    }
-    
     logger.apiError('send-approval-email', error as Error, { 
       userEmail, 
-      userName,
-      messageId: messageResult.messageId
+      userName
     });
     
     return { 
