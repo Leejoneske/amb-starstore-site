@@ -119,23 +119,115 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Failed to update application' }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
     }
 
-    // 5) Send approval email (best-effort)
+    // 5) Create message record and send approval email
     let emailSent = false;
     let emailError = null;
+    let messageId = null;
+    
     try {
-      const fnRes = await serviceClient.functions.invoke('send-approval-email', {
-        body: { userEmail: applicantEmail, userName: applicantName, tempPassword, referralCode },
-      });
-      
-      if (fnRes.error) {
-        emailError = fnRes.error.message || 'Email function returned error';
-        console.error('Email function error:', fnRes.error);
+      // First create a message record
+      const { data: messageData, error: messageErr } = await serviceClient
+        .from('messages')
+        .insert({
+          recipient_email: applicantEmail,
+          recipient_name: applicantName,
+          user_id: newUserId,
+          ambassador_id: ambassadorId,
+          subject: 'Congratulations! Your Ambassador Application is Approved',
+          message_type: 'approval',
+          template_name: 'approval_email',
+          priority: 'high',
+          sent_by: adminId,
+          sent_via: 'system',
+          variables: {
+            name: applicantName,
+            email: applicantEmail,
+            password: tempPassword,
+            referralCode: referralCode,
+            login_url: `${req.headers.get('origin') || 'https://amb.starstore.site'}/auth`
+          },
+          metadata: {
+            source: 'ambassador_approval',
+            applicationId: applicationId
+          }
+        })
+        .select('id')
+        .single();
+
+      if (messageErr) {
+        console.error('Failed to create message record:', messageErr);
+        emailError = 'Failed to create message record';
       } else {
-        emailSent = true;
+        messageId = messageData.id;
+        
+        // Generate email content from template
+        const emailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #2563eb;">Congratulations ${applicantName}!</h1>
+            <p>Your ambassador application has been approved. You can now start earning commissions!</p>
+            
+            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h2 style="margin-top: 0;">Your Login Credentials:</h2>
+              <p><strong>Email:</strong> ${applicantEmail}</p>
+              <p><strong>Temporary Password:</strong> ${tempPassword}</p>
+              <p><strong>Referral Code:</strong> ${referralCode}</p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${req.headers.get('origin') || 'https://amb.starstore.site'}/auth" 
+                 style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                Login to Your Dashboard
+              </a>
+            </div>
+            
+            <p>Welcome to the StarStore Ambassador Program! 🎉</p>
+            <p>Best regards,<br>The StarStore Team</p>
+          </div>
+        `;
+
+        // Send email using the new send-email function
+        const fnRes = await serviceClient.functions.invoke('send-email', {
+          body: { 
+            to: applicantEmail, 
+            subject: 'Congratulations! Your Ambassador Application is Approved',
+            html: emailHtml,
+            messageId: messageId
+          },
+        });
+        
+        if (fnRes.error) {
+          emailError = fnRes.error.message || 'Email function returned error';
+          console.error('Email function error:', fnRes.error);
+          
+          // Update message status to failed
+          await serviceClient
+            .from('messages')
+            .update({ 
+              status: 'failed',
+              error_message: emailError,
+              failed_at: new Date().toISOString()
+            })
+            .eq('id', messageId);
+        } else {
+          emailSent = true;
+          console.log('Approval email sent successfully');
+        }
       }
     } catch (e) {
-      emailError = e instanceof Error ? e.message : 'Email invoke failed';
-      console.error('Email invoke error:', e);
+      emailError = e instanceof Error ? e.message : 'Email send exception';
+      console.error('Email exception:', e);
+      
+      // Update message status to failed if we have a messageId
+      if (messageId) {
+        await serviceClient
+          .from('messages')
+          .update({ 
+            status: 'failed',
+            error_message: emailError,
+            failed_at: new Date().toISOString()
+          })
+          .eq('id', messageId);
+      }
     }
 
     return new Response(
