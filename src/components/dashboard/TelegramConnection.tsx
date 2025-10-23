@@ -36,6 +36,15 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
 
     setLoading(true);
     try {
+      // First, verify the Telegram ID exists in Star Store
+      const { starStoreService } = await import('@/services/starStoreService');
+      const verificationResponse = await starStoreService.verifyTelegramUser(telegramId.trim());
+      
+      if (!verificationResponse.success || !verificationResponse.data) {
+        throw new Error('Telegram ID not found in Star Store. Please make sure you have used the Star Store bot first.');
+      }
+
+      // Update ambassador profile with Telegram connection
       const { error } = await supabase
         .from('ambassador_profiles')
         .update({
@@ -47,12 +56,22 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
 
       if (error) throw error;
 
+      // Sync ambassador data with Star Store
+      if (profile) {
+        await starStoreService.syncAmbassadorData(telegramId.trim(), {
+          email: profile.profiles?.email || '',
+          fullName: profile.profiles?.full_name || '',
+          tier: profile.current_tier,
+          referralCode: profile.referral_code
+        });
+      }
+
       setIsConnected(true);
       await refetch();
       
       toast({
         title: "Telegram Connected! 🎉",
-        description: "Your Telegram account has been successfully linked to your ambassador profile.",
+        description: "Your Telegram account has been successfully linked and verified with Star Store.",
       });
     } catch (error) {
       toast({

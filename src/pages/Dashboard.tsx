@@ -23,6 +23,7 @@ import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { TransactionsList } from "@/components/dashboard/TransactionsList";
 import { PayoutHistory } from "@/components/dashboard/PayoutHistory";
+import { StarStoreConnection } from "@/components/dashboard/StarStoreConnection";
 import { Link } from "react-router-dom";
 import AdminDashboard from "./AdminDashboard";
 import { getTierInfo, getNextTier, getTierBadgeClass } from "@/lib/tier-utils";

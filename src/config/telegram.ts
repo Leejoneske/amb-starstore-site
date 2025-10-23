@@ -2,14 +2,23 @@
 // Update this with your actual bot username
 
 export const TELEGRAM_CONFIG = {
-  // Replace 'StarStoreBot' with your actual bot username (without @)
-  BOT_USERNAME: 'TgStarStore_bot', // 👈 Updated to correct bot username
+  // Your actual bot username (without @)
+  BOT_USERNAME: 'TgStarStore_bot',
   
-  // Your MongoDB database name (if different from 'tg-star-store')
-  DATABASE_NAME: 'tg-star-store', // 👈 CHANGE THIS IF YOUR DB NAME IS DIFFERENT
+  // Your MongoDB database name
+  DATABASE_NAME: 'tg-star-store',
   
-  // Your main StarStore app URL (MongoDB connected)
+  // Your main StarStore app URL (PRIMARY SYSTEM)
   SERVER_URL: 'https://starstore.site',
+  
+  // API endpoints for fetching data from Star Store
+  API_ENDPOINTS: {
+    REFERRAL_STATS: '/api/referral-stats',
+    USER_REFERRALS: '/api/referrals',
+    TRANSACTIONS: '/api/transactions',
+    USER_INFO: '/api/users',
+    WEBHOOK_REGISTER: '/api/webhook/register'
+  },
   
   // MongoDB connection string (this will be set in environment variables)
   MONGO_CONNECTION_STRING: 'mongodb+srv://LeeJonesKE:rxov9FDs8LIxoOOZ@tg-star-store.l1jsj.mongodb.net/?retryWrites=true&w=majority&appName=Tg-Star-Store'

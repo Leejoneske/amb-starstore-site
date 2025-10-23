@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ACTIVATION_THRESHOLD } from '@/config/telegram';
+import { starStoreService } from '@/services/starStoreService';
 import type { Ambassador, Transaction } from '@/types';
 
 interface ReferralStats {
@@ -30,7 +31,7 @@ interface ReferralActivation {
   commissionEarned: number;
 }
 
-// Hook to get referral statistics for an ambassador
+// Hook to get referral statistics for an ambassador (fetches from Star Store)
 export const useReferralStats = (ambassadorId?: string) => {
   return useQuery({
     queryKey: ['referral-stats', ambassadorId],
@@ -39,91 +40,44 @@ export const useReferralStats = (ambassadorId?: string) => {
         throw new Error('Ambassador ID is required');
       }
 
-      // Get all referrals for this ambassador
-      const { data: referrals, error: referralsError } = await supabase
-        .from('referrals')
-        .select(`
-          *,
-          referred_user_transactions:transactions!referral_id(
-            id,
-            stars_awarded,
-            status,
-            transaction_date
-          )
-        `)
-        .eq('ambassador_id', ambassadorId)
-        .order('created_at', { ascending: false });
+      // Get ambassador profile to get Telegram ID
+      const { data: profile, error: profileError } = await supabase
+        .from('ambassador_profiles')
+        .select('telegram_id, referral_code')
+        .eq('id', ambassadorId)
+        .single();
 
-      if (referralsError) throw referralsError;
+      if (profileError || !profile?.telegram_id) {
+        throw new Error('Ambassador Telegram ID not found. Please connect your Telegram account first.');
+      }
 
-      // Calculate stats
-      const now = new Date();
-      const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      // Fetch referral stats from Star Store API
+      const starStoreResponse = await starStoreService.getReferralStats(profile.telegram_id);
       
-      let totalReferrals = referrals?.length || 0;
-      let activeReferrals = 0;
-      let pendingReferrals = 0;
-      let totalEarnings = 0;
-      let thisMonthReferrals = 0;
-      let thisMonthEarnings = 0;
+      if (!starStoreResponse.success || !starStoreResponse.data) {
+        throw new Error(starStoreResponse.error || 'Failed to fetch referral stats from Star Store');
+      }
 
-      const recentReferrals = referrals?.map(referral => {
-        // Calculate total stars for this referral
-        const totalStars = referral.referred_user_transactions?.reduce(
-          (sum: number, tx: any) => sum + (tx.stars_awarded || 0), 
-          0
-        ) || 0;
+      const starStoreStats = starStoreResponse.data;
 
-        const isActive = totalStars >= ACTIVATION_THRESHOLD;
-        const referredAt = new Date(referral.referred_at || referral.created_at);
-
-        // Count active/pending
-        if (isActive) {
-          activeReferrals++;
-        } else {
-          pendingReferrals++;
-        }
-
-        // Count this month's referrals
-        if (referredAt >= thisMonth) {
-          thisMonthReferrals++;
-        }
-
-        return {
-          id: referral.id,
-          referredAt: referral.referred_at || referral.created_at,
-          status: isActive ? 'active' : 'pending',
-          totalStars,
-          isActive,
-          telegramId: referral.mongo_referred_user_id
-        };
-      }) || [];
-
-      // Get earnings from transactions
-      const { data: transactions, error: transactionsError } = await supabase
-        .from('transactions')
-        .select('commission_amount, transaction_date')
-        .eq('ambassador_id', ambassadorId)
-        .eq('status', 'completed');
-
-      if (transactionsError) throw transactionsError;
-
-      totalEarnings = transactions?.reduce((sum, tx) => sum + (tx.commission_amount || 0), 0) || 0;
-      
-      thisMonthEarnings = transactions?.filter(tx => 
-        new Date(tx.transaction_date) >= thisMonth
-      ).reduce((sum, tx) => sum + (tx.commission_amount || 0), 0) || 0;
-
-      const conversionRate = totalReferrals > 0 ? (activeReferrals / totalReferrals) * 100 : 0;
+      // Map Star Store data to our interface
+      const recentReferrals = starStoreStats.recentReferrals.map(referral => ({
+        id: referral.referredUserId,
+        referredAt: referral.dateReferred,
+        status: referral.status,
+        totalStars: referral.totalStars,
+        isActive: referral.isActive,
+        telegramId: referral.referredUserId
+      }));
 
       return {
-        totalReferrals,
-        activeReferrals,
-        pendingReferrals,
-        totalEarnings,
-        thisMonthReferrals,
-        thisMonthEarnings,
-        conversionRate,
+        totalReferrals: starStoreStats.totalReferrals,
+        activeReferrals: starStoreStats.activeReferrals,
+        pendingReferrals: starStoreStats.pendingReferrals,
+        totalEarnings: starStoreStats.totalEarnings,
+        thisMonthReferrals: starStoreStats.thisMonthReferrals,
+        thisMonthEarnings: starStoreStats.thisMonthEarnings,
+        conversionRate: starStoreStats.conversionRate,
         recentReferrals: recentReferrals.slice(0, 10) // Latest 10 referrals
       };
     },
