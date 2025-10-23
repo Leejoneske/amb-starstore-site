@@ -34,21 +34,32 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
     e.preventDefault();
     if (!telegramId.trim()) return;
 
+    // Basic format validation
+    const telegramIdTrimmed = telegramId.trim();
+    if (!/^\d+$/.test(telegramIdTrimmed) || telegramIdTrimmed.length < 5) {
+      toast({
+        title: "Invalid Telegram ID",
+        description: "Telegram ID must be numeric and at least 5 digits long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
-      // First, verify the Telegram ID exists in Star Store
+      // First, verify the Telegram ID format and optionally with Star Store
       const { starStoreService } = await import('@/services/starStoreService');
-      const verificationResponse = await starStoreService.verifyTelegramUser(telegramId.trim());
+      const verificationResponse = await starStoreService.verifyTelegramUser(telegramIdTrimmed);
       
-      if (!verificationResponse.success || !verificationResponse.data) {
-        throw new Error('Telegram ID not found in Star Store. Please make sure you have used the Star Store bot first.');
+      if (!verificationResponse.success) {
+        throw new Error(verificationResponse.error || 'Invalid Telegram ID format');
       }
 
       // Update ambassador profile with Telegram connection
       const { error } = await supabase
         .from('ambassador_profiles')
         .update({
-          telegram_id: telegramId.trim(),
+          telegram_id: telegramIdTrimmed,
           telegram_username: telegramUsername.trim() || null,
           updated_at: new Date().toISOString()
         })
@@ -56,14 +67,19 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
 
       if (error) throw error;
 
-      // Sync ambassador data with Star Store
+      // Try to sync ambassador data with Star Store (non-blocking)
       if (profile) {
-        await starStoreService.syncAmbassadorData(telegramId.trim(), {
-          email: profile.profiles?.email || '',
-          fullName: profile.profiles?.full_name || '',
-          tier: profile.current_tier,
-          referralCode: profile.referral_code
-        });
+        try {
+          await starStoreService.syncAmbassadorData(telegramIdTrimmed, {
+            email: profile.profiles?.email || '',
+            fullName: profile.profiles?.full_name || '',
+            tier: profile.current_tier,
+            referralCode: profile.referral_code
+          });
+        } catch (syncError) {
+          // Log but don't fail the connection if sync fails
+          console.warn('StarStore sync failed:', syncError);
+        }
       }
 
       setIsConnected(true);
@@ -71,7 +87,7 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
       
       toast({
         title: "Telegram Connected! 🎉",
-        description: "Your Telegram account has been successfully linked and verified with Star Store.",
+        description: "Your Telegram account has been successfully linked.",
       });
     } catch (error) {
       toast({
