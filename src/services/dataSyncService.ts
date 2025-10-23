@@ -293,34 +293,6 @@ class DataSyncService {
       });
 
     if (error) throw error;
-    
-    const analytics: StarStoreAnalytics = await response.json();
-
-    // Clear existing analytics cache
-    await supabase.from('starstore_analytics_cache').delete().neq('id', '');
-
-    // Insert new analytics data
-    const { error } = await supabase
-      .from('starstore_analytics_cache')
-      .insert({
-        total_users: analytics.overview.totalUsers,
-        total_referrals: analytics.overview.totalReferrals,
-        active_referrals: analytics.overview.activeReferrals,
-        total_transactions: analytics.overview.totalTransactions,
-        conversion_rate: parseFloat(analytics.overview.conversionRate),
-        today_users: analytics.growth.today.users,
-        today_referrals: analytics.growth.today.referrals,
-        week_users: analytics.growth.week.users,
-        week_referrals: analytics.growth.week.referrals,
-        month_users: analytics.growth.month.users,
-        month_referrals: analytics.growth.month.referrals,
-        total_earnings: analytics.financial.totalEarnings,
-        total_stars_traded: analytics.financial.totalStarsTraded,
-        starstore_timestamp: analytics.timestamp,
-        synced_at: new Date().toISOString()
-      });
-
-    if (error) throw error;
   }
 
   // Get cached users data from Supabase
