@@ -65,7 +65,7 @@ class StarStoreService {
         headers: {
           'Content-Type': 'application/json',
           'User-Agent': 'Ambassador-Dashboard/1.0',
-          'X-API-Key': 'your-secure-api-key-here', // Add API key for authentication
+          'X-API-Key': 'amb_starstore_secure_key_2024', // API key for ambassador app authentication
           ...options.headers,
         },
         ...options,
