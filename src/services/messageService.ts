@@ -541,9 +541,49 @@ class MessageService {
         throw new Error(messageResult.error);
       }
 
-      // Here you would integrate with your actual email sending service
-      // For now, we'll just mark it as sent
-      await this.updateMessageStatus(messageResult.messageId!, 'sent');
+      // Actually send the email using Supabase Edge Function
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        const response = await supabase.functions.invoke('send-email', {
+          body: {
+            to: recipientEmail,
+            subject,
+            html: htmlContent,
+            text: textContent,
+            messageId: messageResult.messageId
+          }
+        });
+
+        if (response.error) {
+          throw new Error(response.error.message || 'Failed to send email');
+        }
+
+        const result = response.data;
+        
+        // Mark as sent with external message ID if available
+        await this.updateMessageStatus(
+          messageResult.messageId!, 
+          'sent'
+        );
+
+        // Log the event
+        await this.logMessageEvent({
+          messageId: messageResult.messageId!,
+          eventType: 'sent',
+          eventData: { externalMessageId: result.messageId }
+        });
+
+      } catch (emailError) {
+        // Mark as failed and log the error
+        await this.updateMessageStatus(
+          messageResult.messageId!, 
+          'failed', 
+          emailError instanceof Error ? emailError.message : 'Unknown email error'
+        );
+        
+        throw emailError;
+      }
 
       logger.info('Templated message sent successfully', { 
         templateName, 

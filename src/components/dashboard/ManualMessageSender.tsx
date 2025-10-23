@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from '@/hooks/use-toast';
 import { useMessageTemplates, useSendTemplatedMessage } from '@/hooks/useMessages';
 import { messageService, type MessageType } from '@/services/messageService';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Send, 
   Mail, 
@@ -123,6 +124,7 @@ export const ManualMessageSender = () => {
     }
 
     try {
+      // Create message record first
       const result = await messageService.createMessage({
         recipientEmail,
         recipientName: recipientName || undefined,
@@ -133,23 +135,40 @@ export const ManualMessageSender = () => {
         sentVia: 'manual'
       });
 
-      if (result.success) {
-        // Mark as sent (in a real implementation, you'd integrate with your email service)
-        await messageService.updateMessageStatus(result.messageId!, 'sent');
-        
-        toast({
-          title: "Message Sent Successfully! 📧",
-          description: `Custom email sent to ${recipientEmail}`,
-        });
-
-        // Reset form
-        setRecipientEmail('');
-        setRecipientName('');
-        setCustomSubject('');
-        setCustomContent('');
-      } else {
+      if (!result.success) {
         throw new Error(result.error);
       }
+
+      // Actually send the email using Supabase Edge Function
+      const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-email', {
+        body: {
+          to: recipientEmail,
+          subject: customSubject,
+          html: customContent,
+          messageId: result.messageId
+        }
+      });
+
+      if (emailError) {
+        // Update message status to failed
+        await messageService.updateMessageStatus(
+          result.messageId!, 
+          'failed', 
+          emailError.message
+        );
+        throw new Error(emailError.message);
+      }
+
+      toast({
+        title: "Message Sent Successfully! 📧",
+        description: `Custom email sent to ${recipientEmail}`,
+      });
+
+      // Reset form
+      setRecipientEmail('');
+      setRecipientName('');
+      setCustomSubject('');
+      setCustomContent('');
     } catch (error) {
       toast({
         title: "Failed to Send Message",
