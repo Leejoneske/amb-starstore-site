@@ -167,50 +167,20 @@ class DataSyncService {
 
     // Insert new users data
     const usersToInsert = users.map(user => ({
-      telegram_id: user.telegramId,
+      telegram_id: user.telegramId || user.id,
       username: user.username,
-      total_referrals: user.totalReferrals,
-      active_referrals: user.activeReferrals,
-      pending_referrals: user.pendingReferrals,
-      total_earnings: user.totalEarnings,
-      buy_orders: user.buyOrders,
-      sell_orders: user.sellOrders,
-      total_stars_earned: user.totalStarsEarned,
-      created_at: user.createdAt,
-      last_active: user.lastActive,
-      is_ambassador: user.isAmbassador,
-      ambassador_tier: user.ambassadorTier,
-      ambassador_synced_at: user.ambassadorSyncedAt,
-      synced_at: new Date().toISOString()
-    }));
-
-    const { error } = await supabase
-      .from('starstore_users_cache')
-      .insert(usersToInsert);
-
-    if (error) throw error;
-    return users.length;
-    const users: StarStoreUser[] = data.users;
-
-    // Clear existing cached users data
-    await supabase.from('starstore_users_cache').delete().neq('id', '');
-
-    // Insert new users data
-    const usersToInsert = users.map(user => ({
-      telegram_id: user.telegramId,
-      username: user.username,
-      total_referrals: user.totalReferrals,
-      active_referrals: user.activeReferrals,
-      pending_referrals: user.pendingReferrals,
-      total_earnings: user.totalEarnings,
-      buy_orders: user.buyOrders,
-      sell_orders: user.sellOrders,
-      total_stars_earned: user.totalStarsEarned,
-      created_at: user.createdAt,
-      last_active: user.lastActive,
-      is_ambassador: user.isAmbassador,
-      ambassador_tier: user.ambassadorTier,
-      ambassador_synced_at: user.ambassadorSyncedAt,
+      total_referrals: user.totalReferrals || 0,
+      active_referrals: user.activeReferrals || 0,
+      pending_referrals: user.pendingReferrals || 0,
+      total_earnings: user.totalEarnings || 0,
+      buy_orders: user.buyOrders || 0,
+      sell_orders: user.sellOrders || 0,
+      total_stars_earned: user.totalStarsEarned || 0,
+      created_at: user.createdAt || null,
+      last_active: user.lastActive || null,
+      is_ambassador: user.isAmbassador || false,
+      ambassador_tier: user.ambassadorTier || null,
+      ambassador_synced_at: user.ambassadorSyncedAt || null,
       synced_at: new Date().toISOString()
     }));
 
