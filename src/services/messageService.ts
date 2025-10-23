@@ -227,12 +227,7 @@ class MessageService {
     try {
       let query = supabase
         .from('messages')
-        .select(`
-          *,
-          user:user_id(email, id),
-          ambassador:ambassador_id(id, profiles:user_id(full_name)),
-          sent_by_user:sent_by(email, id)
-        `, { count: 'exact' })
+        .select('*', { count: 'exact' })
         .order('created_at', { ascending: false });
 
       // Apply filters
@@ -306,12 +301,7 @@ class MessageService {
       const [messageResult, eventsResult] = await Promise.all([
         supabase
           .from('messages')
-          .select(`
-            *,
-            user:user_id(email, id),
-            ambassador:ambassador_id(id, profiles:user_id(full_name)),
-            sent_by_user:sent_by(email, id)
-          `)
+          .select('*')
           .eq('id', messageId)
           .single(),
         
