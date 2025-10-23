@@ -154,10 +154,42 @@ class DataSyncService {
     return result;
   }
 
-  // Sync users data from Star Store - TEMPORARILY DISABLED
+  // Sync users data from Star Store
   private async syncUsersData(): Promise<number> {
-    console.log('⚠️ StarStore users data sync temporarily disabled');
-    return 0;
+    const response = await fetch(`${starStoreService['baseUrl']}/api/admin/users-data?limit=500`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    
+    const data = await response.json();
+    const users: StarStoreUser[] = data.users;
+
+    // Clear existing cached users data
+    await supabase.from('starstore_users_cache').delete().neq('id', '');
+
+    // Insert new users data
+    const usersToInsert = users.map(user => ({
+      telegram_id: user.telegramId,
+      username: user.username,
+      total_referrals: user.totalReferrals,
+      active_referrals: user.activeReferrals,
+      pending_referrals: user.pendingReferrals,
+      total_earnings: user.totalEarnings,
+      buy_orders: user.buyOrders,
+      sell_orders: user.sellOrders,
+      total_stars_earned: user.totalStarsEarned,
+      created_at: user.createdAt,
+      last_active: user.lastActive,
+      is_ambassador: user.isAmbassador,
+      ambassador_tier: user.ambassadorTier,
+      ambassador_synced_at: user.ambassadorSyncedAt,
+      synced_at: new Date().toISOString()
+    }));
+
+    const { error } = await supabase
+      .from('starstore_users_cache')
+      .insert(usersToInsert);
+
+    if (error) throw error;
+    return users.length;
     const users: StarStoreUser[] = data.users;
 
     // Clear existing cached users data
@@ -259,9 +291,38 @@ class DataSyncService {
     return transactions.length;
   }
 
-  // Sync analytics data from Star Store - TEMPORARILY DISABLED
+  // Sync analytics data from Star Store
   private async syncAnalyticsData(): Promise<void> {
-    console.log('⚠️ StarStore analytics data sync temporarily disabled');
+    const response = await fetch(`${starStoreService['baseUrl']}/api/admin/analytics`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    
+    const data = await response.json();
+
+    // Clear existing cached analytics data
+    await supabase.from('starstore_analytics_cache').delete().neq('id', '');
+
+    // Insert new analytics data
+    const { error } = await supabase
+      .from('starstore_analytics_cache')
+      .insert({
+        total_users: data.overview?.totalUsers || 0,
+        total_referrals: data.overview?.totalReferrals || 0,
+        active_referrals: data.overview?.activeReferrals || 0,
+        total_transactions: parseInt(data.overview?.totalTransactions) || 0,
+        conversion_rate: parseFloat(data.overview?.conversionRate) || 0,
+        today_users: data.growth?.today?.users || 0,
+        today_referrals: data.growth?.today?.referrals || 0,
+        week_users: data.growth?.week?.users || 0,
+        week_referrals: data.growth?.week?.referrals || 0,
+        month_users: data.growth?.month?.users || 0,
+        month_referrals: data.growth?.month?.referrals || 0,
+        total_earnings: data.financial?.totalEarnings || 0,
+        total_stars_traded: data.financial?.totalStarsTraded || 0,
+        starstore_timestamp: data.timestamp,
+        synced_at: new Date().toISOString()
+      });
+
+    if (error) throw error;
     
     const analytics: StarStoreAnalytics = await response.json();
 
@@ -292,52 +353,115 @@ class DataSyncService {
     if (error) throw error;
   }
 
-  // Get cached users data from Supabase - TEMPORARILY DISABLED
+  // Get cached users data from Supabase
   async getCachedUsers(limit = 100, page = 1): Promise<{
     users: any[];
     total: number;
     lastSync: string | null;
   }> {
-    console.log('⚠️ StarStore cached users query temporarily disabled');
+    const offset = (page - 1) * limit;
+    
+    const [dataResult, countResult] = await Promise.all([
+      supabase
+        .from('starstore_users_cache')
+        .select('*')
+        .order('last_active', { ascending: false })
+        .range(offset, offset + limit - 1),
+      supabase
+        .from('starstore_users_cache')
+        .select('*', { count: 'exact', head: true })
+    ]);
+
+    const lastSyncResult = await supabase
+      .from('starstore_users_cache')
+      .select('synced_at')
+      .order('synced_at', { ascending: false })
+      .limit(1)
+      .single();
+
     return {
-      users: [],
-      total: 0,
-      lastSync: null
+      users: dataResult.data || [],
+      total: countResult.count || 0,
+      lastSync: lastSyncResult.data?.synced_at || null
     };
   }
 
-  // Get cached referrals data from Supabase - TEMPORARILY DISABLED
+  // Get cached referrals data from Supabase
   async getCachedReferrals(limit = 100, page = 1): Promise<{
     referrals: any[];
     total: number;
     lastSync: string | null;
   }> {
-    console.log('⚠️ StarStore cached referrals query temporarily disabled');
+    const offset = (page - 1) * limit;
+    
+    const [dataResult, countResult] = await Promise.all([
+      supabase
+        .from('starstore_referrals_cache')
+        .select('*')
+        .order('date_referred', { ascending: false })
+        .range(offset, offset + limit - 1),
+      supabase
+        .from('starstore_referrals_cache')
+        .select('*', { count: 'exact', head: true })
+    ]);
+
+    const lastSyncResult = await supabase
+      .from('starstore_referrals_cache')
+      .select('synced_at')
+      .order('synced_at', { ascending: false })
+      .limit(1)
+      .single();
+
     return {
-      referrals: [],
-      total: 0,
-      lastSync: null
+      referrals: dataResult.data || [],
+      total: countResult.count || 0,
+      lastSync: lastSyncResult.data?.synced_at || null
     };
   }
 
-  // Get cached transactions data from Supabase - TEMPORARILY DISABLED
+  // Get cached transactions data from Supabase
   async getCachedTransactions(limit = 100, page = 1): Promise<{
     transactions: any[];
     total: number;
     lastSync: string | null;
   }> {
-    console.log('⚠️ StarStore cached transactions query temporarily disabled');
+    const offset = (page - 1) * limit;
+    
+    const [dataResult, countResult] = await Promise.all([
+      supabase
+        .from('starstore_transactions_cache')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1),
+      supabase
+        .from('starstore_transactions_cache')
+        .select('*', { count: 'exact', head: true })
+    ]);
+
+    const lastSyncResult = await supabase
+      .from('starstore_transactions_cache')
+      .select('synced_at')
+      .order('synced_at', { ascending: false })
+      .limit(1)
+      .single();
+
     return {
-      transactions: [],
-      total: 0,
-      lastSync: null
+      transactions: dataResult.data || [],
+      total: countResult.count || 0,
+      lastSync: lastSyncResult.data?.synced_at || null
     };
   }
 
-  // Get cached analytics data from Supabase - TEMPORARILY DISABLED
+  // Get cached analytics data from Supabase
   async getCachedAnalytics(): Promise<any> {
-    console.log('⚠️ StarStore cached analytics query temporarily disabled');
-    return null;
+    const { data } = await supabase
+      .from('starstore_analytics_cache')
+      .select('*')
+      .order('synced_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    return data;
   }
 
   // Auto sync with interval
