@@ -32,8 +32,21 @@ const Auth = () => {
     if (needsPasswordChange) {
       setIsFirstLogin(true);
     } else {
+      // Check if user has completed onboarding
+      const { data: profile } = await supabase
+        .from('ambassador_profiles')
+        .select('telegram_id, referral_code')
+        .eq('user_id', user.id)
+        .single();
+      
       setIsRedirecting(true);
-      navigate("/dashboard");
+      
+      // If user hasn't completed onboarding (missing telegram_id or referral_code), redirect to onboarding
+      if (!profile?.telegram_id || !profile?.referral_code) {
+        navigate("/onboarding");
+      } else {
+        navigate("/dashboard");
+      }
     }
   }, [user, navigate]);
 
@@ -100,10 +113,22 @@ const Auth = () => {
 
       toast({
         title: "Success!",
-        description: "Password updated successfully. Welcome to your dashboard!",
+        description: "Password updated successfully. Let's get you set up!",
       });
 
-      navigate("/dashboard");
+      // Check if user has completed onboarding after password change
+      const { data: profile } = await supabase
+        .from('ambassador_profiles')
+        .select('telegram_id, referral_code')
+        .eq('user_id', user.id)
+        .single();
+      
+      // If user hasn't completed onboarding, redirect to onboarding
+      if (!profile?.telegram_id || !profile?.referral_code) {
+        navigate("/onboarding");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error: unknown) {
       toast({
         title: "Error",

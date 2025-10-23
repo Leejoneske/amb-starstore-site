@@ -24,15 +24,17 @@ import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { TransactionsList } from "@/components/dashboard/TransactionsList";
 import { PayoutHistory } from "@/components/dashboard/PayoutHistory";
 import { StarStoreConnection } from "@/components/dashboard/StarStoreConnection";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AdminDashboard from "./AdminDashboard";
 import { getTierInfo, getNextTier, getTierBadgeClass } from "@/lib/tier-utils";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { logger } from "@/lib/logger";
 import type { Transaction, Payout } from "@/types";
+import { useEffect } from "react";
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { data: userRole } = useUserRole(user?.id);
   const { ambassadorProfile, tierConfig, isLoading: profileLoading } = useAmbassadorProfile(user?.id);
   const { data: transactions, isLoading: transactionsLoading } = useTransactions(ambassadorProfile?.id);
@@ -43,6 +45,17 @@ const Dashboard = () => {
   useFirstLoginTracker();
   
   const isAdmin = userRole === 'admin';
+
+  // Check if user has completed onboarding
+  useEffect(() => {
+    if (ambassadorProfile && !profileLoading && !isAdmin) {
+      // If user hasn't completed onboarding (missing telegram_id or referral_code), redirect to onboarding
+      if (!ambassadorProfile.telegram_id || !ambassadorProfile.referral_code) {
+        navigate("/onboarding");
+        return;
+      }
+    }
+  }, [ambassadorProfile, profileLoading, isAdmin, navigate]);
 
   // Redirect admins to admin dashboard
   if (isAdmin) {

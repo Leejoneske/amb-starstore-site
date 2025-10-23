@@ -16,6 +16,7 @@ import { logger } from "./lib/logger";
 const Home = lazy(() => import("./pages/Home"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Apply = lazy(() => import("./pages/Apply"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -51,6 +52,13 @@ const App = () => (
                   <Route path="/" element={<Home />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/apply" element={<Apply />} />
+                  <Route path="/onboarding" element={
+                    <ProtectedRoute>
+                      <ErrorBoundary>
+                        <Onboarding />
+                      </ErrorBoundary>
+                    </ProtectedRoute>
+                  } />
                   <Route path="/dashboard" element={
                     <ProtectedRoute>
                       <ErrorBoundary>
