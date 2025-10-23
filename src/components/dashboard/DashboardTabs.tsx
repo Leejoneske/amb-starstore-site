@@ -8,6 +8,7 @@ import { LiveActivityFeed } from "@/components/dashboard/LiveActivityFeed";
 import { ReferralDashboard } from "@/components/dashboard/ReferralDashboard";
 import { TierLevelsDisplay } from "@/components/dashboard/TierLevelsDisplay";
 import { TelegramConnection } from "@/components/dashboard/TelegramConnection";
+import { StarStoreConnection } from "@/components/dashboard/StarStoreConnection";
 import type { Ambassador, AnalyticsData } from "@/types";
 
 interface DashboardTabsProps {
@@ -75,6 +76,7 @@ export const DashboardTabs = ({
       </TabsContent>
 
       <TabsContent value="telegram" className="space-y-6">
+        <StarStoreConnection />
         <TelegramConnection ambassadorId={ambassadorProfile.id} />
         <MongoIntegration 
           ambassadorId={ambassadorProfile.id}
