@@ -13,8 +13,38 @@ type ApproveRequest = {
 };
 
 function genTempPassword() {
-  const s = Math.random().toString(36).slice(2, 10).toUpperCase();
-  return `STAR${s}`;
+  // Generate a password that meets all requirements:
+  // - At least 8 characters long
+  // - One uppercase and one lowercase letter  
+  // - At least one number
+  // - At least one special character (@$!%*?&)
+  
+  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+  const numbers = '0123456789';
+  const specials = '@$!%*?&';
+  
+  // Ensure we have at least one of each required type
+  const password = [
+    uppercase[Math.floor(Math.random() * uppercase.length)], // 1 uppercase
+    lowercase[Math.floor(Math.random() * lowercase.length)], // 1 lowercase  
+    numbers[Math.floor(Math.random() * numbers.length)],     // 1 number
+    specials[Math.floor(Math.random() * specials.length)]    // 1 special
+  ];
+  
+  // Add 4 more random characters to make it 8+ chars
+  const allChars = uppercase + lowercase + numbers + specials;
+  for (let i = 0; i < 4; i++) {
+    password.push(allChars[Math.floor(Math.random() * allChars.length)]);
+  }
+  
+  // Shuffle the password array and join
+  for (let i = password.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [password[i], password[j]] = [password[j], password[i]];
+  }
+  
+  return password.join('');
 }
 
 function genReferralCode() {
@@ -51,6 +81,12 @@ serve(async (req) => {
 
     const tempPassword = genTempPassword();
     const referralCode = genReferralCode().toUpperCase();
+    
+    console.log('Generated credentials:', { 
+      tempPassword, 
+      referralCode, 
+      passwordLength: tempPassword.length 
+    });
 
     // 1) Create or find user in Auth
     let newUserId: string | null = null;
@@ -79,6 +115,19 @@ serve(async (req) => {
         );
       }
       newUserId = existing.id;
+      
+      // Update existing user's password
+      console.log('Updating password for existing user:', newUserId);
+      const updateRes = await supabase.auth.admin.updateUserById(newUserId, {
+        password: tempPassword
+      });
+      
+      if (updateRes.error) {
+        console.error('Failed to update user password:', updateRes.error);
+        // Continue anyway, but note the issue
+      } else {
+        console.log('Password updated successfully for existing user');
+      }
     } else {
       newUserId = createRes.data.user?.id || null;
     }
