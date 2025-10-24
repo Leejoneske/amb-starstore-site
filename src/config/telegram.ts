@@ -8,8 +8,8 @@ export const TELEGRAM_CONFIG = {
   // Your MongoDB database name
   DATABASE_NAME: 'tg-star-store',
   
-  // Your main StarStore app URL (PRIMARY SYSTEM)
-  SERVER_URL: 'https://starstore.site',
+  // Your main StarStore app URL (PRIMARY SYSTEM) - Update this to your Railway URL
+  SERVER_URL: 'https://tg-star-store-production.up.railway.app',
   
   // API endpoints for fetching data from Star Store
   API_ENDPOINTS: {
