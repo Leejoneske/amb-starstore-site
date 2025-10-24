@@ -76,13 +76,8 @@ export const DashboardTabs = ({
       </TabsContent>
 
       <TabsContent value="telegram" className="space-y-6">
-        <StarStoreConnection />
         <TelegramConnectionSimple />
-        <MongoIntegration 
-          ambassadorId={ambassadorProfile.id}
-          referralCode={ambassadorProfile.referral_code}
-          isAdmin={isAdmin}
-        />
+        {/* Temporarily removed other components to isolate the issue */}
       </TabsContent>
 
       <TabsContent value="actions">

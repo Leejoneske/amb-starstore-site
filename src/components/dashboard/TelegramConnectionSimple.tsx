@@ -28,7 +28,8 @@ export const TelegramConnectionSimple = () => {
     }
 
     setLoading(true);
-    console.log('🚀 SIMPLE TELEGRAM CONNECTION - Testing with ID:', telegramIdTrimmed);
+    console.log('🚀🚀🚀 SIMPLE TELEGRAM CONNECTION v5.0 - ISOLATED TEST - Testing with ID:', telegramIdTrimmed);
+    console.log('🔥 IF YOU SEE THIS LOG, YOU ARE USING THE SIMPLE COMPONENT!');
 
     try {
       // Use ONLY the secure function - no other database calls
