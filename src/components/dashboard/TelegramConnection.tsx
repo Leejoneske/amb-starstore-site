@@ -54,21 +54,15 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
     }
 
     setLoading(true);
+    
+    // FORCE CACHE CHECK - If you see this message, you have the latest code
+    console.log('🚀 TELEGRAM CONNECTION v4.0 [BUILD:20251024] - SECURE FUNCTION ONLY');
+    console.log('🔄 Connecting Telegram ID:', telegramIdTrimmed);
+    
     try {
-      console.log('🔄 Telegram Connection v3.0 [' + Date.now() + '] - SECURE FUNCTION ONLY - Connecting Telegram ID:', telegramIdTrimmed);
 
-      // Verify the Telegram ID format (with improved error handling)
-      const { starStoreService } = await import('@/services/starStoreService');
-      const verificationResponse = await starStoreService.verifyTelegramUser(telegramIdTrimmed);
-      
-      if (!verificationResponse.success) {
-        console.error('Telegram verification failed:', verificationResponse.error);
-        throw new Error(verificationResponse.error || 'Invalid Telegram ID format');
-      }
-
-      console.log('Telegram ID verified, updating profile...');
-
-      console.log('🚀 Using SECURE FUNCTION approach (v3.0) - bypassing direct database access');
+      // Skip external verification - go directly to secure function
+      console.log('⚡ Skipping external verification - using secure function directly');
 
       // Use the secure function directly to bypass RLS issues
       const { data: functionResult, error: functionError } = await supabase
