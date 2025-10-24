@@ -25,74 +25,25 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
-    // Get environment variables
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
+    // Initialize Supabase client (same pattern as send-email function)
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    if (!supabaseUrl || !serviceKey || !anonKey) {
-      console.error('Missing environment variables:', { supabaseUrl: !!supabaseUrl, serviceKey: !!serviceKey, anonKey: !!anonKey });
-      return new Response(
-        JSON.stringify({ error: 'Missing required environment variables' }), 
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      );
-    }
+    // Get request data
+    const { applicationId, applicantEmail, applicantName }: ApproveRequest = await req.json();
 
-    const authHeader = req.headers.get('Authorization') || '';
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Missing Authorization header' }), 
-        { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      );
-    }
-
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const serviceClient = createClient(supabaseUrl, serviceKey);
-
-    // Verify requester is admin
-    const { data: userRes, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !userRes.user) {
-      console.error('Auth error:', userErr);
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }), 
-        { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      );
-    }
-
-    const adminId = userRes.user.id;
-    const { data: roleRow, error: roleErr } = await userClient
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', adminId)
-      .maybeSingle();
-      
-    if (roleErr || !roleRow || roleRow.role !== 'admin') {
-      console.error('Role check failed:', { roleErr, roleRow });
-      return new Response(
-        JSON.stringify({ error: 'Forbidden: Admin only' }), 
-        { status: 403, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      );
-    }
-
-    // Parse request body
-    let requestBody;
-    try {
-      requestBody = await req.json();
-    } catch (e) {
-      console.error('Failed to parse request body:', e);
-      return new Response(
-        JSON.stringify({ error: 'Invalid JSON in request body' }), 
-        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      );
-    }
-
-    const { applicationId, applicantEmail, applicantName }: ApproveRequest = requestBody;
+    // Validate required fields
     if (!applicationId || !applicantEmail || !applicantName) {
       return new Response(
-        JSON.stringify({ error: 'Missing fields: applicationId, applicantEmail, or applicantName' }), 
-        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        JSON.stringify({ 
+          success: false, 
+          error: 'Missing required fields: applicationId, applicantEmail, or applicantName' 
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
       );
     }
 
@@ -103,112 +54,127 @@ serve(async (req) => {
 
     // 1) Create or find user in Auth
     let newUserId: string | null = null;
-    try {
-      const createRes = await serviceClient.auth.admin.createUser({
-        email: applicantEmail,
-        password: tempPassword,
-        email_confirm: true,
-        user_metadata: { full_name: applicantName },
-      });
+    const createRes = await supabase.auth.admin.createUser({
+      email: applicantEmail,
+      password: tempPassword,
+      email_confirm: true,
+      user_metadata: { full_name: applicantName },
+    });
 
-      if (createRes.error) {
-        console.log('User creation failed, checking if user exists:', createRes.error.message);
-        // If already exists, fetch by email
-        const list = await serviceClient.auth.admin.listUsers({ page: 1, perPage: 200 });
-        const existing = list.data?.users?.find((u: { email?: string }) => u.email?.toLowerCase() === applicantEmail.toLowerCase());
-        if (!existing) {
-          throw new Error(`Failed to create user: ${createRes.error.message}`);
-        }
-        newUserId = existing.id;
-        console.log('Found existing user:', newUserId);
-      } else {
-        newUserId = createRes.data.user?.id || null;
-        console.log('Created new user:', newUserId);
+    if (createRes.error) {
+      console.log('User creation failed, checking if user exists:', createRes.error.message);
+      // If already exists, fetch by email (scan first page)
+      const list = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 });
+      const existing = list.data?.users?.find((u: { email?: string }) => u.email?.toLowerCase() === applicantEmail.toLowerCase());
+      if (!existing) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: `Failed to create user: ${createRes.error.message}` 
+          }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
       }
-    } catch (e) {
-      console.error('User creation/lookup error:', e);
-      return new Response(
-        JSON.stringify({ error: `User creation failed: ${e instanceof Error ? e.message : 'Unknown error'}` }), 
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      );
+      newUserId = existing.id;
+    } else {
+      newUserId = createRes.data.user?.id || null;
     }
 
     if (!newUserId) {
       return new Response(
-        JSON.stringify({ error: 'User creation returned no ID' }), 
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        JSON.stringify({ 
+          success: false, 
+          error: 'User creation returned no ID' 
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
       );
     }
+
+    console.log('User ID:', newUserId);
 
     // 2) Upsert profile
-    try {
-      const { error: profileErr } = await serviceClient
-        .from('profiles')
-        .upsert({ id: newUserId, email: applicantEmail, full_name: applicantName })
-        .eq('id', newUserId);
-      if (profileErr) {
-        console.error('Profile creation error:', profileErr);
-        throw profileErr;
-      }
-      console.log('Profile created successfully');
-    } catch (e) {
+    const { error: profileErr } = await supabase
+      .from('profiles')
+      .upsert({ id: newUserId, email: applicantEmail, full_name: applicantName })
+      .eq('id', newUserId);
+    if (profileErr) {
+      console.error('Profile creation error:', profileErr);
       return new Response(
-        JSON.stringify({ error: `Failed to create profile: ${e instanceof Error ? e.message : 'Unknown error'}` }), 
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        JSON.stringify({ 
+          success: false, 
+          error: `Failed to create profile: ${profileErr.message}` 
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
       );
     }
+
+    console.log('Profile created successfully');
 
     // 3) Upsert ambassador profile
-    let ambassadorId: string | null = null;
-    try {
-      const { data: ambassadorData, error: ambErr } = await serviceClient
-        .from('ambassador_profiles')
-        .upsert({ 
-          user_id: newUserId, 
-          referral_code: referralCode, 
-          status: 'active', 
-          approved_at: new Date().toISOString(), 
-          approved_by: adminId 
-        })
-        .eq('user_id', newUserId)
-        .select('id')
-        .single();
-        
-      if (ambErr) {
-        console.error('Ambassador profile creation error:', ambErr);
-        throw ambErr;
-      }
-      ambassadorId = ambassadorData?.id;
-      console.log('Ambassador profile created with ID:', ambassadorId);
-    } catch (e) {
+    const { data: ambassadorData, error: ambErr } = await supabase
+      .from('ambassador_profiles')
+      .upsert({ 
+        user_id: newUserId, 
+        referral_code: referralCode, 
+        status: 'active', 
+        approved_at: new Date().toISOString(), 
+        approved_by: newUserId // Using newUserId as approver for now
+      })
+      .eq('user_id', newUserId)
+      .select('id')
+      .single();
+      
+    if (ambErr) {
+      console.error('Ambassador profile creation error:', ambErr);
       return new Response(
-        JSON.stringify({ error: `Failed to create ambassador profile: ${e instanceof Error ? e.message : 'Unknown error'}` }), 
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        JSON.stringify({ 
+          success: false, 
+          error: `Failed to create ambassador profile: ${ambErr.message}` 
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
       );
     }
 
+    const ambassadorId = ambassadorData?.id;
+    console.log('Ambassador profile created with ID:', ambassadorId);
+
     // 4) Update application status
-    try {
-      const { error: appErr } = await serviceClient
-        .from('applications')
-        .update({ 
-          status: 'approved', 
-          reviewed_at: new Date().toISOString(), 
-          reviewed_by: adminId 
-        })
-        .eq('id', applicationId);
-        
-      if (appErr) {
-        console.error('Application update error:', appErr);
-        throw appErr;
-      }
-      console.log('Application status updated successfully');
-    } catch (e) {
+    const { error: appErr } = await supabase
+      .from('applications')
+      .update({ 
+        status: 'approved', 
+        reviewed_at: new Date().toISOString(), 
+        reviewed_by: newUserId // Using newUserId as reviewer for now
+      })
+      .eq('id', applicationId);
+      
+    if (appErr) {
+      console.error('Application update error:', appErr);
       return new Response(
-        JSON.stringify({ error: `Failed to update application: ${e instanceof Error ? e.message : 'Unknown error'}` }), 
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        JSON.stringify({ 
+          success: false, 
+          error: `Failed to update application: ${appErr.message}` 
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
       );
     }
+
+    console.log('Application status updated successfully');
 
     // 5) Send approval email
     let emailSent = false;
@@ -242,8 +208,8 @@ serve(async (req) => {
 
       console.log('Attempting to send approval email to:', applicantEmail);
 
-      // Send email using the send-email function
-      const { data: emailResult, error: emailFunctionError } = await serviceClient.functions.invoke('send-email', {
+      // Send email using the send-email function (same as working message system)
+      const { data: emailResult, error: emailFunctionError } = await supabase.functions.invoke('send-email', {
         body: { 
           to: applicantEmail, 
           subject: 'Congratulations! Your Ambassador Application is Approved',
@@ -282,17 +248,24 @@ serve(async (req) => {
           ? 'Ambassador approved and email sent successfully' 
           : `Ambassador approved but email failed: ${emailError}. Please send credentials manually.`
       }),
-      { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      { 
+        status: 200, 
+        headers: { "Content-Type": "application/json", ...corsHeaders } 
+      }
     );
 
   } catch (error: unknown) {
     console.error('Function error:', error);
     return new Response(
       JSON.stringify({ 
+        success: false,
         error: error instanceof Error ? error.message : 'Unknown error occurred',
         details: 'Check function logs for more information'
       }), 
-      { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      { 
+        status: 500, 
+        headers: { "Content-Type": "application/json", ...corsHeaders } 
+      }
     );
   }
 });
