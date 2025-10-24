@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAmbassadorProfile } from '@/hooks/useAmbassadorProfile';
+import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, MessageCircle, CheckCircle2, AlertCircle, Copy, ExternalLink } from 'lucide-react';
 import { generateTelegramReferralLink, TELEGRAM_CONFIG } from '@/config/telegram';
 
@@ -20,7 +21,8 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
   const [loading, setLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const { toast } = useToast();
-  const { data: profile, refetch } = useAmbassadorProfile();
+  const { user } = useAuth();
+  const { data: profile, refetch } = useAmbassadorProfile(user?.id);
 
   useEffect(() => {
     if (profile) {
@@ -60,15 +62,31 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
 
       console.log('Telegram ID verified, updating profile...');
 
+      // Determine which ID to use for the update
+      const profileId = ambassadorId || profile?.id;
+      const userId = user?.id;
+
+      if (!profileId && !userId) {
+        throw new Error('Unable to identify ambassador profile. Please refresh the page and try again.');
+      }
+
       // Update ambassador profile with Telegram connection
-      const { error } = await supabase
+      let updateQuery = supabase
         .from('ambassador_profiles')
         .update({
           telegram_id: telegramIdTrimmed,
           telegram_username: telegramUsername.trim() || null,
           updated_at: new Date().toISOString()
-        })
-        .eq('id', ambassadorId || profile?.id);
+        });
+
+      // Use profile ID if available, otherwise use user_id
+      if (profileId) {
+        updateQuery = updateQuery.eq('id', profileId);
+      } else {
+        updateQuery = updateQuery.eq('user_id', userId);
+      }
+
+      const { error } = await updateQuery;
 
       if (error) {
         console.error('Profile update error:', error);
@@ -116,14 +134,31 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
   const handleDisconnect = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase
+      // Determine which ID to use for the update
+      const profileId = ambassadorId || profile?.id;
+      const userId = user?.id;
+
+      if (!profileId && !userId) {
+        throw new Error('Unable to identify ambassador profile. Please refresh the page and try again.');
+      }
+
+      // Update ambassador profile to remove Telegram connection
+      let updateQuery = supabase
         .from('ambassador_profiles')
         .update({
           telegram_id: null,
           telegram_username: null,
           updated_at: new Date().toISOString()
-        })
-        .eq('id', ambassadorId || profile?.id);
+        });
+
+      // Use profile ID if available, otherwise use user_id
+      if (profileId) {
+        updateQuery = updateQuery.eq('id', profileId);
+      } else {
+        updateQuery = updateQuery.eq('user_id', userId);
+      }
+
+      const { error } = await updateQuery;
 
       if (error) throw error;
 
