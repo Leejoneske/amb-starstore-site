@@ -64,7 +64,9 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
       // Skip external verification - go directly to secure function
       console.log('⚡ Skipping external verification - using secure function directly');
 
-      // Use the secure function directly to bypass RLS issues
+      // Use the secure function directly to bypass RLS issues (same as onboarding)
+      console.log('🚀 DASHBOARD: Using secure function to connect Telegram ID:', telegramIdTrimmed);
+      
       const { data: functionResult, error: functionError } = await supabase
         .rpc('update_ambassador_telegram_info', {
           p_telegram_id: telegramIdTrimmed,
@@ -184,23 +186,24 @@ GRANT EXECUTE ON FUNCTION update_ambassador_telegram_info(text, text) TO authent
         throw new Error('Unable to identify ambassador profile. Please refresh the page and try again.');
       }
 
-      // Update ambassador profile to remove Telegram connection
-      let updateQuery = supabase
-        .from('ambassador_profiles')
-        .update({
-          telegram_id: null,
-          telegram_username: null,
-          updated_at: new Date().toISOString()
-        });
+      // Use secure function to disconnect Telegram
+      console.log('🚀 DASHBOARD: Disconnecting Telegram using secure function');
+      
+      const { data: functionResult, error: functionError } = await supabase
+        .rpc('disconnect_ambassador_telegram');
 
-      // Use profile ID if available, otherwise use user_id
-      if (profileId) {
-        updateQuery = updateQuery.eq('id', profileId);
-      } else {
-        updateQuery = updateQuery.eq('user_id', userId);
+      if (functionError) {
+        console.error('Disconnect function error:', functionError);
+        throw functionError;
       }
 
-      const { error } = await updateQuery;
+      if (!functionResult?.success) {
+        console.error('Disconnect function returned error:', functionResult);
+        throw new Error(functionResult?.error || 'Failed to disconnect Telegram');
+      }
+
+      console.log('✅ Telegram disconnected successfully:', functionResult);
+      const error = null; // No error if we got here
 
       if (error) throw error;
 
