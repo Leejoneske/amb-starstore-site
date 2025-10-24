@@ -77,7 +77,7 @@ export const DashboardTabs = ({
 
       <TabsContent value="telegram" className="space-y-6">
         <StarStoreConnection />
-        <TelegramConnection ambassadorId={ambassadorProfile.id} />
+        <TelegramConnectionSimple />
         <MongoIntegration 
           ambassadorId={ambassadorProfile.id}
           referralCode={ambassadorProfile.referral_code}
