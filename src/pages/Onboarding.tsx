@@ -109,17 +109,31 @@ const Onboarding = () => {
         throw new Error(verificationResponse.error || 'Invalid Telegram ID format');
       }
 
-      // Update ambassador profile with Telegram connection
-      const { error } = await supabase
-        .from('ambassador_profiles')
-        .update({
-          telegram_id: telegramIdTrimmed,
-          telegram_username: telegramUsername.trim() || null,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', ambassadorProfile?.id);
+      // Update ambassador profile with Telegram connection using secure function
+      console.log('🚀 ONBOARDING: Using secure function to connect Telegram ID:', telegramIdTrimmed);
+      
+      const { data: functionResult, error: functionError } = await supabase
+        .rpc('update_ambassador_telegram_info', {
+          p_telegram_id: telegramIdTrimmed,
+          p_telegram_username: telegramUsername.trim() || null
+        });
 
-      if (error) throw error;
+      if (functionError) {
+        console.error('Onboarding: Function error:', functionError);
+        
+        if (functionError.message?.includes('function') && functionError.message?.includes('does not exist')) {
+          throw new Error('Database function not found. Please contact support - the system needs to be configured.');
+        }
+        
+        throw functionError;
+      }
+
+      if (!functionResult?.success) {
+        console.error('Onboarding: Function returned error:', functionResult);
+        throw new Error(functionResult?.error || 'Failed to connect Telegram account');
+      }
+
+      console.log('✅ Onboarding: Telegram connected successfully:', functionResult);
 
       // Try to sync ambassador data with Star Store (non-blocking)
       if (ambassadorProfile) {
