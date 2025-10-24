@@ -47,13 +47,18 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
 
     setLoading(true);
     try {
-      // First, verify the Telegram ID format and optionally with Star Store
+      console.log('Connecting Telegram ID:', telegramIdTrimmed);
+
+      // Verify the Telegram ID format (with improved error handling)
       const { starStoreService } = await import('@/services/starStoreService');
       const verificationResponse = await starStoreService.verifyTelegramUser(telegramIdTrimmed);
       
       if (!verificationResponse.success) {
+        console.error('Telegram verification failed:', verificationResponse.error);
         throw new Error(verificationResponse.error || 'Invalid Telegram ID format');
       }
+
+      console.log('Telegram ID verified, updating profile...');
 
       // Update ambassador profile with Telegram connection
       const { error } = await supabase
@@ -65,20 +70,27 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
         })
         .eq('id', ambassadorId || profile?.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Profile update error:', error);
+        throw error;
+      }
+
+      console.log('Profile updated successfully');
 
       // Try to sync ambassador data with Star Store (non-blocking)
       if (profile) {
         try {
+          console.log('Attempting StarStore sync...');
           await starStoreService.syncAmbassadorData(telegramIdTrimmed, {
             email: profile.profiles?.email || '',
             fullName: profile.profiles?.full_name || '',
             tier: profile.current_tier,
             referralCode: profile.referral_code
           });
+          console.log('StarStore sync completed');
         } catch (syncError) {
           // Log but don't fail the connection if sync fails
-          console.warn('StarStore sync failed:', syncError);
+          console.warn('StarStore sync failed (non-critical):', syncError);
         }
       }
 
@@ -90,9 +102,10 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
         description: "Your Telegram account has been successfully linked.",
       });
     } catch (error) {
+      console.error('Telegram connection error:', error);
       toast({
         title: "Connection Failed",
-        description: error instanceof Error ? error.message : "Failed to connect Telegram account",
+        description: error instanceof Error ? error.message : "Failed to connect Telegram account. Please check your Telegram ID and try again.",
         variant: "destructive",
       });
     } finally {

@@ -61,6 +61,11 @@ class StarStoreService {
   private async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     try {
       const url = `${this.baseUrl}${endpoint}`;
+      
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
@@ -68,8 +73,11 @@ class StarStoreService {
           'X-API-Key': 'amb_starstore_secure_key_2024', // API key for ambassador app authentication
           ...options.headers,
         },
+        signal: controller.signal,
         ...options,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -78,10 +86,18 @@ class StarStoreService {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      logger.apiError(endpoint, error as Error, { service: 'starstore' });
+      // Log error but don't expose internal details
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          logger.warn('StarStore API request timeout', { endpoint });
+        } else {
+          logger.apiError(endpoint, error, { service: 'starstore' });
+        }
+      }
+      
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : 'StarStore API unavailable',
         data: null as T
       };
     }
@@ -110,39 +126,43 @@ class StarStoreService {
   // Verify if a Telegram user exists in Star Store
   async verifyTelegramUser(telegramId: string): Promise<ApiResponse<boolean>> {
     try {
-      // First try to get user info from StarStore
-      const userResponse = await this.getUserByTelegramId(telegramId);
-      
-      if (userResponse.success && userResponse.data !== null) {
-        return {
-          success: true,
-          data: true
-        };
-      }
-      
-      // If user not found in StarStore, but telegramId is valid format, allow it
-      // This allows users to connect even if StarStore API is temporarily unavailable
+      // Validate Telegram ID format first (most important check)
       const isValidTelegramId = /^\d+$/.test(telegramId) && telegramId.length >= 5;
       
-      if (isValidTelegramId) {
-        logger.warn('StarStore API verification failed, allowing valid Telegram ID format', { telegramId });
+      if (!isValidTelegramId) {
         return {
-          success: true,
-          data: true
+          success: false,
+          error: 'Invalid Telegram ID format. Must be numeric and at least 5 digits.',
+          data: false
         };
+      }
+
+      // For now, skip external API verification and just validate format
+      // This ensures Telegram connection works even if StarStore API is unavailable
+      logger.info('Telegram ID format validation passed', { telegramId });
+      
+      // Optional: Try to verify with StarStore API (non-blocking)
+      try {
+        const userResponse = await this.getUserByTelegramId(telegramId);
+        if (userResponse.success && userResponse.data !== null) {
+          logger.info('Telegram ID verified with StarStore API', { telegramId });
+        }
+      } catch (apiError) {
+        // Log but don't fail - API might be unavailable
+        logger.warn('StarStore API verification skipped (API unavailable)', { telegramId, error: apiError });
       }
       
       return {
-        success: false,
-        error: 'Invalid Telegram ID format. Must be numeric and at least 5 digits.',
-        data: false
+        success: true,
+        data: true
       };
+      
     } catch (error) {
-      // If there's an API error, fall back to format validation
+      // Fallback to format validation only
       const isValidTelegramId = /^\d+$/.test(telegramId) && telegramId.length >= 5;
       
       if (isValidTelegramId) {
-        logger.warn('StarStore API error, allowing valid Telegram ID format', { telegramId, error });
+        logger.warn('Telegram verification error, allowing valid format', { telegramId, error });
         return {
           success: true,
           data: true
