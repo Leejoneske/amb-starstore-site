@@ -9,6 +9,7 @@ import { ReferralDashboard } from "@/components/dashboard/ReferralDashboard";
 import { TierLevelsDisplay } from "@/components/dashboard/TierLevelsDisplay";
 import { TelegramConnection } from "@/components/dashboard/TelegramConnection";
 import { StarStoreConnection } from "@/components/dashboard/StarStoreConnection";
+import { IntegrationTest } from "@/components/dashboard/IntegrationTest";
 import type { Ambassador, AnalyticsData } from "@/types";
 
 interface DashboardTabsProps {
@@ -28,7 +29,7 @@ export const DashboardTabs = ({
 }: DashboardTabsProps) => {
   return (
     <Tabs defaultValue="overview" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-7">
+      <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
         <TabsTrigger value="overview" className="flex items-center gap-2">
           <BarChart3 className="h-4 w-4" />
           Overview
@@ -56,6 +57,10 @@ export const DashboardTabs = ({
         <TabsTrigger value="performance" className="flex items-center gap-2">
           <Award className="h-4 w-4" />
           Performance
+        </TabsTrigger>
+        <TabsTrigger value="integration" className="flex items-center gap-2">
+          <Activity className="h-4 w-4" />
+          Test
         </TabsTrigger>
       </TabsList>
 
@@ -94,6 +99,10 @@ export const DashboardTabs = ({
           <PerformanceGoals ambassadorProfile={ambassadorProfile} />
           <LiveActivityFeed isAdmin={isAdmin} limit={10} />
         </div>
+      </TabsContent>
+
+      <TabsContent value="integration">
+        <IntegrationTest />
       </TabsContent>
     </Tabs>
   );
