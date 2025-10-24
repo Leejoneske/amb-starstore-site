@@ -106,56 +106,26 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
         console.log('Found existing profile:', existingProfile.id);
       }
 
-      // Prepare update data
-      const updateData = {
-        telegram_id: telegramIdTrimmed,
-        telegram_username: telegramUsername.trim() || null,
-        updated_at: new Date().toISOString()
-      };
+      console.log('Updating Telegram info using secure function...');
 
-      console.log('Update data:', updateData);
+      // Use the secure function directly to bypass RLS issues
+      const { data: functionResult, error: functionError } = await supabase
+        .rpc('update_ambassador_telegram_info', {
+          p_telegram_id: telegramIdTrimmed,
+          p_telegram_username: telegramUsername.trim() || null
+        });
 
-      // Update ambassador profile with Telegram connection
-      let updateQuery = supabase
-        .from('ambassador_profiles')
-        .update(updateData);
-
-      // Use profile ID if available, otherwise use user_id
-      if (profileId) {
-        console.log('Updating by profile ID:', profileId);
-        updateQuery = updateQuery.eq('id', profileId);
-      } else {
-        console.log('Updating by user ID:', userId);
-        updateQuery = updateQuery.eq('user_id', userId);
+      if (functionError) {
+        console.error('Function error:', functionError);
+        throw new Error(`Failed to update Telegram info: ${functionError.message}`);
       }
 
-      const { error, data } = await updateQuery.select();
-
-      if (error) {
-        console.error('Profile update error:', error);
-        
-        // Try using the secure function as fallback
-        console.log('Attempting fallback using secure function...');
-        
-        const { data: functionResult, error: functionError } = await supabase
-          .rpc('update_ambassador_telegram_info', {
-            p_telegram_id: telegramIdTrimmed,
-            p_telegram_username: telegramUsername.trim() || null
-          });
-
-        if (functionError) {
-          console.error('Function fallback error:', functionError);
-          throw new Error(`Update failed: ${error.message}. Fallback also failed: ${functionError.message}`);
-        }
-
-        if (!functionResult?.success) {
-          throw new Error(functionResult?.error || 'Function update failed');
-        }
-
-        console.log('Profile updated successfully via function:', functionResult);
-      } else {
-        console.log('Profile updated successfully via direct update:', data);
+      if (!functionResult?.success) {
+        console.error('Function returned error:', functionResult);
+        throw new Error(functionResult?.error || 'Failed to update Telegram information');
       }
+
+      console.log('Profile updated successfully via secure function:', functionResult);
 
       console.log('Profile updated successfully');
 
