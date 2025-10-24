@@ -55,7 +55,7 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
 
     setLoading(true);
     try {
-      console.log('Connecting Telegram ID:', telegramIdTrimmed);
+      console.log('🔄 Telegram Connection v2.0 - Connecting Telegram ID:', telegramIdTrimmed);
 
       // Verify the Telegram ID format (with improved error handling)
       const { starStoreService } = await import('@/services/starStoreService');
@@ -117,6 +117,58 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
 
       if (functionError) {
         console.error('Function error:', functionError);
+        
+        // If function doesn't exist, show helpful error
+        if (functionError.message?.includes('function') && functionError.message?.includes('does not exist')) {
+          console.error('🚨 DATABASE FUNCTION MISSING! Run this SQL in your Supabase SQL Editor:');
+          console.log(`
+-- TELEGRAM CONNECTION FIX - Copy and run this in Supabase SQL Editor
+CREATE OR REPLACE FUNCTION update_ambassador_telegram_info(
+  p_telegram_id text,
+  p_telegram_username text DEFAULT NULL
+)
+RETURNS json
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_user_id uuid;
+  v_ambassador_id uuid;
+BEGIN
+  v_user_id := auth.uid();
+  IF v_user_id IS NULL THEN
+    RETURN json_build_object('success', false, 'error', 'Not authenticated');
+  END IF;
+  
+  SELECT id INTO v_ambassador_id FROM ambassador_profiles WHERE user_id = v_user_id;
+  IF v_ambassador_id IS NULL THEN
+    RETURN json_build_object('success', false, 'error', 'Ambassador profile not found');
+  END IF;
+  
+  IF p_telegram_id IS NULL OR p_telegram_id = '' THEN
+    RETURN json_build_object('success', false, 'error', 'Telegram ID is required');
+  END IF;
+  
+  IF NOT (p_telegram_id ~ '^\\d+$' AND length(p_telegram_id) >= 5) THEN
+    RETURN json_build_object('success', false, 'error', 'Invalid Telegram ID format');
+  END IF;
+  
+  UPDATE ambassador_profiles 
+  SET telegram_id = p_telegram_id, telegram_username = p_telegram_username, updated_at = now()
+  WHERE id = v_ambassador_id;
+  
+  RETURN json_build_object('success', true, 'ambassador_id', v_ambassador_id, 'telegram_id', p_telegram_id);
+EXCEPTION WHEN OTHERS THEN
+  RETURN json_build_object('success', false, 'error', 'Database error: ' || SQLERRM);
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION update_ambassador_telegram_info(text, text) TO authenticated;
+          `);
+          throw new Error('Database function not found. Please run the SQL fix in your Supabase dashboard first. Check the console above for the SQL code to copy and paste.');
+        }
+        
         throw new Error(`Failed to update Telegram info: ${functionError.message}`);
       }
 
@@ -125,7 +177,7 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
         throw new Error(functionResult?.error || 'Failed to update Telegram information');
       }
 
-      console.log('Profile updated successfully via secure function:', functionResult);
+      console.log('✅ Profile updated successfully via secure function:', functionResult);
 
       console.log('Profile updated successfully');
 
