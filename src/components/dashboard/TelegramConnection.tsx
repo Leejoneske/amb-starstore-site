@@ -25,12 +25,18 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
   const { data: profile, refetch } = useAmbassadorProfile(user?.id);
 
   useEffect(() => {
+    console.log('TelegramConnection - Profile data updated:', {
+      profile,
+      userId: user?.id,
+      ambassadorIdProp: ambassadorId
+    });
+    
     if (profile) {
       setTelegramId(profile.telegram_id || '');
       setTelegramUsername(profile.telegram_username || '');
       setIsConnected(!!profile.telegram_id);
     }
-  }, [profile]);
+  }, [profile, user?.id, ambassadorId]);
 
   const handleConnect = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,12 +68,42 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
 
       console.log('Telegram ID verified, updating profile...');
 
+      // Debug logging
+      console.log('Debug info:', {
+        ambassadorId,
+        profileId: profile?.id,
+        userId: user?.id,
+        profile: profile
+      });
+
       // Determine which ID to use for the update
       const profileId = ambassadorId || profile?.id;
       const userId = user?.id;
 
       if (!profileId && !userId) {
         throw new Error('Unable to identify ambassador profile. Please refresh the page and try again.');
+      }
+
+      // If we don't have a profile ID but have a user ID, first check if ambassador profile exists
+      if (!profileId && userId) {
+        console.log('No profile ID found, checking if ambassador profile exists...');
+        
+        const { data: existingProfile, error: checkError } = await supabase
+          .from('ambassador_profiles')
+          .select('id')
+          .eq('user_id', userId)
+          .single();
+
+        if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
+          console.error('Error checking for existing profile:', checkError);
+          throw new Error('Failed to check ambassador profile status');
+        }
+
+        if (!existingProfile) {
+          throw new Error('Ambassador profile not found. Please contact support or try refreshing the page.');
+        }
+
+        console.log('Found existing profile:', existingProfile.id);
       }
 
       // Update ambassador profile with Telegram connection
@@ -81,17 +117,21 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
 
       // Use profile ID if available, otherwise use user_id
       if (profileId) {
+        console.log('Updating by profile ID:', profileId);
         updateQuery = updateQuery.eq('id', profileId);
       } else {
+        console.log('Updating by user ID:', userId);
         updateQuery = updateQuery.eq('user_id', userId);
       }
 
-      const { error } = await updateQuery;
+      const { error, data } = await updateQuery.select();
 
       if (error) {
         console.error('Profile update error:', error);
         throw error;
       }
+
+      console.log('Profile updated successfully:', data);
 
       console.log('Profile updated successfully');
 
