@@ -55,7 +55,7 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
 
     setLoading(true);
     try {
-      console.log('🔄 Telegram Connection v2.0 - Connecting Telegram ID:', telegramIdTrimmed);
+      console.log('🔄 Telegram Connection v3.0 [' + Date.now() + '] - SECURE FUNCTION ONLY - Connecting Telegram ID:', telegramIdTrimmed);
 
       // Verify the Telegram ID format (with improved error handling)
       const { starStoreService } = await import('@/services/starStoreService');
@@ -68,45 +68,7 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
 
       console.log('Telegram ID verified, updating profile...');
 
-      // Debug logging
-      console.log('Debug info:', {
-        ambassadorId,
-        profileId: profile?.id,
-        userId: user?.id,
-        profile: profile
-      });
-
-      // Determine which ID to use for the update
-      const profileId = ambassadorId || profile?.id;
-      const userId = user?.id;
-
-      if (!profileId && !userId) {
-        throw new Error('Unable to identify ambassador profile. Please refresh the page and try again.');
-      }
-
-      // If we don't have a profile ID but have a user ID, first check if ambassador profile exists
-      if (!profileId && userId) {
-        console.log('No profile ID found, checking if ambassador profile exists...');
-        
-        const { data: existingProfile, error: checkError } = await supabase
-          .from('ambassador_profiles')
-          .select('id')
-          .eq('user_id', userId)
-          .single();
-
-        if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
-          console.error('Error checking for existing profile:', checkError);
-          throw new Error('Failed to check ambassador profile status');
-        }
-
-        if (!existingProfile) {
-          throw new Error('Ambassador profile not found. Please contact support or try refreshing the page.');
-        }
-
-        console.log('Found existing profile:', existingProfile.id);
-      }
-
-      console.log('Updating Telegram info using secure function...');
+      console.log('🚀 Using SECURE FUNCTION approach (v3.0) - bypassing direct database access');
 
       // Use the secure function directly to bypass RLS issues
       const { data: functionResult, error: functionError } = await supabase
