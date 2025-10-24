@@ -11,5 +11,12 @@ export const supabase = createClient<Database>(supabaseConfig.url, supabaseConfi
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce'
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'amb-starstore-dashboard'
+    }
   }
 });

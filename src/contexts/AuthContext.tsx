@@ -101,12 +101,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    
-    return { error };
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      return { error };
+    } catch (networkError) {
+      console.error('Network/CORS error during sign in:', networkError);
+      
+      // Check if it's a CORS error
+      if (networkError instanceof TypeError && networkError.message.includes('fetch')) {
+        return { 
+          error: new Error('Connection failed. Please check your internet connection and try again. If the problem persists, contact support.') 
+        };
+      }
+      
+      return { error: networkError as Error };
+    }
   };
 
   const signOut = async () => {
