@@ -99,15 +99,19 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Failed to create profile' }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
     }
 
-    // 3) Upsert ambassador profile
-    const { error: ambErr } = await serviceClient
+    // 3) Upsert ambassador profile and get the ID
+    const { data: ambassadorData, error: ambErr } = await serviceClient
       .from('ambassador_profiles')
       .upsert({ user_id: newUserId, referral_code: referralCode, status: 'active', approved_at: new Date().toISOString(), approved_by: adminId })
-      .eq('user_id', newUserId);
+      .eq('user_id', newUserId)
+      .select('id')
+      .single();
     if (ambErr) {
       // Ambassador upsert error
       return new Response(JSON.stringify({ error: 'Failed to create ambassador profile' }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
     }
+
+    const ambassadorId = ambassadorData?.id;
 
     // 4) Update application status
     const { error: appErr } = await serviceClient
@@ -139,6 +143,7 @@ serve(async (req) => {
           priority: 'high',
           sent_by: adminId,
           sent_via: 'system',
+          status: 'pending',
           variables: {
             name: applicantName,
             email: applicantEmail,
@@ -156,7 +161,7 @@ serve(async (req) => {
 
       if (messageErr) {
         console.error('Failed to create message record:', messageErr);
-        emailError = 'Failed to create message record';
+        emailError = `Failed to create message record: ${messageErr.message}`;
       } else {
         messageId = messageData.id;
         
@@ -185,8 +190,8 @@ serve(async (req) => {
           </div>
         `;
 
-        // Send email using the new send-email function
-        const fnRes = await serviceClient.functions.invoke('send-email', {
+        // Send email using the send-email function (same as working message system)
+        const { data: emailResult, error: emailFunctionError } = await serviceClient.functions.invoke('send-email', {
           body: { 
             to: applicantEmail, 
             subject: 'Congratulations! Your Ambassador Application is Approved',
@@ -195,22 +200,33 @@ serve(async (req) => {
           },
         });
         
-        if (fnRes.error) {
-          emailError = fnRes.error.message || 'Email function returned error';
-          console.error('Email function error:', fnRes.error);
+        if (emailFunctionError) {
+          emailError = emailFunctionError.message || 'Email function returned error';
+          console.error('Email function error:', emailFunctionError);
           
-          // Update message status to failed
-          await serviceClient
-            .from('messages')
-            .update({ 
-              status: 'failed',
-              error_message: emailError,
-              failed_at: new Date().toISOString()
-            })
-            .eq('id', messageId);
+          // The send-email function will handle updating the message status to failed
+          // But we still set our local flags for the response
+          emailSent = false;
+        } else if (emailResult && !emailResult.success) {
+          emailError = emailResult.error || 'Email sending failed';
+          console.error('Email sending failed:', emailResult);
+          emailSent = false;
         } else {
           emailSent = true;
           console.log('Approval email sent successfully');
+          
+          // Log success event
+          await serviceClient
+            .from('message_events')
+            .insert({
+              message_id: messageId,
+              event_type: 'sent',
+              event_data: { 
+                source: 'ambassador_approval',
+                externalMessageId: emailResult?.messageId
+              },
+              occurred_at: new Date().toISOString()
+            });
         }
       }
     } catch (e) {
