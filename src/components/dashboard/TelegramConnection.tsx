@@ -106,14 +106,19 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
         console.log('Found existing profile:', existingProfile.id);
       }
 
+      // Prepare update data
+      const updateData = {
+        telegram_id: telegramIdTrimmed,
+        telegram_username: telegramUsername.trim() || null,
+        updated_at: new Date().toISOString()
+      };
+
+      console.log('Update data:', updateData);
+
       // Update ambassador profile with Telegram connection
       let updateQuery = supabase
         .from('ambassador_profiles')
-        .update({
-          telegram_id: telegramIdTrimmed,
-          telegram_username: telegramUsername.trim() || null,
-          updated_at: new Date().toISOString()
-        });
+        .update(updateData);
 
       // Use profile ID if available, otherwise use user_id
       if (profileId) {
@@ -128,10 +133,29 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
 
       if (error) {
         console.error('Profile update error:', error);
-        throw error;
-      }
+        
+        // Try using the secure function as fallback
+        console.log('Attempting fallback using secure function...');
+        
+        const { data: functionResult, error: functionError } = await supabase
+          .rpc('update_ambassador_telegram_info', {
+            p_telegram_id: telegramIdTrimmed,
+            p_telegram_username: telegramUsername.trim() || null
+          });
 
-      console.log('Profile updated successfully:', data);
+        if (functionError) {
+          console.error('Function fallback error:', functionError);
+          throw new Error(`Update failed: ${error.message}. Fallback also failed: ${functionError.message}`);
+        }
+
+        if (!functionResult?.success) {
+          throw new Error(functionResult?.error || 'Function update failed');
+        }
+
+        console.log('Profile updated successfully via function:', functionResult);
+      } else {
+        console.log('Profile updated successfully via direct update:', data);
+      }
 
       console.log('Profile updated successfully');
 
