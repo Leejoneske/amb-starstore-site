@@ -31,6 +31,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { logger } from "@/lib/logger";
 import type { Transaction, Payout } from "@/types";
 import { useEffect } from "react";
+import { ADMIN_EMAIL } from "@/config/env";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -46,21 +47,21 @@ const Dashboard = () => {
   
   const isAdmin = userRole === 'admin';
 
-  // Check if user has completed onboarding
+  // Redirect admin to admin dashboard
   useEffect(() => {
-    if (ambassadorProfile && !profileLoading && !isAdmin) {
+    if (user?.email === ADMIN_EMAIL || isAdmin) {
+      navigate("/admin");
+      return;
+    }
+
+    if (ambassadorProfile && !profileLoading) {
       // If user hasn't completed onboarding (missing telegram_id or referral_code), redirect to onboarding
       if (!ambassadorProfile.telegram_id || !ambassadorProfile.referral_code) {
         navigate("/onboarding");
         return;
       }
     }
-  }, [ambassadorProfile, profileLoading, isAdmin, navigate]);
-
-  // Redirect admins to admin dashboard
-  if (isAdmin) {
-    return <AdminDashboard />;
-  }
+  }, [ambassadorProfile, profileLoading, isAdmin, navigate, user]);
 
   if (profileLoading) {
     return (

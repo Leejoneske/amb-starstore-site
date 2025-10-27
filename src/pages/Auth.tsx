@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles, AlertCircle, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { ADMIN_EMAIL } from "@/config/env";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -24,23 +25,28 @@ const Auth = () => {
 
   const checkFirstLogin = useCallback(async () => {
     if (!user) return;
-    
-    // Check if user needs to change password (you can implement this logic)
-    // For now, we'll check if the user has a specific metadata field
+
+    // Check if user needs to change password
     const needsPasswordChange = user.user_metadata?.needs_password_change === true;
-    
+
     if (needsPasswordChange) {
       setIsFirstLogin(true);
     } else {
+      setIsRedirecting(true);
+
+      // Check if user is admin
+      if (user.email === ADMIN_EMAIL) {
+        navigate("/admin");
+        return;
+      }
+
       // Check if user has completed onboarding
       const { data: profile } = await supabase
         .from('ambassador_profiles')
         .select('telegram_id, referral_code')
         .eq('user_id', user.id)
         .single();
-      
-      setIsRedirecting(true);
-      
+
       // If user hasn't completed onboarding (missing telegram_id or referral_code), redirect to onboarding
       if (!profile?.telegram_id || !profile?.referral_code) {
         navigate("/onboarding");
@@ -116,13 +122,19 @@ const Auth = () => {
         description: "Password updated successfully. Let's get you set up!",
       });
 
+      // Check if user is admin
+      if (user?.email === ADMIN_EMAIL) {
+        navigate("/admin");
+        return;
+      }
+
       // Check if user has completed onboarding after password change
       const { data: profile } = await supabase
         .from('ambassador_profiles')
         .select('telegram_id, referral_code')
         .eq('user_id', user.id)
         .single();
-      
+
       // If user hasn't completed onboarding, redirect to onboarding
       if (!profile?.telegram_id || !profile?.referral_code) {
         navigate("/onboarding");

@@ -24,6 +24,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { generateTelegramReferralLink, generateReferralCode, TELEGRAM_CONFIG } from "@/config/telegram";
 import { starStoreService } from "@/services/starStoreService";
+import { ADMIN_EMAIL } from "@/config/env";
 
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -38,19 +39,25 @@ const Onboarding = () => {
 
   // Check if user has already completed onboarding
   useEffect(() => {
+    // Redirect admin to admin dashboard
+    if (user?.email === ADMIN_EMAIL) {
+      navigate("/admin");
+      return;
+    }
+
     if (ambassadorProfile && !profileLoading) {
       // If user has telegram_id and referral_code, they've completed onboarding
       if (ambassadorProfile.telegram_id && ambassadorProfile.referral_code) {
         navigate("/dashboard");
         return;
       }
-      
+
       // If they have referral code but no telegram, start at telegram step
       if (ambassadorProfile.referral_code && !ambassadorProfile.telegram_id) {
         setCurrentStep(1);
         return;
       }
-      
+
       // If they have telegram but no referral code, start at referral step
       if (ambassadorProfile.telegram_id && !ambassadorProfile.referral_code) {
         setCurrentStep(2);
@@ -59,7 +66,7 @@ const Onboarding = () => {
         return;
       }
     }
-  }, [ambassadorProfile, profileLoading, navigate]);
+  }, [ambassadorProfile, profileLoading, navigate, user]);
 
   const steps = [
     {

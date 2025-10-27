@@ -80,6 +80,9 @@ export const isStaging = config.app.environment === 'staging';
 // Feature flags
 export const features = config.features;
 
+// Admin configuration
+export const ADMIN_EMAIL = 'johnwanderi202@gmail.com';
+
 // Export individual configs for convenience
 export const supabaseConfig = config.supabase;
 export const telegramConfig = config.telegram;
