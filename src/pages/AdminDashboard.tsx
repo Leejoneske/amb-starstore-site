@@ -31,6 +31,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "@/lib/logger";
 import type { Application, Ambassador } from "@/types";
+import { ADMIN_EMAIL } from "@/config/env";
 
 
 
@@ -250,7 +251,10 @@ const AdminDashboard = () => {
     window.URL.revokeObjectURL(url);
   };
 
-  if (userRole !== 'admin') {
+  // Check if user is admin by role OR by email
+  const isAdmin = userRole === 'admin' || user?.email === ADMIN_EMAIL;
+
+  if (!isAdmin) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <Card className="p-8 max-w-md text-center">
