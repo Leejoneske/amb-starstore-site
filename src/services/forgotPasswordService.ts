@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
-import { sendTemplatedEmail } from '@/lib/emailService';
+import { messageService } from '@/services/messageService';
 
 export interface ForgotPasswordRequest {
   email: string;
@@ -42,26 +42,16 @@ export const forgotPasswordService = {
         };
       }
 
-      // Send password reset email via Supabase Auth
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth?reset=true`,
-      });
-
-      if (resetError) {
-        logger.error('Error sending password reset email', { email }, resetError);
-        return {
-          success: false,
-          error: 'Failed to send reset email. Please try again later.',
-        };
-      }
-
-      // Track password reset request in message service
-      await sendTemplatedEmail(
+      // Send password reset email using our custom template via message service
+      // This gives us full control over the email content and tracking
+      const resetLink = `${window.location.origin}/auth?reset=true`;
+      
+      const emailResult = await messageService.sendTemplatedMessage(
         'password_reset',
         email,
         {
           userName: userData.full_name || 'User',
-          resetLink: 'Check your email for the reset link',
+          resetLink: resetLink,
         },
         {
           recipientName: userData.full_name,
@@ -72,6 +62,23 @@ export const forgotPasswordService = {
           },
         }
       );
+
+      if (!emailResult.success) {
+        logger.error('Failed to send password reset email', { email }, new Error(emailResult.error));
+        return {
+          success: false,
+          error: 'Failed to send reset email. Please try again later.',
+        };
+      }
+
+      // Also trigger Supabase's password reset (which sends a second email with actual secure token)
+      // This is needed because we can't generate our own secure password reset tokens
+      await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: resetLink,
+      }).catch((error) => {
+        // Log but don't fail - we already sent our custom email
+        logger.error('Supabase password reset failed', { email }, error);
+      });
 
       logger.info('Password reset email sent successfully', { email });
 

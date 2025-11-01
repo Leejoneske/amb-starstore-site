@@ -22,13 +22,17 @@ export type Database = {
           avg_stars_per_transaction: number | null
           created_at: string
           current_tier: Database["public"]["Enums"]["app_tier"]
+          first_login_at: string | null
           id: string
           lifetime_stars: number
+          password_change_required: boolean | null
           pending_earnings: number
           quality_transaction_rate: number | null
           referral_code: string
           social_posts_this_month: number
           status: string
+          telegram_id: string | null
+          telegram_username: string | null
           tier_progress: number
           total_earnings: number
           total_referrals: number
@@ -42,13 +46,17 @@ export type Database = {
           avg_stars_per_transaction?: number | null
           created_at?: string
           current_tier?: Database["public"]["Enums"]["app_tier"]
+          first_login_at?: string | null
           id?: string
           lifetime_stars?: number
+          password_change_required?: boolean | null
           pending_earnings?: number
           quality_transaction_rate?: number | null
           referral_code: string
           social_posts_this_month?: number
           status?: string
+          telegram_id?: string | null
+          telegram_username?: string | null
           tier_progress?: number
           total_earnings?: number
           total_referrals?: number
@@ -62,13 +70,17 @@ export type Database = {
           avg_stars_per_transaction?: number | null
           created_at?: string
           current_tier?: Database["public"]["Enums"]["app_tier"]
+          first_login_at?: string | null
           id?: string
           lifetime_stars?: number
+          password_change_required?: boolean | null
           pending_earnings?: number
           quality_transaction_rate?: number | null
           referral_code?: string
           social_posts_this_month?: number
           status?: string
+          telegram_id?: string | null
+          telegram_username?: string | null
           tier_progress?: number
           total_earnings?: number
           total_referrals?: number
@@ -99,7 +111,7 @@ export type Database = {
           event_data: Json | null
           event_type: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           user_agent: string | null
         }
         Insert: {
@@ -108,7 +120,7 @@ export type Database = {
           event_data?: Json | null
           event_type: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
         }
         Update: {
@@ -117,7 +129,7 @@ export type Database = {
           event_data?: Json | null
           event_type?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
         }
         Relationships: [
@@ -195,6 +207,225 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_attachments: {
+        Row: {
+          content_type: string | null
+          created_at: string | null
+          file_size: number | null
+          file_url: string | null
+          filename: string
+          id: string
+          message_id: string | null
+        }
+        Insert: {
+          content_type?: string | null
+          created_at?: string | null
+          file_size?: number | null
+          file_url?: string | null
+          filename: string
+          id?: string
+          message_id?: string | null
+        }
+        Update: {
+          content_type?: string | null
+          created_at?: string | null
+          file_size?: number | null
+          file_url?: string | null
+          filename?: string
+          id?: string
+          message_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_events: {
+        Row: {
+          event_data: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown
+          message_id: string | null
+          occurred_at: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          message_id?: string | null
+          occurred_at?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          message_id?: string | null
+          occurred_at?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_events_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_templates: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          html_template: string
+          id: string
+          is_active: boolean | null
+          message_type: Database["public"]["Enums"]["message_type"]
+          name: string
+          subject_template: string
+          text_template: string | null
+          updated_at: string | null
+          variables: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          html_template: string
+          id?: string
+          is_active?: boolean | null
+          message_type: Database["public"]["Enums"]["message_type"]
+          name: string
+          subject_template: string
+          text_template?: string | null
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          html_template?: string
+          id?: string
+          is_active?: boolean | null
+          message_type?: Database["public"]["Enums"]["message_type"]
+          name?: string
+          subject_template?: string
+          text_template?: string | null
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          ambassador_id: string | null
+          clicked_at: string | null
+          content_html: string | null
+          content_text: string | null
+          created_at: string | null
+          delivered_at: string | null
+          email_service: string | null
+          error_message: string | null
+          external_message_id: string | null
+          failed_at: string | null
+          id: string
+          max_retries: number | null
+          message_type: Database["public"]["Enums"]["message_type"]
+          metadata: Json | null
+          opened_at: string | null
+          priority: Database["public"]["Enums"]["message_priority"] | null
+          recipient_email: string
+          recipient_name: string | null
+          retry_count: number | null
+          sent_at: string | null
+          sent_by: string | null
+          sent_via: string | null
+          status: Database["public"]["Enums"]["message_status"] | null
+          subject: string
+          template_name: string | null
+          updated_at: string | null
+          user_id: string | null
+          variables: Json | null
+        }
+        Insert: {
+          ambassador_id?: string | null
+          clicked_at?: string | null
+          content_html?: string | null
+          content_text?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          email_service?: string | null
+          error_message?: string | null
+          external_message_id?: string | null
+          failed_at?: string | null
+          id?: string
+          max_retries?: number | null
+          message_type: Database["public"]["Enums"]["message_type"]
+          metadata?: Json | null
+          opened_at?: string | null
+          priority?: Database["public"]["Enums"]["message_priority"] | null
+          recipient_email: string
+          recipient_name?: string | null
+          retry_count?: number | null
+          sent_at?: string | null
+          sent_by?: string | null
+          sent_via?: string | null
+          status?: Database["public"]["Enums"]["message_status"] | null
+          subject: string
+          template_name?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          ambassador_id?: string | null
+          clicked_at?: string | null
+          content_html?: string | null
+          content_text?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          email_service?: string | null
+          error_message?: string | null
+          external_message_id?: string | null
+          failed_at?: string | null
+          id?: string
+          max_retries?: number | null
+          message_type?: Database["public"]["Enums"]["message_type"]
+          metadata?: Json | null
+          opened_at?: string | null
+          priority?: Database["public"]["Enums"]["message_priority"] | null
+          recipient_email?: string
+          recipient_name?: string | null
+          retry_count?: number | null
+          sent_at?: string | null
+          sent_by?: string | null
+          sent_via?: string | null
+          status?: Database["public"]["Enums"]["message_status"] | null
+          subject?: string
+          template_name?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          variables?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_ambassador_id_fkey"
+            columns: ["ambassador_id"]
+            isOneToOne: false
+            referencedRelation: "ambassador_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -398,6 +629,213 @@ export type Database = {
           },
         ]
       }
+      starstore_analytics_cache: {
+        Row: {
+          active_referrals: number | null
+          conversion_rate: number | null
+          id: string
+          month_referrals: number | null
+          month_users: number | null
+          starstore_timestamp: string | null
+          synced_at: string | null
+          today_referrals: number | null
+          today_users: number | null
+          total_earnings: number | null
+          total_referrals: number | null
+          total_stars_traded: number | null
+          total_transactions: number | null
+          total_users: number | null
+          week_referrals: number | null
+          week_users: number | null
+        }
+        Insert: {
+          active_referrals?: number | null
+          conversion_rate?: number | null
+          id?: string
+          month_referrals?: number | null
+          month_users?: number | null
+          starstore_timestamp?: string | null
+          synced_at?: string | null
+          today_referrals?: number | null
+          today_users?: number | null
+          total_earnings?: number | null
+          total_referrals?: number | null
+          total_stars_traded?: number | null
+          total_transactions?: number | null
+          total_users?: number | null
+          week_referrals?: number | null
+          week_users?: number | null
+        }
+        Update: {
+          active_referrals?: number | null
+          conversion_rate?: number | null
+          id?: string
+          month_referrals?: number | null
+          month_users?: number | null
+          starstore_timestamp?: string | null
+          synced_at?: string | null
+          today_referrals?: number | null
+          today_users?: number | null
+          total_earnings?: number | null
+          total_referrals?: number | null
+          total_stars_traded?: number | null
+          total_transactions?: number | null
+          total_users?: number | null
+          week_referrals?: number | null
+          week_users?: number | null
+        }
+        Relationships: []
+      }
+      starstore_referrals_cache: {
+        Row: {
+          date_referred: string | null
+          id: string
+          referred_user_id: string
+          referred_username: string | null
+          referrer_is_ambassador: boolean | null
+          referrer_tier: string | null
+          referrer_user_id: string
+          referrer_username: string | null
+          starstore_id: string
+          status: string
+          synced_at: string | null
+          withdrawn: boolean | null
+        }
+        Insert: {
+          date_referred?: string | null
+          id?: string
+          referred_user_id: string
+          referred_username?: string | null
+          referrer_is_ambassador?: boolean | null
+          referrer_tier?: string | null
+          referrer_user_id: string
+          referrer_username?: string | null
+          starstore_id: string
+          status: string
+          synced_at?: string | null
+          withdrawn?: boolean | null
+        }
+        Update: {
+          date_referred?: string | null
+          id?: string
+          referred_user_id?: string
+          referred_username?: string | null
+          referrer_is_ambassador?: boolean | null
+          referrer_tier?: string | null
+          referrer_user_id?: string
+          referrer_username?: string | null
+          starstore_id?: string
+          status?: string
+          synced_at?: string | null
+          withdrawn?: boolean | null
+        }
+        Relationships: []
+      }
+      starstore_transactions_cache: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          is_premium: boolean | null
+          premium_duration: number | null
+          stars: number
+          starstore_id: string
+          status: string
+          synced_at: string | null
+          telegram_id: string
+          type: string
+          username: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          is_premium?: boolean | null
+          premium_duration?: number | null
+          stars: number
+          starstore_id: string
+          status: string
+          synced_at?: string | null
+          telegram_id: string
+          type: string
+          username?: string | null
+          wallet_address?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          is_premium?: boolean | null
+          premium_duration?: number | null
+          stars?: number
+          starstore_id?: string
+          status?: string
+          synced_at?: string | null
+          telegram_id?: string
+          type?: string
+          username?: string | null
+          wallet_address?: string | null
+        }
+        Relationships: []
+      }
+      starstore_users_cache: {
+        Row: {
+          active_referrals: number | null
+          ambassador_synced_at: string | null
+          ambassador_tier: string | null
+          buy_orders: number | null
+          created_at: string | null
+          id: string
+          is_ambassador: boolean | null
+          last_active: string | null
+          pending_referrals: number | null
+          sell_orders: number | null
+          synced_at: string | null
+          telegram_id: string
+          total_earnings: number | null
+          total_referrals: number | null
+          total_stars_earned: number | null
+          username: string | null
+        }
+        Insert: {
+          active_referrals?: number | null
+          ambassador_synced_at?: string | null
+          ambassador_tier?: string | null
+          buy_orders?: number | null
+          created_at?: string | null
+          id?: string
+          is_ambassador?: boolean | null
+          last_active?: string | null
+          pending_referrals?: number | null
+          sell_orders?: number | null
+          synced_at?: string | null
+          telegram_id: string
+          total_earnings?: number | null
+          total_referrals?: number | null
+          total_stars_earned?: number | null
+          username?: string | null
+        }
+        Update: {
+          active_referrals?: number | null
+          ambassador_synced_at?: string | null
+          ambassador_tier?: string | null
+          buy_orders?: number | null
+          created_at?: string | null
+          id?: string
+          is_ambassador?: boolean | null
+          last_active?: string | null
+          pending_referrals?: number | null
+          sell_orders?: number | null
+          synced_at?: string | null
+          telegram_id?: string
+          total_earnings?: number | null
+          total_referrals?: number | null
+          total_stars_earned?: number | null
+          username?: string | null
+        }
+        Relationships: []
+      }
       tier_configs: {
         Row: {
           base_earnings: number
@@ -566,15 +1004,23 @@ export type Database = {
         }
         Returns: Json
       }
-      generate_referral_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      has_role: {
-        Args:
-          | { _role: Database["public"]["Enums"]["app_role"]; _user_id: string }
-          | { check_user_id: string; role_name: string }
-        Returns: boolean
+      disconnect_ambassador_telegram: { Args: never; Returns: Json }
+      generate_referral_code: { Args: never; Returns: string }
+      has_role:
+        | {
+            Args: { check_user_id: string; role_name: string }
+            Returns: boolean
+          }
+        | {
+            Args: {
+              _role: Database["public"]["Enums"]["app_role"]
+              _user_id: string
+            }
+            Returns: boolean
+          }
+      update_ambassador_telegram_info: {
+        Args: { p_telegram_id: string; p_telegram_username?: string }
+        Returns: Json
       }
       update_application_as_admin: {
         Args: {
@@ -585,10 +1031,34 @@ export type Database = {
         }
         Returns: Json
       }
+      update_first_login: { Args: { user_uuid: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "ambassador" | "pending"
-      app_tier: "explorer" | "connector" | "pioneer" | "elite"
+      app_tier: "entry" | "growing" | "advanced" | "elite"
+      message_priority: "low" | "normal" | "high" | "urgent"
+      message_status:
+        | "pending"
+        | "sent"
+        | "delivered"
+        | "opened"
+        | "clicked"
+        | "failed"
+        | "bounced"
+      message_type:
+        | "welcome"
+        | "approval"
+        | "rejection"
+        | "login_credentials"
+        | "password_reset"
+        | "tier_upgrade"
+        | "commission_payout"
+        | "referral_activation"
+        | "monthly_report"
+        | "system_notification"
+        | "manual_email"
+        | "reminder"
+        | "announcement"
       payout_status: "pending" | "processing" | "completed" | "failed"
       transaction_status: "pending" | "completed" | "cancelled" | "refunded"
     }
@@ -719,7 +1189,32 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "ambassador", "pending"],
-      app_tier: ["explorer", "connector", "pioneer", "elite"],
+      app_tier: ["entry", "growing", "advanced", "elite"],
+      message_priority: ["low", "normal", "high", "urgent"],
+      message_status: [
+        "pending",
+        "sent",
+        "delivered",
+        "opened",
+        "clicked",
+        "failed",
+        "bounced",
+      ],
+      message_type: [
+        "welcome",
+        "approval",
+        "rejection",
+        "login_credentials",
+        "password_reset",
+        "tier_upgrade",
+        "commission_payout",
+        "referral_activation",
+        "monthly_report",
+        "system_notification",
+        "manual_email",
+        "reminder",
+        "announcement",
+      ],
       payout_status: ["pending", "processing", "completed", "failed"],
       transaction_status: ["pending", "completed", "cancelled", "refunded"],
     },
