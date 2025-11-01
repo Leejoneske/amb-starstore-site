@@ -54,9 +54,9 @@ export const TelegramConnectionSimple = () => {
         throw new Error(error.message);
       }
 
-      if (!result?.success) {
+      if (!result || typeof result !== 'object' || !(result as any).success) {
         console.error('Function returned error:', result);
-        throw new Error(result?.error || 'Failed to update Telegram information');
+        throw new Error((result as any)?.error || 'Failed to update Telegram information');
       }
 
       console.log('✅ SUCCESS:', result);

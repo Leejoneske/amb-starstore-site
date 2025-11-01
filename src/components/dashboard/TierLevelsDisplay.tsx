@@ -171,8 +171,8 @@ const { user } = useAuth();
             {allTiers.map((tierKey) => {
               const tier = getTierConfig(tierKey);
               const Icon = getTierIcon(tierKey);
-              const isCurrentTier = profile.current_tier === tierKey;
-              const isUnlocked = allTiers.indexOf(profile.current_tier as TierLevel) >= allTiers.indexOf(tierKey);
+              const isCurrentTier = (profile.current_tier as string) === tierKey;
+              const isUnlocked = allTiers.indexOf((profile.current_tier === 'entry' || profile.current_tier === 'growing' || profile.current_tier === 'advanced' || profile.current_tier === 'elite' ? profile.current_tier : 'explorer') as TierLevel) >= allTiers.indexOf(tierKey);
 
               return (
                 <div

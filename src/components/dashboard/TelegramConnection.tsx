@@ -131,9 +131,9 @@ GRANT EXECUTE ON FUNCTION update_ambassador_telegram_info(text, text) TO authent
         throw new Error(`Failed to update Telegram info: ${functionError.message}`);
       }
 
-      if (!functionResult?.success) {
+      if (!functionResult || typeof functionResult !== 'object' || !(functionResult as any).success) {
         console.error('Function returned error:', functionResult);
-        throw new Error(functionResult?.error || 'Failed to update Telegram information');
+        throw new Error((functionResult as any)?.error || 'Failed to update Telegram information');
       }
 
       console.log('✅ Profile updated successfully via secure function:', functionResult);
@@ -141,12 +141,13 @@ GRANT EXECUTE ON FUNCTION update_ambassador_telegram_info(text, text) TO authent
       console.log('Profile updated successfully');
 
       // Try to sync ambassador data with Star Store (non-blocking)
-      if (profile) {
+      if (profile && typeof profile === 'object') {
         try {
           console.log('Attempting StarStore sync...');
+          const profileData = profile as any;
           await starStoreService.syncAmbassadorData(telegramIdTrimmed, {
-            email: profile.profiles?.email || '',
-            fullName: profile.profiles?.full_name || '',
+            email: profileData.email || '',
+            fullName: profileData.full_name || '',
             tier: profile.current_tier,
             referralCode: profile.referral_code
           });
@@ -198,9 +199,9 @@ GRANT EXECUTE ON FUNCTION update_ambassador_telegram_info(text, text) TO authent
         throw functionError;
       }
 
-      if (!functionResult?.success) {
+      if (!functionResult || typeof functionResult !== 'object' || !(functionResult as any).success) {
         console.error('Disconnect function returned error:', functionResult);
-        throw new Error(functionResult?.error || 'Failed to disconnect Telegram');
+        throw new Error((functionResult as any)?.error || 'Failed to disconnect Telegram');
       }
 
       console.log('✅ Telegram disconnected successfully:', functionResult);

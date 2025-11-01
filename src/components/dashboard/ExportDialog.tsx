@@ -163,7 +163,7 @@ export function ExportDialog({
     // Apply date filter if specified
     if (exportConfig.dateRange?.from) {
       exportData = data.filter(item => {
-        const itemDate = new Date(item.created_at || item.date)
+        const itemDate = new Date((item.created_at as string) || (item.date as string))
         return itemDate >= exportConfig.dateRange!.from && 
                (!exportConfig.dateRange!.to || itemDate <= exportConfig.dateRange!.to)
       })
@@ -335,7 +335,7 @@ export function ExportDialog({
                   mode="range"
                   defaultMonth={config.dateRange?.from}
                   selected={config.dateRange}
-                  onSelect={(range) => setConfig(prev => ({ ...prev, dateRange: range }))}
+                  onSelect={(range) => setConfig(prev => ({ ...prev, dateRange: range as { from: Date; to?: Date } | undefined }))}
                   numberOfMonths={2}
                 />
               </PopoverContent>
