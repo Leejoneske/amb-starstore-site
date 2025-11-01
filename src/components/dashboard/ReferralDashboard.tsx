@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useAmbassadorProfile } from '@/hooks/useAmbassadorProfile';
+import { useAuth } from '@/contexts/AuthContext';
 import { useReferralStats, useReferralActivationTracking } from '@/hooks/useReferralTracking';
 import { generateTelegramReferralLink, generateReferralCode, ACTIVATION_THRESHOLD } from '@/config/telegram';
 import { 
@@ -28,7 +29,8 @@ interface ReferralDashboardProps {
 
 export const ReferralDashboard = ({ ambassadorId }: ReferralDashboardProps) => {
   const { toast } = useToast();
-  const { data: profile } = useAmbassadorProfile();
+const { user } = useAuth();
+  const { data: profile } = useAmbassadorProfile(user?.id);
   const { data: stats, refetch: refetchStats, isLoading } = useReferralStats(ambassadorId || profile?.id);
   const { checkActivations, isChecking } = useReferralActivationTracking();
 

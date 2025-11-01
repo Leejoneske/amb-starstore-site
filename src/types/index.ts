@@ -75,6 +75,16 @@ export interface AnalyticsData {
 export interface AdminAnalyticsData extends AnalyticsData {
   totalRevenue: number;
   monthlyRevenue: number;
+  revenueByMonth: Array<{
+    month: string;
+    revenue: number;
+    transactions: number;
+  }>;
+  tierDistribution: Array<{
+    tier: string;
+    count: number;
+    percentage: number;
+  }>;
   performanceMetrics: {
     activeAmbassadors: number;
     avgTransactionValue: number;

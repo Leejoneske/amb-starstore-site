@@ -70,9 +70,9 @@ export const IntegrationTest = () => {
           r.endpoint === test.endpoint 
             ? {
                 endpoint: test.endpoint,
-                status: result.success ? 'success' : 'error',
-                data: result.data,
-                error: result.error
+status: ('success' in result) ? ((result as any).success ? 'success' : 'error') : (('connected' in result) ? ((result as any).connected ? 'success' : 'error') : 'success'),
+                data: ('data' in result) ? (result as any).data : result,
+                error: ('error' in result) ? (result as any).error : undefined
               }
             : r
         ));

@@ -205,7 +205,7 @@ export const QuickActions = ({ referralCode, isAdmin = false }: QuickActionsProp
                   <Button
                     variant="outline"
                     className="w-full h-auto p-4 flex items-start gap-3 hover:shadow-md transition-shadow"
-                    disabled={action.disabled}
+disabled={'disabled' in action ? (action as any).disabled : false}
                   >
                     <div className={`p-2 rounded-lg ${action.color}`}>
                       <action.icon className="h-4 w-4" />
@@ -311,8 +311,8 @@ export const QuickActions = ({ referralCode, isAdmin = false }: QuickActionsProp
                 variant="outline"
                 className="w-full h-auto p-4 flex items-start gap-3 hover:shadow-md transition-shadow"
                 onClick={action.action}
-                disabled={action.disabled}
-              >
+disabled={'disabled' in action ? (action as any).disabled : false}>
+
                 <div className={`p-2 rounded-lg ${action.color}`}>
                   <action.icon className="h-4 w-4" />
                 </div>

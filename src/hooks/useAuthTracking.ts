@@ -42,7 +42,7 @@ export const useAuthTracking = (isAdmin: boolean = false) => {
       if (ambassadorError) throw ambassadorError;
 
       // Get auth users data using admin function
-      const { data: authUsers, error: authError } = await supabase.rpc('get_auth_users_info');
+      const { data: authUsers, error: authError } = await supabase.rpc('get_auth_users_info' as any);
       
       if (authError) {
         logger.warn('Could not fetch auth user data', { error: authError.message });

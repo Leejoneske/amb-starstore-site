@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { ExportConfig } from '@/types';
+
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -41,7 +41,7 @@ interface ExportConfig {
   format: "csv" | "json" | "xlsx"
   dateRange?: {
     from: Date
-    to: Date
+    to?: Date
   }
   includeFields: string[]
   dataType: "applications" | "ambassadors" | "transactions" | "all"

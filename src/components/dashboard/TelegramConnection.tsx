@@ -10,6 +10,7 @@ import { useAmbassadorProfile } from '@/hooks/useAmbassadorProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, MessageCircle, CheckCircle2, AlertCircle, Copy, ExternalLink } from 'lucide-react';
 import { generateTelegramReferralLink, TELEGRAM_CONFIG } from '@/config/telegram';
+import { starStoreService } from '@/services/starStoreService';
 
 interface TelegramConnectionProps {
   ambassadorId?: string;

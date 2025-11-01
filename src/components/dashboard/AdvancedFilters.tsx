@@ -31,7 +31,7 @@ export interface FilterConfig {
   tier?: string
   dateRange?: {
     from: Date
-    to: Date
+    to?: Date
   }
   minAmount?: number
   maxAmount?: number
@@ -62,7 +62,7 @@ export function AdvancedFilters({
 }: AdvancedFiltersProps) {
   const [isOpen, setIsOpen] = useState(false)
 
-  const updateFilter = (key: keyof FilterConfig, value: string | { from: Date; to: Date } | { min: number; max: number }) => {
+  const updateFilter = (key: keyof FilterConfig, value: string | number | undefined | { from: Date; to?: Date } | { min: number; max: number } | undefined) => {
     onFiltersChange({ ...filters, [key]: value })
   }
 
@@ -193,14 +193,14 @@ export function AdvancedFilters({
                     <Input
                       type="number"
                       placeholder="Min"
-                      value={filters.minAmount || ""}
+                      value={filters.minAmount ?? ""}
                       onChange={(e) => updateFilter("minAmount", e.target.value ? Number(e.target.value) : undefined)}
                       className="h-8"
                     />
                     <Input
                       type="number"
                       placeholder="Max"
-                      value={filters.maxAmount || ""}
+                      value={filters.maxAmount ?? ""}
                       onChange={(e) => updateFilter("maxAmount", e.target.value ? Number(e.target.value) : undefined)}
                       className="h-8"
                     />
@@ -238,8 +238,8 @@ export function AdvancedFilters({
                         initialFocus
                         mode="range"
                         defaultMonth={filters.dateRange?.from}
-                        selected={filters.dateRange}
-                        onSelect={(range) => updateFilter("dateRange", range)}
+                         selected={filters.dateRange}
+                         onSelect={(range) => updateFilter("dateRange", range as { from: Date; to?: Date })}
                         numberOfMonths={2}
                       />
                     </PopoverContent>
@@ -345,7 +345,7 @@ export function AdvancedFilters({
           )}
           {filters.dateRange && (
             <Badge variant="secondary" className="text-xs">
-              Date: {format(filters.dateRange.from, "MMM dd")} - {format(filters.dateRange.to || filters.dateRange.from, "MMM dd")}
+              Date: {format(filters.dateRange.from, "MMM dd")} - {format((filters.dateRange.to ?? filters.dateRange.from), "MMM dd")}
               <Button
                 variant="ghost"
                 size="sm"

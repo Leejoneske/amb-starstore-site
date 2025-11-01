@@ -287,7 +287,7 @@ export const MongoIntegration = ({ ambassadorId, referralCode, isAdmin = false }
                 </div>
               ) : (
                 <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {mongoUsers?.slice(0, 10).map((user) => (
+                  {mongoUsers?.data?.slice(0, 10).map((user) => (
                     <div key={user._id} className="flex items-center justify-between p-3 rounded-lg border">
                       <div>
                         <div className="font-medium">
@@ -314,11 +314,11 @@ export const MongoIntegration = ({ ambassadorId, referralCode, isAdmin = false }
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Telegram Referrals</h3>
-                <Badge variant="outline">{mongoReferrals?.length || 0} referrals</Badge>
+                <Badge variant="outline">{mongoReferrals?.data?.length || 0} referrals</Badge>
               </div>
               
               <div className="space-y-3 max-h-64 overflow-y-auto">
-                {mongoReferrals?.slice(0, 10).map((referral) => (
+                {mongoReferrals?.data?.slice(0, 10).map((referral) => (
                   <div key={referral._id} className="flex items-center justify-between p-3 rounded-lg border">
                     <div>
                       <div className="font-medium">Code: {referral.referralCode}</div>
@@ -344,11 +344,11 @@ export const MongoIntegration = ({ ambassadorId, referralCode, isAdmin = false }
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Telegram Transactions</h3>
-                <Badge variant="outline">{mongoTransactions?.length || 0} transactions</Badge>
+                <Badge variant="outline">{mongoTransactions?.data?.length || 0} transactions</Badge>
               </div>
               
               <div className="space-y-3 max-h-64 overflow-y-auto">
-                {mongoTransactions?.slice(0, 10).map((transaction) => (
+                {mongoTransactions?.data?.slice(0, 10).map((transaction) => (
                   <div key={transaction._id} className="flex items-center justify-between p-3 rounded-lg border">
                     <div>
                       <div className="font-medium">

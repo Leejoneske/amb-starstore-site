@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useAmbassadorProfile } from '@/hooks/useAmbassadorProfile';
+import { useAuth } from '@/contexts/AuthContext';
 import { getTierConfig, getNextTier, calculateTierProgress } from '@/lib/tier-utils';
 import { Star, Trophy, Target, Zap, Crown, Sparkles } from 'lucide-react';
 type TierLevel = 'explorer' | 'pioneer' | 'trailblazer' | 'legend';
@@ -11,7 +12,8 @@ interface TierLevelsDisplayProps {
 }
 
 export const TierLevelsDisplay = ({ ambassadorId }: TierLevelsDisplayProps) => {
-  const { data: profile } = useAmbassadorProfile();
+const { user } = useAuth();
+  const { data: profile } = useAmbassadorProfile(user?.id);
 
   if (!profile) {
     return (

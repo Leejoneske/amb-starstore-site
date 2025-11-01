@@ -17,7 +17,7 @@ import {
   PieChart,
   LineChart
 } from "lucide-react"
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart as RechartsPieChart, Cell, BarChart, Bar, LineChart as RechartsLineChart, Line } from "recharts"
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, BarChart, Bar, LineChart as RechartsLineChart, Line } from "recharts"
 
 interface PerformanceData {
   totalEarnings: number
