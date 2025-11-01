@@ -82,11 +82,14 @@ export const ForgotPassword = ({ onBack }: ForgotPasswordProps) => {
               <div className="space-y-2 text-sm">
                 <p className="font-medium">What to do next:</p>
                 <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                  <li>Open the email from StarStore</li>
-                  <li>Click the password reset link</li>
-                  <li>Enter your new password</li>
+                  <li>Check your email inbox (and spam folder)</li>
+                  <li>Click the "Reset Password" link in the email</li>
+                  <li>You'll be redirected to create a new password</li>
                   <li>Log in with your new password</li>
                 </ol>
+                <p className="text-xs text-muted-foreground mt-3">
+                  The reset link will expire in 1 hour for security.
+                </p>
               </div>
             </div>
           </div>
