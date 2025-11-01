@@ -1,15 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ADMIN_EMAIL } from "@/config/env";
+import { ForgotPassword } from "@/components/ForgotPassword";
+import { ResetPassword } from "@/components/ResetPassword";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -19,9 +20,12 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [isFirstLogin, setIsFirstLogin] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
   const { signIn, user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const checkFirstLogin = useCallback(async () => {
     if (!user) return;
@@ -55,6 +59,13 @@ const Auth = () => {
       }
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    // Check if coming from password reset email
+    if (searchParams.get('reset') === 'true') {
+      setShowResetPassword(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (user) {
@@ -166,6 +177,58 @@ const Auth = () => {
     );
   }
 
+  // Show reset password form if coming from email link
+  if (showResetPassword) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center gap-2 mb-4">
+              <img
+                src="/favicon.ico"
+                alt="StarStore"
+                className="w-8 h-8"
+              />
+              <h1 className="text-3xl font-bold">StarStore</h1>
+            </div>
+            <p className="text-muted-foreground">Reset Your Password</p>
+          </div>
+
+          <Card className="p-8 border-border backdrop-blur-sm bg-card/95">
+            <ResetPassword />
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Show forgot password form
+  if (showForgotPassword) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center gap-2 mb-4">
+              <img
+                src="/favicon.ico"
+                alt="StarStore"
+                className="w-8 h-8"
+              />
+              <h1 className="text-3xl font-bold">StarStore</h1>
+            </div>
+            <p className="text-muted-foreground">Ambassador Portal</p>
+          </div>
+
+          <Card className="p-8 border-border backdrop-blur-sm bg-card/95">
+            <ForgotPassword
+              onBack={() => setShowForgotPassword(false)}
+            />
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   // Show password change form for first-time login
   if (isFirstLogin) {
     return (
@@ -265,7 +328,16 @@ const Auth = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="signin-password">Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="signin-password">Password</Label>
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-xs text-primary hover:underline"
+                >
+                  Forgot password?
+                </button>
+              </div>
               <Input
                 id="signin-password"
                 type="password"
