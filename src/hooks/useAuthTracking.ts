@@ -1,7 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
-import type { UserAuthStatus, Ambassador } from '@/types';
+import type { Ambassador } from '@/types';
+
+export interface UserAuthStatus {
+  id: string;
+  email: string;
+  full_name: string;
+  created_at: string;
+  last_sign_in_at: string | null;
+  email_confirmed_at: string | null;
+  is_activated: boolean;
+  days_since_approval: number;
+  password_changed: boolean;
+}
 
 interface AuthUser {
   id: string;
@@ -9,6 +21,7 @@ interface AuthUser {
   last_sign_in_at: string | null;
   email_confirmed_at: string | null;
   created_at: string;
+  password_changed?: boolean;
 }
 
 export const useAuthTracking = (isAdmin: boolean = false) => {
