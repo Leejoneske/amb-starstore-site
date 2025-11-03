@@ -93,7 +93,7 @@ export const MongoIntegration = ({ ambassadorId, referralCode, isAdmin = false }
               <span className="text-sm font-medium">MongoDB</span>
             </div>
             <div className="text-xs text-muted-foreground">
-              {mongoUsers?.length || 0} users synced
+              {mongoUsers?.data?.length || 0} users synced
             </div>
           </div>
           
@@ -276,7 +276,7 @@ export const MongoIntegration = ({ ambassadorId, referralCode, isAdmin = false }
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Telegram Users</h3>
-                <Badge variant="outline">{mongoUsers?.length || 0} users</Badge>
+                <Badge variant="outline">{mongoUsers?.data?.length || 0} users</Badge>
               </div>
               
               {isLoading ? (

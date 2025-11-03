@@ -39,9 +39,10 @@ export const useRealTimeUpdates = (userId: string | undefined, isAdmin: boolean 
           ...(isAdmin ? {} : { filter: `ambassador_id=eq.${userId}` })
         },
         (payload) => {
+          const newData = payload.new as any;
           logger.info('Real-time transaction update received', { 
           userId, 
-          transactionId: payload.new?.id,
+          transactionId: newData?.id,
           eventType: payload.eventType 
         });
           

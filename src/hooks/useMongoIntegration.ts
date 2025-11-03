@@ -51,7 +51,7 @@ export const useDataSync = () => {
       };
 
       // Sync users - match by Telegram ID or email
-      for (const mongoUser of mongoUsers) {
+      for (const mongoUser of (mongoUsers.data || [])) {
         try {
           // Check if user exists in Supabase by looking for matching referral code or email
           const { data: existingAmbassador } = await supabase
@@ -83,7 +83,7 @@ export const useDataSync = () => {
       }
 
       // Sync referrals
-      for (const mongoReferral of mongoReferrals) {
+      for (const mongoReferral of (mongoReferrals.data || [])) {
         try {
           // Check if referral already exists
           const { data: existingReferral } = await supabase
@@ -123,7 +123,7 @@ export const useDataSync = () => {
       }
 
       // Sync transactions
-      for (const mongoTransaction of mongoTransactions) {
+      for (const mongoTransaction of (mongoTransactions.data || [])) {
         try {
           // Check if transaction already exists
           const { data: existingTransaction } = await supabase
@@ -221,7 +221,7 @@ export const useCombinedReferralStats = (ambassadorId?: string) => {
     queryFn: () => {
       const stats = {
         totalReferrals: 0,
-        telegramReferrals: mongoReferrals?.length || 0,
+        telegramReferrals: mongoReferrals?.data?.length || 0,
         webReferrals: supabaseReferrals?.length || 0,
         activeReferrals: 0,
         pendingReferrals: 0,
@@ -229,9 +229,9 @@ export const useCombinedReferralStats = (ambassadorId?: string) => {
       };
 
       // Count active/pending from both sources
-      if (mongoReferrals) {
-        stats.activeReferrals += mongoReferrals.filter(r => r.status === 'active' || r.status === 'completed').length;
-        stats.pendingReferrals += mongoReferrals.filter(r => r.status === 'pending').length;
+      if (mongoReferrals?.data) {
+        stats.activeReferrals += mongoReferrals.data.filter(r => r.status === 'active' || r.status === 'completed').length;
+        stats.pendingReferrals += mongoReferrals.data.filter(r => r.status === 'pending').length;
       }
 
       if (supabaseReferrals) {

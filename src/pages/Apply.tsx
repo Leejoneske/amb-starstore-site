@@ -124,9 +124,10 @@ const Apply = () => {
           variant: "destructive",
         });
       } else {
+        const errorMessage = error instanceof Error ? error.message : "Failed to submit application. Please try again.";
         toast({
           title: "Error",
-          description: error?.message || "Failed to submit application. Please try again.",
+          description: errorMessage,
           variant: "destructive",
         });
       }
