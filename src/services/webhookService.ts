@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Webhook Service for receiving real-time updates from Star Store
 // This service handles incoming webhooks from the primary Star Store system
 

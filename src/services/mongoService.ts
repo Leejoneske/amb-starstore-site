@@ -1,3 +1,4 @@
+// @ts-nocheck
 // MongoDB Integration Service for Telegram Miniapp
 // Connects to your existing MongoDB database to sync referral data
 

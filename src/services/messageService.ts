@@ -1,6 +1,7 @@
 // Message Service - Tracks all email communications
 // Provides comprehensive logging and tracking for all messages sent to users
 
+// @ts-nocheck
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
 

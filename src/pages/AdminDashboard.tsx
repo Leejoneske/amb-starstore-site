@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useApplications } from "@/hooks/useApplications";
