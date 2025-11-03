@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAmbassadorProfile } from "@/hooks/useAmbassadorProfile";
 import { useTransactions } from "@/hooks/useTransactions";
@@ -31,7 +32,6 @@ import { getTierInfo, getNextTier, getTierBadgeClass } from "@/lib/tier-utils";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { logger } from "@/lib/logger";
 import type { Transaction, Payout } from "@/types";
-import { useEffect } from "react";
 import { ADMIN_EMAIL } from "@/config/env";
 
 const Dashboard = () => {
