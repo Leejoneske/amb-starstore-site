@@ -43,27 +43,28 @@ export const ReferralTools = ({ referralCode }: ReferralToolsProps) => {
   };
 
   return (
-    <Card className="p-6">
+    <Card className="p-4 md:p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">Referral Tools</h3>
-        <Button variant="ghost" size="sm" onClick={shareReferral}>
+        <h3 className="text-base md:text-lg font-semibold">Referral Tools</h3>
+        <Button variant="ghost" size="sm" onClick={shareReferral} className="h-8 w-8 p-0">
           <Share2 className="h-4 w-4" />
         </Button>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         <div>
-          <label className="text-sm text-muted-foreground mb-2 block">Your Referral Code</label>
+          <label className="text-xs sm:text-sm text-muted-foreground mb-2 block">Your Referral Code</label>
           <div className="flex gap-2">
             <Input 
               value={referralCode} 
               readOnly 
-              className="font-mono font-semibold text-lg"
+              className="font-mono font-semibold text-base sm:text-lg h-10 sm:h-11"
             />
             <Button 
               variant="outline" 
               size="icon"
               onClick={() => copyToClipboard(referralCode)}
+              className="h-10 w-10 sm:h-11 sm:w-11 shrink-0"
             >
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </Button>
@@ -71,25 +72,26 @@ export const ReferralTools = ({ referralCode }: ReferralToolsProps) => {
         </div>
 
         <div>
-          <label className="text-sm text-muted-foreground mb-2 block">Referral Link</label>
+          <label className="text-xs sm:text-sm text-muted-foreground mb-2 block">Referral Link</label>
           <div className="flex gap-2">
             <Input 
               value={referralUrl} 
               readOnly 
-              className="text-sm"
+              className="text-xs sm:text-sm h-10 sm:h-11 truncate"
             />
             <Button 
               variant="outline" 
               size="icon"
               onClick={() => copyToClipboard(referralUrl)}
+              className="h-10 w-10 sm:h-11 sm:w-11 shrink-0"
             >
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </Button>
           </div>
         </div>
 
-        <div className="pt-4 border-t border-border">
-          <p className="text-sm text-muted-foreground">
+        <div className="pt-3 sm:pt-4 border-t border-border">
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
             Share your referral code or link to earn commissions on every transaction your referrals make!
           </p>
         </div>

@@ -225,26 +225,28 @@ const Dashboard = () => {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background p-4 md:p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <DashboardHeader 
-            user={user!} 
-            tier={ambassadorProfile.current_tier}
-            isAdmin={isAdmin}
-          />
+      <div className="min-h-screen bg-background">
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-5 md:py-6">
+          <div className="space-y-4 sm:space-y-5 md:space-y-6">
+            <DashboardHeader 
+              user={user!} 
+              tier={ambassadorProfile.current_tier}
+              isAdmin={isAdmin}
+            />
 
-          <DashboardStats 
-            ambassadorProfile={ambassadorProfile}
-            analyticsData={analyticsData}
-          />
+            <DashboardStats 
+              ambassadorProfile={ambassadorProfile}
+              analyticsData={analyticsData}
+            />
 
-          <DashboardTabs 
-            ambassadorProfile={ambassadorProfile}
-            analyticsData={analyticsData}
-            analyticsLoading={analyticsLoading}
-            isAdmin={isAdmin}
-            overviewContent={overviewContent}
-          />
+            <DashboardTabs 
+              ambassadorProfile={ambassadorProfile}
+              analyticsData={analyticsData}
+              analyticsLoading={analyticsLoading}
+              isAdmin={isAdmin}
+              overviewContent={overviewContent}
+            />
+          </div>
         </div>
       </div>
     </ErrorBoundary>

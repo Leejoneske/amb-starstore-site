@@ -12,19 +12,17 @@ interface DashboardHeaderProps {
 
 export const DashboardHeader = ({ user, tier, isAdmin }: DashboardHeaderProps) => {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <ProfileSection 
-          user={user} 
-          tier={tier}
-          isAdmin={isAdmin}
-        />
-      </div>
-      <div className="flex items-center gap-3">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <ProfileSection 
+        user={user} 
+        tier={tier}
+        isAdmin={isAdmin}
+      />
+      <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
         <NotificationCenter userId={user?.id} isAdmin={isAdmin} />
-        <Badge variant="outline" className="flex items-center gap-1">
+        <Badge variant="outline" className="flex items-center gap-1 text-xs px-2 py-1">
           <Activity className="h-3 w-3" />
-          Live Dashboard
+          <span className="hidden sm:inline">Live Dashboard</span>
         </Badge>
       </div>
     </div>
