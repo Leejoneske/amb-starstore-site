@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAmbassadorProfile } from "@/hooks/useAmbassadorProfile";
 import { useTransactions } from "@/hooks/useTransactions";
@@ -22,9 +22,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ReferralTools } from "@/components/dashboard/ReferralTools";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
-import { DashboardTabs } from "@/components/dashboard/DashboardTabs";
 import { TransactionsList } from "@/components/dashboard/TransactionsList";
 import { PayoutHistory } from "@/components/dashboard/PayoutHistory";
+import { BottomNav } from "@/components/dashboard/BottomNav";
+import { SideNav } from "@/components/dashboard/SideNav";
+import { ReferralDashboard } from "@/components/dashboard/ReferralDashboard";
+import { AmbassadorAnalytics } from "@/components/dashboard/AmbassadorAnalytics";
+import { PerformanceGoals } from "@/components/dashboard/PerformanceGoals";
+import { QuickActions } from "@/components/dashboard/QuickActions";
+import { TierLevelsDisplay } from "@/components/dashboard/TierLevelsDisplay";
+import { LiveActivityFeed } from "@/components/dashboard/LiveActivityFeed";
 import { StarStoreConnection } from "@/components/dashboard/StarStoreConnection";
 import { Link, useNavigate } from "react-router-dom";
 import AdminDashboard from "./AdminDashboard";
@@ -37,6 +44,7 @@ import { ADMIN_EMAIL } from "@/config/env";
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [activeView, setActiveView] = useState("home");
   const { data: userRole } = useUserRole(user?.id);
   const { ambassadorProfile, tierConfig, isLoading: profileLoading } = useAmbassadorProfile(user?.id);
   const { data: transactions, isLoading: transactionsLoading } = useTransactions(ambassadorProfile?.id);
@@ -110,122 +118,127 @@ const Dashboard = () => {
     isAdmin 
   });
 
-  const overviewContent = (
-    <>
-      {/* Performance Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        <Card className="p-4 md:p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-lg bg-warning/10">
-              <Star className="h-4 w-4 md:h-5 md:w-5 text-warning" />
-            </div>
-            <div>
-              <div className="text-xl md:text-2xl font-bold">{ambassadorProfile.quality_transaction_rate?.toFixed(1) || 0}%</div>
-              <div className="text-xs md:text-sm text-muted-foreground">Quality Rate</div>
-            </div>
-          </div>
-          <div className="text-xs text-muted-foreground">
-            250+ stars threshold
-          </div>
-          <Progress 
-            value={ambassadorProfile.quality_transaction_rate || 0} 
-            className="h-2 mt-3" 
-          />
-        </Card>
+  const renderView = () => {
+    switch (activeView) {
+      case "home":
+        return (
+          <div className="space-y-4 md:space-y-6">
+            {/* Performance Metrics */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Card className="p-4 md:p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 rounded-lg bg-warning/10">
+                    <Star className="h-4 w-4 md:h-5 md:w-5 text-warning" />
+                  </div>
+                  <div>
+                    <div className="text-xl md:text-2xl font-bold">{ambassadorProfile.quality_transaction_rate?.toFixed(1) || 0}%</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">Quality Rate</div>
+                  </div>
+                </div>
+                <Progress value={ambassadorProfile.quality_transaction_rate || 0} className="h-2" />
+              </Card>
 
-        <Card className="p-4 md:p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-lg bg-success/10">
-              <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-success" />
-            </div>
-            <div>
-              <div className="text-xl md:text-2xl font-bold">{ambassadorProfile.active_referrals}</div>
-              <div className="text-xs md:text-sm text-muted-foreground">Active Referrals</div>
-            </div>
-          </div>
-          <div className="text-xs text-muted-foreground">
-            Currently generating revenue
-          </div>
-        </Card>
+              <Card className="p-4 md:p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 rounded-lg bg-success/10">
+                    <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-success" />
+                  </div>
+                  <div>
+                    <div className="text-xl md:text-2xl font-bold">{ambassadorProfile.active_referrals}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">Active Referrals</div>
+                  </div>
+                </div>
+              </Card>
 
-        <Card className="p-4 md:p-6 sm:col-span-2 lg:col-span-1">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-lg bg-info/10">
-              <Calendar className="h-4 w-4 md:h-5 md:w-5 text-info" />
+              <Card className="p-4 md:p-5 sm:col-span-2 lg:col-span-1">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 rounded-lg bg-info/10">
+                    <Calendar className="h-4 w-4 md:h-5 md:w-5 text-info" />
+                  </div>
+                  <div>
+                    <div className="text-xl md:text-2xl font-bold">{ambassadorProfile.social_posts_this_month}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">Social Posts</div>
+                  </div>
+                </div>
+                <Progress value={(ambassadorProfile.social_posts_this_month / currentTierInfo.requirements.socialPosts) * 100} className="h-2" />
+              </Card>
             </div>
-            <div>
-              <div className="text-xl md:text-2xl font-bold">{ambassadorProfile.social_posts_this_month}</div>
-              <div className="text-xs md:text-sm text-muted-foreground">Social Posts</div>
-            </div>
-          </div>
-          <div className="text-xs text-muted-foreground">
-            {currentTierInfo.requirements.socialPosts} required monthly
-          </div>
-          <Progress 
-            value={(ambassadorProfile.social_posts_this_month / currentTierInfo.requirements.socialPosts) * 100} 
-            className="h-2 mt-3" 
-          />
-        </Card>
-      </div>
 
-      {/* Tier Progress & Referral Tools */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-        <Card className="p-4 md:p-6">
-          <div className="mb-4">
-            <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-              <h3 className="text-base md:text-lg font-semibold font-serif">Tier Progress</h3>
-              <Badge 
-                variant="outline" 
-                className={`text-white border-none text-xs md:text-sm ${getTierBadgeClass(ambassadorProfile.current_tier)}`}
-              >
-                {currentTierInfo.icon} {currentTierInfo.displayName}
-              </Badge>
+            {/* Tier Progress & Referral Tools */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+              <Card className="p-4 md:p-6">
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                    <h3 className="text-base md:text-lg font-semibold font-serif">Tier Progress</h3>
+                    <Badge variant="outline" className={`text-white border-none text-xs md:text-sm ${getTierBadgeClass(ambassadorProfile.current_tier)}`}>
+                      {currentTierInfo.icon} {currentTierInfo.displayName}
+                    </Badge>
+                  </div>
+                  <div className="text-xs md:text-sm text-muted-foreground mb-4">
+                    {nextTierInfo ? (
+                      <>{ambassadorProfile.total_referrals} / {nextTierInfo.requirements.referrals} referrals to {nextTierInfo.displayName}</>
+                    ) : (
+                      "Maximum tier achieved! 🎉"
+                    )}
+                  </div>
+                  <Progress value={tierProgress} className="h-3" />
+                </div>
+                <div className="grid grid-cols-2 gap-3 md:gap-4 pt-4 border-t border-border">
+                  <div className="space-y-1">
+                    <div className="text-xs text-muted-foreground">Min Earnings</div>
+                    <div className="text-lg md:text-xl font-semibold text-primary">${currentTierInfo.benefits.minEarnings}+</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-xs text-muted-foreground">NFT Level</div>
+                    <div className="text-lg md:text-xl font-semibold">Level {currentTierInfo.benefits.nftLevel}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-xs text-muted-foreground">Free Stars</div>
+                    <div className="text-lg md:text-xl font-semibold">{currentTierInfo.benefits.freeStars}/month</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-xs text-muted-foreground">Social Posts</div>
+                    <div className="text-lg md:text-xl font-semibold">{ambassadorProfile.social_posts_this_month}/{currentTierInfo.requirements.socialPosts}</div>
+                  </div>
+                </div>
+              </Card>
+
+              <ReferralTools referralCode={ambassadorProfile.referral_code} />
             </div>
-            <div className="text-xs md:text-sm text-muted-foreground mb-4">
-              {nextTierInfo ? (
-                <>
-                  {ambassadorProfile.total_referrals} / {nextTierInfo.requirements.referrals} referrals to {nextTierInfo.displayName}
-                </>
-              ) : (
-                "Maximum tier achieved! 🎉"
-              )}
-            </div>
-            <Progress value={tierProgress} className="h-3" />
+
+            <TransactionsList transactions={transactions} isLoading={transactionsLoading} />
+            {payouts && payouts.length > 0 && <PayoutHistory payouts={payouts} />}
           </div>
-          <div className="grid grid-cols-2 gap-3 md:gap-4 pt-4 border-t border-border">
-            <div className="space-y-1">
-              <div className="text-xs text-muted-foreground">Min Earnings</div>
-              <div className="text-lg md:text-xl font-semibold text-primary">${currentTierInfo.benefits.minEarnings}+</div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-xs text-muted-foreground">NFT Level</div>
-              <div className="text-lg md:text-xl font-semibold">Level {currentTierInfo.benefits.nftLevel}</div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-xs text-muted-foreground">Free Stars</div>
-              <div className="text-lg md:text-xl font-semibold">{currentTierInfo.benefits.freeStars}/month</div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-xs text-muted-foreground">Social Posts</div>
-              <div className="text-lg md:text-xl font-semibold">{ambassadorProfile.social_posts_this_month}/{currentTierInfo.requirements.socialPosts}</div>
-            </div>
+        );
+      
+      case "referrals":
+        return <ReferralDashboard ambassadorId={ambassadorProfile.id} />;
+      
+      case "tiers":
+        return <TierLevelsDisplay ambassadorId={ambassadorProfile.id} />;
+      
+      case "analytics":
+        return <AmbassadorAnalytics data={analyticsData} isLoading={analyticsLoading} />;
+      
+      case "goals":
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+            <PerformanceGoals ambassadorProfile={ambassadorProfile} />
+            <LiveActivityFeed isAdmin={isAdmin} limit={10} />
           </div>
-        </Card>
-
-        <ReferralTools referralCode={ambassadorProfile.referral_code} />
-      </div>
-
-      {/* Recent Transactions */}
-      <TransactionsList transactions={transactions} isLoading={transactionsLoading} />
-
-      {/* Payout History */}
-      {payouts && payouts.length > 0 && <PayoutHistory payouts={payouts} />}
-    </>
-  );
+        );
+      
+      case "actions":
+        return <QuickActions referralCode={ambassadorProfile.referral_code} isAdmin={isAdmin} />;
+      
+      default:
+        return null;
+    }
+  };
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pb-20 md:pb-6">
         <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-5 md:py-6">
           <div className="space-y-4 sm:space-y-5 md:space-y-6">
             <DashboardHeader 
@@ -239,15 +252,17 @@ const Dashboard = () => {
               analyticsData={analyticsData}
             />
 
-            <DashboardTabs 
-              ambassadorProfile={ambassadorProfile}
-              analyticsData={analyticsData}
-              analyticsLoading={analyticsLoading}
-              isAdmin={isAdmin}
-              overviewContent={overviewContent}
-            />
+            <div className="flex gap-6">
+              <SideNav activeView={activeView} onViewChange={setActiveView} />
+              
+              <div className="flex-1 min-w-0">
+                {renderView()}
+              </div>
+            </div>
           </div>
         </div>
+
+        <BottomNav activeView={activeView} onViewChange={setActiveView} />
       </div>
     </ErrorBoundary>
   );
