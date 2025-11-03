@@ -113,15 +113,15 @@ const Dashboard = () => {
   const overviewContent = (
     <>
       {/* Performance Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <Card className="p-4 md:p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 rounded-lg bg-warning/10">
-              <Star className="h-5 w-5 text-warning" />
+              <Star className="h-4 w-4 md:h-5 md:w-5 text-warning" />
             </div>
             <div>
-              <div className="text-2xl font-bold">{ambassadorProfile.quality_transaction_rate?.toFixed(1) || 0}%</div>
-              <div className="text-sm text-muted-foreground">Quality Rate</div>
+              <div className="text-xl md:text-2xl font-bold">{ambassadorProfile.quality_transaction_rate?.toFixed(1) || 0}%</div>
+              <div className="text-xs md:text-sm text-muted-foreground">Quality Rate</div>
             </div>
           </div>
           <div className="text-xs text-muted-foreground">
@@ -133,14 +133,14 @@ const Dashboard = () => {
           />
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-4 md:p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 rounded-lg bg-success/10">
-              <CheckCircle2 className="h-5 w-5 text-success" />
+              <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-success" />
             </div>
             <div>
-              <div className="text-2xl font-bold">{ambassadorProfile.active_referrals}</div>
-              <div className="text-sm text-muted-foreground">Active Referrals</div>
+              <div className="text-xl md:text-2xl font-bold">{ambassadorProfile.active_referrals}</div>
+              <div className="text-xs md:text-sm text-muted-foreground">Active Referrals</div>
             </div>
           </div>
           <div className="text-xs text-muted-foreground">
@@ -148,14 +148,14 @@ const Dashboard = () => {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-4 md:p-6 sm:col-span-2 lg:col-span-1">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 rounded-lg bg-info/10">
-              <Calendar className="h-5 w-5 text-info" />
+              <Calendar className="h-4 w-4 md:h-5 md:w-5 text-info" />
             </div>
             <div>
-              <div className="text-2xl font-bold">{ambassadorProfile.social_posts_this_month}</div>
-              <div className="text-sm text-muted-foreground">Social Posts</div>
+              <div className="text-xl md:text-2xl font-bold">{ambassadorProfile.social_posts_this_month}</div>
+              <div className="text-xs md:text-sm text-muted-foreground">Social Posts</div>
             </div>
           </div>
           <div className="text-xs text-muted-foreground">
@@ -169,19 +169,19 @@ const Dashboard = () => {
       </div>
 
       {/* Tier Progress & Referral Tools */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <Card className="p-4 md:p-6">
           <div className="mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-semibold font-serif">Tier Progress</h3>
+            <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+              <h3 className="text-base md:text-lg font-semibold font-serif">Tier Progress</h3>
               <Badge 
                 variant="outline" 
-                className={`text-white border-none ${getTierBadgeClass(ambassadorProfile.current_tier)}`}
+                className={`text-white border-none text-xs md:text-sm ${getTierBadgeClass(ambassadorProfile.current_tier)}`}
               >
                 {currentTierInfo.icon} {currentTierInfo.displayName}
               </Badge>
             </div>
-            <div className="text-sm text-muted-foreground mb-4">
+            <div className="text-xs md:text-sm text-muted-foreground mb-4">
               {nextTierInfo ? (
                 <>
                   {ambassadorProfile.total_referrals} / {nextTierInfo.requirements.referrals} referrals to {nextTierInfo.displayName}
@@ -192,22 +192,22 @@ const Dashboard = () => {
             </div>
             <Progress value={tierProgress} className="h-3" />
           </div>
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
+          <div className="grid grid-cols-2 gap-3 md:gap-4 pt-4 border-t border-border">
             <div className="space-y-1">
               <div className="text-xs text-muted-foreground">Min Earnings</div>
-              <div className="text-xl font-semibold text-primary">${currentTierInfo.benefits.minEarnings}+</div>
+              <div className="text-lg md:text-xl font-semibold text-primary">${currentTierInfo.benefits.minEarnings}+</div>
             </div>
             <div className="space-y-1">
               <div className="text-xs text-muted-foreground">NFT Level</div>
-              <div className="text-xl font-semibold">Level {currentTierInfo.benefits.nftLevel}</div>
+              <div className="text-lg md:text-xl font-semibold">Level {currentTierInfo.benefits.nftLevel}</div>
             </div>
             <div className="space-y-1">
               <div className="text-xs text-muted-foreground">Free Stars</div>
-              <div className="text-xl font-semibold">{currentTierInfo.benefits.freeStars}/month</div>
+              <div className="text-lg md:text-xl font-semibold">{currentTierInfo.benefits.freeStars}/month</div>
             </div>
             <div className="space-y-1">
               <div className="text-xs text-muted-foreground">Social Posts</div>
-              <div className="text-xl font-semibold">{ambassadorProfile.social_posts_this_month}/{currentTierInfo.requirements.socialPosts}</div>
+              <div className="text-lg md:text-xl font-semibold">{ambassadorProfile.social_posts_this_month}/{currentTierInfo.requirements.socialPosts}</div>
             </div>
           </div>
         </Card>

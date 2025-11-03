@@ -1,15 +1,11 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, TrendingUp, Activity, Zap, Award, Users, Crown } from "lucide-react";
+import { BarChart3, TrendingUp, Zap, Award, Users, Crown } from "lucide-react";
 import { AmbassadorAnalytics } from "@/components/dashboard/AmbassadorAnalytics";
-import { MongoIntegration } from "@/components/dashboard/MongoIntegration";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { PerformanceGoals } from "@/components/dashboard/PerformanceGoals";
 import { LiveActivityFeed } from "@/components/dashboard/LiveActivityFeed";
 import { ReferralDashboard } from "@/components/dashboard/ReferralDashboard";
 import { TierLevelsDisplay } from "@/components/dashboard/TierLevelsDisplay";
-import { TelegramConnection } from "@/components/dashboard/TelegramConnection";
-import { StarStoreConnection } from "@/components/dashboard/StarStoreConnection";
-import { IntegrationTest } from "@/components/dashboard/IntegrationTest";
 import type { Ambassador, AnalyticsData } from "@/types";
 
 interface DashboardTabsProps {
@@ -29,38 +25,31 @@ export const DashboardTabs = ({
 }: DashboardTabsProps) => {
   return (
     <Tabs defaultValue="overview" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
-        <TabsTrigger value="overview" className="flex items-center gap-2">
-          <BarChart3 className="h-4 w-4" />
-          Overview
+      <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1">
+        <TabsTrigger value="overview" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+          <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
+          <span className="hidden sm:inline">Overview</span>
+          <span className="sm:hidden">Home</span>
         </TabsTrigger>
-        <TabsTrigger value="referrals" className="flex items-center gap-2">
-          <Users className="h-4 w-4" />
+        <TabsTrigger value="referrals" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+          <Users className="h-3 w-3 sm:h-4 sm:w-4" />
           Referrals
         </TabsTrigger>
-        <TabsTrigger value="tiers" className="flex items-center gap-2">
-          <Crown className="h-4 w-4" />
+        <TabsTrigger value="tiers" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+          <Crown className="h-3 w-3 sm:h-4 sm:w-4" />
           Tiers
         </TabsTrigger>
-        <TabsTrigger value="analytics" className="flex items-center gap-2">
-          <TrendingUp className="h-4 w-4" />
+        <TabsTrigger value="analytics" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+          <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
           Analytics
         </TabsTrigger>
-        <TabsTrigger value="telegram" className="flex items-center gap-2">
-          <Activity className="h-4 w-4" />
-          Telegram
-        </TabsTrigger>
-        <TabsTrigger value="actions" className="flex items-center gap-2">
-          <Zap className="h-4 w-4" />
+        <TabsTrigger value="actions" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+          <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
           Actions
         </TabsTrigger>
-        <TabsTrigger value="performance" className="flex items-center gap-2">
-          <Award className="h-4 w-4" />
-          Performance
-        </TabsTrigger>
-        <TabsTrigger value="integration" className="flex items-center gap-2">
-          <Activity className="h-4 w-4" />
-          Test
+        <TabsTrigger value="performance" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+          <Award className="h-3 w-3 sm:h-4 sm:w-4" />
+          Goals
         </TabsTrigger>
       </TabsList>
 
@@ -80,29 +69,15 @@ export const DashboardTabs = ({
         <AmbassadorAnalytics data={analyticsData} isLoading={analyticsLoading} />
       </TabsContent>
 
-      <TabsContent value="telegram" className="space-y-6">
-        <StarStoreConnection />
-        <TelegramConnection ambassadorId={ambassadorProfile.id} />
-        <MongoIntegration 
-          ambassadorId={ambassadorProfile.id}
-          referralCode={ambassadorProfile.referral_code}
-          isAdmin={isAdmin}
-        />
-      </TabsContent>
-
       <TabsContent value="actions">
         <QuickActions referralCode={ambassadorProfile.referral_code} isAdmin={isAdmin} />
       </TabsContent>
 
       <TabsContent value="performance" className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <PerformanceGoals ambassadorProfile={ambassadorProfile} />
           <LiveActivityFeed isAdmin={isAdmin} limit={10} />
         </div>
-      </TabsContent>
-
-      <TabsContent value="integration">
-        <IntegrationTest />
       </TabsContent>
     </Tabs>
   );
