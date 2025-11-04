@@ -91,10 +91,10 @@ export const AmbassadorAnalytics = ({ data, isLoading }: AmbassadorAnalyticsProp
     },
   };
 
-  // Calculate trends
-  const currentMonth = data.earningsByMonth[data.earningsByMonth.length - 1];
-  const previousMonth = data.earningsByMonth[data.earningsByMonth.length - 2];
-  const earningsTrend = previousMonth && previousMonth.earnings > 0 ? 
+  // Calculate trends - with null safety
+  const currentMonth = data.earningsByMonth?.[data.earningsByMonth.length - 1];
+  const previousMonth = data.earningsByMonth?.[data.earningsByMonth.length - 2];
+  const earningsTrend = currentMonth && previousMonth && previousMonth.earnings > 0 ? 
     ((currentMonth.earnings - previousMonth.earnings) / previousMonth.earnings) * 100 : 0;
 
   return (
