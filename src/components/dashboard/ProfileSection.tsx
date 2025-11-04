@@ -1,10 +1,11 @@
-import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { PasswordChangeDialog } from "@/components/dashboard/PasswordChangeDialog";
 import { User } from "@supabase/supabase-js";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ProfileSectionProps {
   user: User;
@@ -49,40 +50,40 @@ export const ProfileSection = ({ user, tier, isAdmin }: ProfileSectionProps) => 
   };
 
   return (
-    <Card className="p-6">
-      <div className="flex items-center gap-4">
-        <Avatar className="h-16 w-16">
-          <AvatarFallback className="text-lg font-semibold bg-primary text-primary-foreground">
+    <div className="flex items-center justify-between w-full">
+      <div className="flex items-center gap-3">
+        <Avatar className="h-12 w-12 ring-2 ring-primary/20">
+          <AvatarFallback className="text-base font-semibold bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
             {getInitials(fullName)}
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-xl font-bold">{fullName}</h2>
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold">{fullName}</h2>
             {isAdmin && (
-              <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">
+              <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 text-xs">
                 Admin
               </Badge>
             )}
             {ambassadorProfile?.password_change_required && (
-              <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-300">
+              <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20 text-xs">
                 Temp Password
               </Badge>
             )}
           </div>
-          <p className="text-sm text-muted-foreground mb-2">{user.email}</p>
           <div className="flex items-center gap-2">
-            <Badge className={getTierColor(tier)}>
-              {tier.charAt(0).toUpperCase() + tier.slice(1)} Ambassador
+            <p className="text-sm text-muted-foreground">{user.email}</p>
+            <Badge variant="outline" className={`${getTierColor(tier)} text-xs`}>
+              {tier.charAt(0).toUpperCase() + tier.slice(1)}
             </Badge>
-            {!isAdmin && (
-              <PasswordChangeDialog 
-                isUsingTempPassword={ambassadorProfile?.password_change_required || false}
-              />
-            )}
           </div>
         </div>
       </div>
-    </Card>
+      {!isAdmin && (
+        <PasswordChangeDialog 
+          isUsingTempPassword={ambassadorProfile?.password_change_required || false}
+        />
+      )}
+    </div>
   );
 };
