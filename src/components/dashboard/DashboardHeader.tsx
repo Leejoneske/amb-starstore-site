@@ -1,7 +1,4 @@
-import { ProfileSection } from "@/components/dashboard/ProfileSection";
-import { NotificationCenter } from "@/components/dashboard/NotificationCenter";
 import type { User } from '@supabase/supabase-js';
-import { Card } from "@/components/ui/card";
 
 interface DashboardHeaderProps {
   user: User;
@@ -11,15 +8,13 @@ interface DashboardHeaderProps {
 
 export const DashboardHeader = ({ user, tier, isAdmin }: DashboardHeaderProps) => {
   return (
-    <Card className="p-4 border-border/50 shadow-sm">
-      <div className="flex items-center justify-between gap-4">
-        <ProfileSection 
-          user={user} 
-          tier={tier}
-          isAdmin={isAdmin}
-        />
-        <NotificationCenter userId={user?.id} isAdmin={isAdmin} />
-      </div>
-    </Card>
+    <div className="pb-6 border-b border-border">
+      <h1 className="text-2xl sm:text-3xl font-bold font-serif bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
+        Ambassador Dashboard
+      </h1>
+      <p className="text-sm sm:text-base text-muted-foreground mt-1">
+        Track your performance and grow your network
+      </p>
+    </div>
   );
 };

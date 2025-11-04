@@ -1,4 +1,4 @@
-import { Home, Users, TrendingUp, Award, Zap, Crown } from "lucide-react";
+import { Home, Users, TrendingUp, Award, Zap, Crown, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SideNavProps {
@@ -13,6 +13,7 @@ const navItems = [
   { id: "analytics", label: "Analytics", icon: TrendingUp },
   { id: "goals", label: "Goals", icon: Award },
   { id: "actions", label: "Actions", icon: Zap },
+  { id: "settings", label: "Settings", icon: Settings },
 ];
 
 export const SideNav = ({ activeView, onViewChange }: SideNavProps) => {

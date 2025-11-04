@@ -32,7 +32,7 @@ import { PerformanceGoals } from "@/components/dashboard/PerformanceGoals";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { TierLevelsDisplay } from "@/components/dashboard/TierLevelsDisplay";
 import { LiveActivityFeed } from "@/components/dashboard/LiveActivityFeed";
-import { StarStoreConnection } from "@/components/dashboard/StarStoreConnection";
+import { Settings } from "@/components/dashboard/Settings";
 import { Link, useNavigate } from "react-router-dom";
 import AdminDashboard from "./AdminDashboard";
 import { getTierInfo, getNextTier, getTierBadgeClass } from "@/lib/tier-utils";
@@ -231,6 +231,9 @@ const Dashboard = () => {
       case "actions":
         return <QuickActions referralCode={ambassadorProfile.referral_code} isAdmin={isAdmin} />;
       
+      case "settings":
+        return <Settings user={user!} tier={ambassadorProfile.current_tier} isAdmin={isAdmin} />;
+      
       default:
         return null;
     }
@@ -247,15 +250,17 @@ const Dashboard = () => {
               isAdmin={isAdmin}
             />
 
-            <DashboardStats 
-              ambassadorProfile={ambassadorProfile}
-              analyticsData={analyticsData}
-            />
+            {activeView === "home" && (
+              <DashboardStats 
+                ambassadorProfile={ambassadorProfile}
+                analyticsData={analyticsData}
+              />
+            )}
 
             <div className="flex gap-6">
               <SideNav activeView={activeView} onViewChange={setActiveView} />
               
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 overflow-hidden">
                 {renderView()}
               </div>
             </div>
