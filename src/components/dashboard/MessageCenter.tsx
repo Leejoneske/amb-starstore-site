@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { messageService, type MessageFilter, type MessageType } from '@/services/messageService';
+import { logger } from '@/lib/logger';
 import { 
   Mail, 
   Search, 
@@ -120,7 +121,7 @@ export const MessageCenter = () => {
         setStats(result.stats || null);
       }
     } catch (error) {
-      console.error('Failed to load stats:', error);
+      logger.error('Failed to load message stats', {}, error as Error);
     }
   };
 

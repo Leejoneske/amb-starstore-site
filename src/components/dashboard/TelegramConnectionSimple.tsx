@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 import { Loader2, MessageCircle } from 'lucide-react';
 
 export const TelegramConnectionSimple = () => {
@@ -28,8 +29,7 @@ export const TelegramConnectionSimple = () => {
     }
 
     setLoading(true);
-    console.log('🚀🚀🚀 SIMPLE TELEGRAM CONNECTION v5.0 - ISOLATED TEST - Testing with ID:', telegramIdTrimmed);
-    console.log('🔥 IF YOU SEE THIS LOG, YOU ARE USING THE SIMPLE COMPONENT!');
+    logger.info('Simple Telegram connection starting', { telegramId: telegramIdTrimmed });
 
     try {
       // Use ONLY the secure function - no other database calls
@@ -40,7 +40,7 @@ export const TelegramConnectionSimple = () => {
         });
 
       if (error) {
-        console.error('Function error:', error);
+        logger.error('Simple Telegram connection error', { telegramId: telegramIdTrimmed }, error);
         
         if (error.message?.includes('function') && error.message?.includes('does not exist')) {
           toast({
@@ -55,11 +55,11 @@ export const TelegramConnectionSimple = () => {
       }
 
       if (!result || typeof result !== 'object' || !(result as any).success) {
-        console.error('Function returned error:', result);
+        logger.error('Function returned error', { telegramId: telegramIdTrimmed, result });
         throw new Error((result as any)?.error || 'Failed to update Telegram information');
       }
 
-      console.log('✅ SUCCESS:', result);
+      logger.info('Telegram connection successful', { telegramId: telegramIdTrimmed });
       
       toast({
         title: "Telegram Connected! 🎉",
@@ -70,7 +70,7 @@ export const TelegramConnectionSimple = () => {
       setTelegramId('');
 
     } catch (error) {
-      console.error('Connection error:', error);
+      logger.error('Connection error', { telegramId: telegramIdTrimmed }, error as Error);
       toast({
         title: "Connection Failed",
         description: error instanceof Error ? error.message : "Unknown error occurred",
