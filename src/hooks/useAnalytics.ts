@@ -72,7 +72,9 @@ export const useAnalytics = (isAdmin: boolean = false) => {
         .slice(0, 5)
         .map(a => ({
           id: a.id,
-          name: a.profiles?.full_name || 'Unknown',
+          name: (a.profiles && typeof a.profiles === 'object' && 'full_name' in a.profiles) 
+                 ? a.profiles.full_name || 'Ambassador' 
+                 : 'Ambassador',
           earnings: a.total_earnings,
           referrals: a.total_referrals
         })) || [];

@@ -1,6 +1,5 @@
 import { Badge } from "@/components/ui/badge";
 import { Shield, Activity } from "lucide-react";
-import { NotificationCenter } from "@/components/dashboard/NotificationCenter";
 
 interface AdminHeaderProps {
   userId?: string;
@@ -21,7 +20,6 @@ export const AdminHeader = ({ userId }: AdminHeaderProps) => {
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <NotificationCenter userId={userId} isAdmin={true} />
         <Badge variant="destructive" className="flex items-center gap-1">
           <Activity className="h-3 w-3" />
           Admin Access

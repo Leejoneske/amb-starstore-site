@@ -1,10 +1,7 @@
 import { lazy, Suspense, ReactNode } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, FileText, Users, TrendingUp, Settings, Database, Mail } from "lucide-react";
-import { AmbassadorStatusList } from "@/components/dashboard/AmbassadorStatusList";
-import { SetupChecker } from "@/components/dashboard/SetupChecker";
-import { MessageCenter } from "@/components/dashboard/MessageCenter";
-import { ManualMessageSender } from "@/components/dashboard/ManualMessageSender";
+import { BarChart3, FileText, Users, TrendingUp, Settings, Database } from "lucide-react";
+import { AmbassadorsList } from "@/components/dashboard/AmbassadorsList";
 import type { AdminAnalyticsData } from "@/types";
 
 const AnalyticsCharts = lazy(() =>
@@ -36,19 +33,17 @@ interface AdminTabsProps {
   analyticsLoading: boolean;
   overviewContent: ReactNode;
   applicationsContent: ReactNode;
-  settingsContent: ReactNode;
 }
 
 export const AdminTabs = ({ 
   analyticsData, 
   analyticsLoading, 
   overviewContent,
-  applicationsContent,
-  settingsContent
+  applicationsContent
 }: AdminTabsProps) => {
   return (
     <Tabs defaultValue="overview" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-7">
+      <TabsList className="grid w-full grid-cols-5">
         <TabsTrigger value="overview" className="flex items-center gap-2">
           <BarChart3 className="h-4 w-4" />
           Overview
@@ -61,21 +56,13 @@ export const AdminTabs = ({
           <Users className="h-4 w-4" />
           Ambassadors
         </TabsTrigger>
-        <TabsTrigger value="messages" className="flex items-center gap-2">
-          <Mail className="h-4 w-4" />
-          Messages
-        </TabsTrigger>
         <TabsTrigger value="starstore" className="flex items-center gap-2">
           <Database className="h-4 w-4" />
-          Star Store Data
+          Users Data
         </TabsTrigger>
         <TabsTrigger value="analytics" className="flex items-center gap-2">
           <TrendingUp className="h-4 w-4" />
           Analytics
-        </TabsTrigger>
-        <TabsTrigger value="settings" className="flex items-center gap-2">
-          <Settings className="h-4 w-4" />
-          Settings
         </TabsTrigger>
       </TabsList>
 
@@ -96,23 +83,13 @@ export const AdminTabs = ({
       </TabsContent>
 
       <TabsContent value="ambassadors" className="space-y-6">
-        <AmbassadorStatusList isAdmin={true} />
-      </TabsContent>
-
-      <TabsContent value="messages" className="space-y-6">
-        <MessageCenter />
-        <ManualMessageSender />
+        <AmbassadorsList />
       </TabsContent>
 
       <TabsContent value="starstore" className="space-y-6">
         <Suspense fallback={<DataViewerFallback />}>
           <StarStoreDataViewer />
         </Suspense>
-      </TabsContent>
-
-      <TabsContent value="settings" className="space-y-6">
-        <SetupChecker />
-        {settingsContent}
       </TabsContent>
     </Tabs>
   );

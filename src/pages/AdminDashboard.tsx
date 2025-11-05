@@ -139,53 +139,6 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDatabaseReset = async () => {
-    if (!confirm('Are you sure you want to reset the database? This will delete ALL data and cannot be undone.')) {
-      return;
-    }
-
-    try {
-      setActionLoading('reset');
-      
-      // Clear all data
-      const tables = [
-        'analytics_events',
-        'payouts', 
-        'transactions',
-        'social_posts',
-        'referrals',
-        'applications',
-        'ambassador_profiles',
-        'user_roles',
-        'profiles'
-      ];
-
-      for (const table of tables) {
-        const { error } = await supabase
-          .from(table)
-          .delete()
-          .neq('id', '00000000-0000-0000-0000-000000000000');
-        
-        if (error) throw error;
-      }
-
-      toast({
-        title: "Success!",
-        description: "Database has been reset successfully.",
-      });
-
-      // Refresh queries
-      await queryClient.invalidateQueries();
-    } catch (error: unknown) {
-      toast({
-        title: "Error",
-        description: `Failed to reset database: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: "destructive",
-      });
-    } finally {
-      setActionLoading(null);
-    }
-  };
 
   const handleExportData = () => {
     try {
@@ -462,51 +415,6 @@ const AdminDashboard = () => {
     </Card>
   );
 
-  const settingsContent = (
-    <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-6">System Settings</h3>
-      <div className="space-y-4">
-        <div className="p-4 border border-border rounded-lg">
-          <h4 className="font-medium mb-2">Database Management</h4>
-          <p className="text-sm text-muted-foreground mb-3">
-            Clear all data and reset the system to initial state.
-          </p>
-          <Button 
-            variant="destructive" 
-            size="sm"
-            onClick={handleDatabaseReset}
-            disabled={actionLoading === 'reset'}
-          >
-            {actionLoading === 'reset' ? 'Resetting...' : 'Reset Database'}
-          </Button>
-        </div>
-        
-        <div className="p-4 border border-border rounded-lg">
-          <h4 className="font-medium mb-2">Export Data</h4>
-          <p className="text-sm text-muted-foreground mb-3">
-            Export all applications and ambassador data.
-          </p>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleExportData}
-          >
-            Export CSV
-          </Button>
-        </div>
-
-        <div className="p-4 border border-border rounded-lg">
-          <h4 className="font-medium mb-2">RLS Policy Fix</h4>
-          <p className="text-sm text-muted-foreground mb-3">
-            Run the simple-rls-fix.sql script in Supabase SQL Editor to fix admin permissions.
-          </p>
-          <div className="text-xs bg-muted p-2 rounded font-mono">
-            Copy and run: simple-rls-fix.sql
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
 
   return (
     <ErrorBoundary>
@@ -527,7 +435,6 @@ const AdminDashboard = () => {
             analyticsLoading={analyticsLoading}
             overviewContent={overviewContent}
             applicationsContent={applicationsContent}
-            settingsContent={settingsContent}
           />
         </div>
       </div>
