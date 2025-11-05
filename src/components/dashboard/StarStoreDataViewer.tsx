@@ -207,7 +207,7 @@ export const StarStoreDataViewer = () => {
 
       {/* Analytics Overview */}
       {analytics && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
@@ -235,6 +235,18 @@ export const StarStoreDataViewer = () => {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
+                <DollarSign className="h-8 w-8 text-yellow-500" />
+                <div>
+                  <p className="text-2xl font-bold">${formatNumber(analytics.total_earnings)}</p>
+                  <p className="text-sm text-muted-foreground">Total Earnings</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
                 <Star className="h-8 w-8 text-purple-500" />
                 <div>
                   <p className="text-2xl font-bold">{formatNumber(analytics.total_stars_traded)}</p>
@@ -246,71 +258,207 @@ export const StarStoreDataViewer = () => {
         </div>
       )}
 
-      {/* Users Data Table */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-blue-500" />
-                Users Data
-              </CardTitle>
+      {/* Data Tables */}
+      <Tabs defaultValue="users" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="users" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Users ({users.length})
+          </TabsTrigger>
+          <TabsTrigger value="referrals" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Referrals ({referrals.length})
+          </TabsTrigger>
+          <TabsTrigger value="transactions" className="flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            Transactions ({transactions.length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="users">
+          <Card>
+            <CardHeader>
+              <CardTitle>Users Data</CardTitle>
               <CardDescription>
                 Last synced: {formatDate(lastSyncTimes.users)}
               </CardDescription>
-            </div>
-            <Badge variant="outline" className="text-lg px-3 py-1">
-              {users.length} users
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Username</TableHead>
+                      <TableHead>Telegram ID</TableHead>
+                      <TableHead>Referrals</TableHead>
+                      <TableHead>Earnings</TableHead>
+                      <TableHead>Stars Earned</TableHead>
+                      <TableHead>Ambassador</TableHead>
+                      <TableHead>Last Active</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((user, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">
+                          {user.username || 'N/A'}
+                        </TableCell>
+                        <TableCell>{user.telegram_id}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline">
+                              {user.active_referrals}/{user.total_referrals}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell>${user.total_earnings}</TableCell>
+                        <TableCell>{formatNumber(user.total_stars_earned)}</TableCell>
+                        <TableCell>
+                          {user.is_ambassador ? (
+                            <Badge className="bg-purple-100 text-purple-800">
+                              {user.ambassador_tier || 'Ambassador'}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline">User</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>{formatDate(user.last_active)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Username</TableHead>
-                  <TableHead>Telegram ID</TableHead>
-                  <TableHead>Referrals</TableHead>
-                  <TableHead>Stars Earned</TableHead>
-                  <TableHead>Ambassador</TableHead>
-                  <TableHead>Last Active</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.map((user, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">
-                      {user.username || 'N/A'}
-                    </TableCell>
-                    <TableCell>{user.telegram_id}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">
-                          {user.active_referrals}/{user.total_referrals}
-                        </Badge>
-                      </div>
-                    </TableCell>
-                    <TableCell>{formatNumber(user.total_stars_earned)}</TableCell>
-                    <TableCell>
-                      {user.is_ambassador ? (
-                        <Badge className="bg-purple-100 text-purple-800">
-                          {user.ambassador_tier || 'Ambassador'}
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline">User</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>{formatDate(user.last_active)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+        <TabsContent value="referrals">
+          <Card>
+            <CardHeader>
+              <CardTitle>Referrals Data</CardTitle>
+              <CardDescription>
+                Last synced: {formatDate(lastSyncTimes.referrals)}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Referrer</TableHead>
+                      <TableHead>Referred User</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Withdrawn</TableHead>
+                      <TableHead>Referrer Type</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {referrals.map((referral, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">
+                          {referral.referrer_username || referral.referrer_user_id}
+                        </TableCell>
+                        <TableCell>
+                          {referral.referred_username || referral.referred_user_id}
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={referral.status === 'active' ? 'default' : 
+                                   referral.status === 'pending' ? 'secondary' : 'outline'}
+                          >
+                            {referral.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{formatDate(referral.date_referred)}</TableCell>
+                        <TableCell>
+                          {referral.withdrawn ? (
+                            <Badge className="bg-green-100 text-green-800">Yes</Badge>
+                          ) : (
+                            <Badge variant="outline">No</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {referral.referrer_is_ambassador ? (
+                            <Badge className="bg-purple-100 text-purple-800">
+                              {referral.referrer_tier || 'Ambassador'}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline">User</Badge>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-        </CardContent>
-      </Card>
+        <TabsContent value="transactions">
+          <Card>
+            <CardHeader>
+              <CardTitle>Transactions Data</CardTitle>
+              <CardDescription>
+                Last synced: {formatDate(lastSyncTimes.transactions)}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Type</TableHead>
+                      <TableHead>User</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Stars</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Premium</TableHead>
+                      <TableHead>Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {transactions.map((transaction, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          <Badge 
+                            variant={transaction.type === 'buy' ? 'default' : 'secondary'}
+                          >
+                            {transaction.type.toUpperCase()}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {transaction.username || transaction.telegram_id}
+                        </TableCell>
+                        <TableCell>${transaction.amount}</TableCell>
+                        <TableCell>{formatNumber(transaction.stars)}</TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={transaction.status === 'completed' ? 'default' : 'outline'}
+                          >
+                            {transaction.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {transaction.is_premium ? (
+                            <Badge className="bg-yellow-100 text-yellow-800">
+                              {transaction.premium_duration}m
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline">No</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>{formatDate(transaction.created_at)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

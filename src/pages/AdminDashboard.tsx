@@ -16,9 +16,6 @@ import { AdminHeader } from "@/components/dashboard/AdminHeader";
 import { AdminStats } from "@/components/dashboard/AdminStats";
 import { AdminPerformanceMetrics } from "@/components/dashboard/AdminPerformanceMetrics";
 import { AdminTabs } from "@/components/dashboard/AdminTabs";
-import { AdminKeyMetrics } from "@/components/dashboard/AdminKeyMetrics";
-import { AdminActivityTimeline } from "@/components/dashboard/AdminActivityTimeline";
-import { AdminAlerts } from "@/components/dashboard/AdminAlerts";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { 
   UserCheck,
@@ -142,6 +139,53 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleDatabaseReset = async () => {
+    if (!confirm('Are you sure you want to reset the database? This will delete ALL data and cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setActionLoading('reset');
+      
+      // Clear all data
+      const tables = [
+        'analytics_events',
+        'payouts', 
+        'transactions',
+        'social_posts',
+        'referrals',
+        'applications',
+        'ambassador_profiles',
+        'user_roles',
+        'profiles'
+      ];
+
+      for (const table of tables) {
+        const { error } = await supabase
+          .from(table)
+          .delete()
+          .neq('id', '00000000-0000-0000-0000-000000000000');
+        
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Success!",
+        description: "Database has been reset successfully.",
+      });
+
+      // Refresh queries
+      await queryClient.invalidateQueries();
+    } catch (error: unknown) {
+      toast({
+        title: "Error",
+        description: `Failed to reset database: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const handleExportData = () => {
     try {
@@ -242,80 +286,78 @@ const AdminDashboard = () => {
     );
   }
 
-  // Calculate metrics for new components
-  const avgQualityRate = ambassadors?.reduce((sum, amb) => sum + (amb.quality_transaction_rate || 0), 0) / (ambassadors?.length || 1) || 0;
-  const inactiveAmbassadors = ambassadors?.filter(amb => amb.status !== 'active').length || 0;
-  const lowPerformers = ambassadors?.filter(amb => (amb.quality_transaction_rate || 0) < 50).length || 0;
-
   // Create content for tabs
   const overviewContent = (
-    <div className="space-y-6">
-      {/* Key Metrics Grid */}
-      <AdminKeyMetrics 
-        totalAmbassadors={ambassadors?.length || 0}
-        activeAmbassadors={analyticsData?.performanceMetrics.activeAmbassadors || 0}
-        totalRevenue={analyticsData?.totalRevenue || 0}
-        monthlyRevenue={analyticsData?.monthlyRevenue || 0}
-        avgQualityRate={avgQualityRate}
-        conversionRate={analyticsData?.conversionRate || 0}
-      />
-
-      {/* Alerts Section */}
-      <AdminAlerts 
-        pendingApplications={applications?.filter(app => app.status === 'pending').length || 0}
-        inactiveAmbassadors={inactiveAmbassadors}
-        lowPerformers={lowPerformers}
-      />
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <QuickActions isAdmin={true} />
-        <AdminActivityTimeline />
-      </div>
-
-      {/* Secondary Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <LiveActivityFeed isAdmin={true} limit={10} />
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <QuickActions isAdmin={true} />
+      
+      <Card className="p-6">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold">System Health</h3>
+          <p className="text-sm text-muted-foreground">Real-time system status</p>
+        </div>
         
-        <Card className="p-6">
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold">Top Performers</h3>
-            <p className="text-sm text-muted-foreground">Highest earning ambassadors this month</p>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-success/5">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-success" />
+              <span className="text-sm">Database Connection</span>
+            </div>
+            <Badge variant="outline" className="text-success border-success">Online</Badge>
           </div>
           
-          <div className="space-y-3">
-            {analyticsData?.topPerformers && Array.isArray(analyticsData.topPerformers) && analyticsData.topPerformers.length > 0 ? (
-              analyticsData.topPerformers.slice(0, 5).map((performer, index) => (
-                <div key={performer.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center text-sm font-bold">
-                      #{index + 1}
-                    </div>
-                    <div>
-                      <div className="font-medium text-sm">{performer.name}</div>
-                      <div className="text-xs text-muted-foreground">{performer.referrals} referrals</div>
-                    </div>
+          <div className="flex items-center justify-between p-3 rounded-lg bg-success/5">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-success" />
+              <span className="text-sm">Real-time Updates</span>
+            </div>
+            <Badge variant="outline" className="text-success border-success">Active</Badge>
+          </div>
+          
+          <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              <span className="text-sm">API Performance</span>
+            </div>
+            <Badge variant="outline" className="text-primary border-primary">Optimal</Badge>
+          </div>
+        </div>
+      </Card>
+
+      <LiveActivityFeed isAdmin={true} limit={15} />
+      
+      <Card className="p-6">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold">Top Performers</h3>
+          <p className="text-sm text-muted-foreground">Highest earning ambassadors</p>
+        </div>
+        
+        <div className="space-y-3">
+          {analyticsData?.topPerformers && Array.isArray(analyticsData.topPerformers) && analyticsData.topPerformers.length > 0 ? (
+            analyticsData.topPerformers.slice(0, 5).map((performer, index) => (
+              <div key={performer.id} className="flex items-center justify-between p-3 rounded-lg border">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                    {index + 1}
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-success">
-                      ${performer.earnings.toFixed(2)}
-                    </div>
-                    <Badge variant="outline" className="text-xs mt-1">
-                      Top {((index + 1) / (ambassadors?.length || 1) * 100).toFixed(0)}%
-                    </Badge>
+                  <div>
+                    <div className="font-medium text-sm">{performer.name}</div>
+                    <div className="text-xs text-muted-foreground">{performer.referrals} referrals</div>
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <Award className="h-12 w-12 mx-auto mb-3 opacity-20" />
-                <p className="text-sm font-medium">No performance data yet</p>
-                <p className="text-xs mt-1">Data will appear as ambassadors earn commissions</p>
+                <div className="text-sm font-bold text-success">
+                  ${performer.earnings.toFixed(2)}
+                </div>
               </div>
-            )}
-          </div>
-        </Card>
-      </div>
+            ))
+          ) : (
+            <div className="text-center py-6 text-muted-foreground">
+              <Award className="h-8 w-8 mx-auto mb-2 opacity-20" />
+              <p className="text-sm">No performance data yet</p>
+            </div>
+          )}
+        </div>
+      </Card>
     </div>
   );
 
@@ -420,12 +462,63 @@ const AdminDashboard = () => {
     </Card>
   );
 
+  const settingsContent = (
+    <Card className="p-6">
+      <h3 className="text-lg font-semibold mb-6">System Settings</h3>
+      <div className="space-y-4">
+        <div className="p-4 border border-border rounded-lg">
+          <h4 className="font-medium mb-2">Database Management</h4>
+          <p className="text-sm text-muted-foreground mb-3">
+            Clear all data and reset the system to initial state.
+          </p>
+          <Button 
+            variant="destructive" 
+            size="sm"
+            onClick={handleDatabaseReset}
+            disabled={actionLoading === 'reset'}
+          >
+            {actionLoading === 'reset' ? 'Resetting...' : 'Reset Database'}
+          </Button>
+        </div>
+        
+        <div className="p-4 border border-border rounded-lg">
+          <h4 className="font-medium mb-2">Export Data</h4>
+          <p className="text-sm text-muted-foreground mb-3">
+            Export all applications and ambassador data.
+          </p>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleExportData}
+          >
+            Export CSV
+          </Button>
+        </div>
+
+        <div className="p-4 border border-border rounded-lg">
+          <h4 className="font-medium mb-2">RLS Policy Fix</h4>
+          <p className="text-sm text-muted-foreground mb-3">
+            Run the simple-rls-fix.sql script in Supabase SQL Editor to fix admin permissions.
+          </p>
+          <div className="text-xs bg-muted p-2 rounded font-mono">
+            Copy and run: simple-rls-fix.sql
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
 
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-background p-4 md:p-6">
         <div className="max-w-7xl mx-auto space-y-6">
           <AdminHeader userId={user?.id} />
+
+          <AdminStats 
+            applications={applications}
+            ambassadors={ambassadors}
+            analyticsData={analyticsData}
+          />
 
           <AdminPerformanceMetrics analyticsData={analyticsData} />
 
@@ -434,6 +527,7 @@ const AdminDashboard = () => {
             analyticsLoading={analyticsLoading}
             overviewContent={overviewContent}
             applicationsContent={applicationsContent}
+            settingsContent={settingsContent}
           />
         </div>
       </div>
