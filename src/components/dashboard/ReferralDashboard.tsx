@@ -3,11 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+// Removed Tabs import - simplified to direct rendering for better performance
 import { useToast } from '@/hooks/use-toast';
 import { useAmbassadorProfile } from '@/hooks/useAmbassadorProfile';
 import { useAuth } from '@/contexts/AuthContext';
-import { useReferralStats, useReferralActivationTracking } from '@/hooks/useReferralTracking';
+import { useReferralStats } from '@/hooks/useReferralTracking';
 import { generateTelegramReferralLink, generateReferralCode, ACTIVATION_THRESHOLD } from '@/config/telegram';
 import { 
   Users, 
@@ -29,21 +29,13 @@ interface ReferralDashboardProps {
 
 export const ReferralDashboard = ({ ambassadorId }: ReferralDashboardProps) => {
   const { toast } = useToast();
-const { user } = useAuth();
+  const { user } = useAuth();
   const { data: profile } = useAmbassadorProfile(user?.id);
   const { data: stats, refetch: refetchStats, isLoading } = useReferralStats(ambassadorId || profile?.id);
-  const { checkActivations, isChecking } = useReferralActivationTracking();
-
-  // Auto-check for activations every 5 minutes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (profile?.id) {
-        checkActivations(profile.id);
-      }
-    }, 5 * 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, [profile?.id, checkActivations]);
+  
+  // Disabled automatic activation checking to prevent errors
+  // This feature requires mongo-proxy edge function which may not be available
+  // const { checkActivations, isChecking } = useReferralActivationTracking();
 
   const copyReferralLink = () => {
     if (!profile?.referral_code) return;
@@ -70,9 +62,6 @@ const { user } = useAuth();
 
   const handleRefresh = async () => {
     await refetchStats();
-    if (profile?.id) {
-      checkActivations(profile.id);
-    }
     toast({
       title: "Refreshed! 🔄",
       description: "Referral data has been updated",
@@ -107,15 +96,14 @@ const { user } = useAuth();
                 Track your referrals and earnings. Users become active after {ACTIVATION_THRESHOLD} stars.
               </CardDescription>
             </div>
-            <Button 
-              onClick={handleRefresh} 
-              variant="outline" 
-              size="sm"
-              disabled={isChecking}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isChecking ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
+          <Button 
+            onClick={handleRefresh} 
+            variant="outline" 
+            size="sm"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -213,22 +201,14 @@ const { user } = useAuth();
         </Card>
       </div>
 
-      {/* Detailed Tabs */}
-      <Tabs defaultValue="recent" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="recent">Recent Referrals</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="help">How It Works</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="recent" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Referrals</CardTitle>
-              <CardDescription>Your latest referrals and their activation status</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {stats?.recentReferrals && stats.recentReferrals.length > 0 ? (
+      {/* Recent Referrals - Always Visible */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Referrals</CardTitle>
+          <CardDescription>Your latest referrals and their activation status</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {stats?.recentReferrals && stats.recentReferrals.length > 0 ? (
                 <div className="space-y-3">
                   {stats.recentReferrals.map((referral) => (
                     <div 
@@ -278,17 +258,19 @@ const { user } = useAuth();
                   </Button>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+        </CardContent>
+      </Card>
 
-        <TabsContent value="analytics" className="space-y-4">
+      {/* Analytics Section - Simplified */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Analytics Overview</CardTitle>
+        </CardHeader>
+        <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Conversion Funnel</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            <div>
+              <h4 className="font-semibold mb-4">Conversion Funnel</h4>
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Total Referrals</span>
@@ -313,14 +295,12 @@ const { user } = useAuth();
                     Conversion Rate: <span className="font-medium">{stats?.conversionRate?.toFixed(1) || 0}%</span>
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Monthly Performance</CardTitle>
-              </CardHeader>
-              <CardContent>
+            <div>
+              <h4 className="font-semibold mb-4">Monthly Performance</h4>
+              <div>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm">This Month Referrals</span>
@@ -339,17 +319,18 @@ const { user } = useAuth();
                     </span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
-        </TabsContent>
+        </CardContent>
+      </Card>
 
-        <TabsContent value="help" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>How Referral Tracking Works</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+      {/* How It Works - Simplified */}
+      <Card>
+        <CardHeader>
+          <CardTitle>How Referral Tracking Works</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
@@ -413,10 +394,8 @@ const { user } = useAuth();
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 };

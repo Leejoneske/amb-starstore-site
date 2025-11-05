@@ -138,18 +138,9 @@ export const ReferralTools = ({ referralCode }: ReferralToolsProps) => {
           </div>
         </div>
 
-        {/* Quick Action: Open StarStore Bot */}
+        {/* Info Section */}
         <div className="pt-3 sm:pt-4 border-t border-border">
-          <Button 
-            variant="outline" 
-            onClick={() => window.open(`https://t.me/${TELEGRAM_CONFIG.BOT_USERNAME}`, '_blank')}
-            className="w-full flex items-center gap-2"
-            size="sm"
-          >
-            <MessageCircle className="h-4 w-4" />
-            Open StarStore Bot
-          </Button>
-          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mt-3">
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
             Share your referral code or link to earn commissions on every transaction your referrals make!
           </p>
         </div>
