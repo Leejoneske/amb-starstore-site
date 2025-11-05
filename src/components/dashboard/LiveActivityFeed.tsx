@@ -90,8 +90,8 @@ export const LiveActivityFeed = ({ isAdmin = false, limit = 20 }: LiveActivityFe
 
       const newActivities: ActivityItem[] = [];
 
-      // Process transactions
-      if (transactionsResult.data) {
+      // Process transactions (with null safety)
+      if (transactionsResult.data && Array.isArray(transactionsResult.data)) {
         transactionsResult.data.forEach(transaction => {
           newActivities.push({
             id: `transaction-${transaction.id}`,
@@ -104,8 +104,8 @@ export const LiveActivityFeed = ({ isAdmin = false, limit = 20 }: LiveActivityFe
         });
       }
 
-      // Process referrals
-      if (referralsResult.data) {
+      // Process referrals (with null safety)
+      if (referralsResult.data && Array.isArray(referralsResult.data)) {
         referralsResult.data.forEach(referral => {
           newActivities.push({
             id: `referral-${referral.id}`,
@@ -118,8 +118,8 @@ export const LiveActivityFeed = ({ isAdmin = false, limit = 20 }: LiveActivityFe
         });
       }
 
-      // Process applications (admin only)
-      if (isAdmin && applicationsResult?.data) {
+      // Process applications (admin only - with null safety)
+      if (isAdmin && applicationsResult?.data && Array.isArray(applicationsResult.data)) {
         applicationsResult.data.forEach(application => {
           newActivities.push({
             id: `application-${application.id}`,
@@ -132,8 +132,8 @@ export const LiveActivityFeed = ({ isAdmin = false, limit = 20 }: LiveActivityFe
         });
       }
 
-      // Process payouts (admin only)
-      if (isAdmin && payoutsResult?.data) {
+      // Process payouts (admin only - with null safety)
+      if (isAdmin && payoutsResult?.data && Array.isArray(payoutsResult.data)) {
         payoutsResult.data.forEach(payout => {
           newActivities.push({
             id: `payout-${payout.id}`,

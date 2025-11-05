@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, MessageCircle, CheckCircle2, AlertCircle, Copy, ExternalLink } from 'lucide-react';
 import { generateTelegramReferralLink, TELEGRAM_CONFIG } from '@/config/telegram';
 import { starStoreService } from '@/services/starStoreService';
+import { logger } from '@/lib/logger';
 
 interface TelegramConnectionProps {
   ambassadorId?: string;
@@ -26,8 +27,8 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
   const { data: profile, refetch } = useAmbassadorProfile(user?.id);
 
   useEffect(() => {
-    console.log('TelegramConnection - Profile data updated:', {
-      profile,
+    logger.info('TelegramConnection - Profile data updated', {
+      hasProfile: !!profile,
       userId: user?.id,
       ambassadorIdProp: ambassadorId
     });
@@ -57,16 +58,12 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
     setLoading(true);
     
     // FORCE CACHE CHECK - If you see this message, you have the latest code
-    console.log('🚀 TELEGRAM CONNECTION v4.0 [BUILD:20251024] - SECURE FUNCTION ONLY');
-    console.log('🔄 Connecting Telegram ID:', telegramIdTrimmed);
+    logger.info('Telegram connection starting', { telegramId: telegramIdTrimmed });
     
     try {
 
       // Skip external verification - go directly to secure function
-      console.log('⚡ Skipping external verification - using secure function directly');
-
-      // Use the secure function directly to bypass RLS issues (same as onboarding)
-      console.log('🚀 DASHBOARD: Using secure function to connect Telegram ID:', telegramIdTrimmed);
+      logger.info('Using secure function to connect Telegram', { telegramId: telegramIdTrimmed });
       
       const { data: functionResult, error: functionError } = await supabase
         .rpc('update_ambassador_telegram_info', {
@@ -75,12 +72,12 @@ export const TelegramConnection = ({ ambassadorId }: TelegramConnectionProps) =>
         });
 
       if (functionError) {
-        console.error('Function error:', functionError);
+        logger.error('Telegram connection function error', { telegramId: telegramIdTrimmed }, functionError);
         
         // If function doesn't exist, show helpful error
         if (functionError.message?.includes('function') && functionError.message?.includes('does not exist')) {
-          console.error('🚨 DATABASE FUNCTION MISSING! Run this SQL in your Supabase SQL Editor:');
-          console.log(`
+          logger.error('Database function missing', { telegramId: telegramIdTrimmed }, functionError);
+          console.error(`
 -- TELEGRAM CONNECTION FIX - Copy and run this in Supabase SQL Editor
 CREATE OR REPLACE FUNCTION update_ambassador_telegram_info(
   p_telegram_id text,
@@ -132,18 +129,16 @@ GRANT EXECUTE ON FUNCTION update_ambassador_telegram_info(text, text) TO authent
       }
 
       if (!functionResult || typeof functionResult !== 'object' || !(functionResult as any).success) {
-        console.error('Function returned error:', functionResult);
+        logger.error('Function returned error', { telegramId: telegramIdTrimmed, result: functionResult });
         throw new Error((functionResult as any)?.error || 'Failed to update Telegram information');
       }
 
-      console.log('✅ Profile updated successfully via secure function:', functionResult);
-
-      console.log('Profile updated successfully');
+      logger.info('Profile updated successfully via secure function', { telegramId: telegramIdTrimmed });
 
       // Try to sync ambassador data with Star Store (non-blocking)
       if (profile && typeof profile === 'object') {
         try {
-          console.log('Attempting StarStore sync...');
+          logger.info('Attempting StarStore sync', { telegramId: telegramIdTrimmed });
           const profileData = profile as any;
           await starStoreService.syncAmbassadorData(telegramIdTrimmed, {
             email: profileData.email || '',
@@ -151,10 +146,10 @@ GRANT EXECUTE ON FUNCTION update_ambassador_telegram_info(text, text) TO authent
             tier: profile.current_tier,
             referralCode: profile.referral_code
           });
-          console.log('StarStore sync completed');
+          logger.info('StarStore sync completed', { telegramId: telegramIdTrimmed });
         } catch (syncError) {
           // Log but don't fail the connection if sync fails
-          console.warn('StarStore sync failed (non-critical):', syncError);
+          logger.warn('StarStore sync failed (non-critical)', { telegramId: telegramIdTrimmed, error: syncError });
         }
       }
 
@@ -166,7 +161,7 @@ GRANT EXECUTE ON FUNCTION update_ambassador_telegram_info(text, text) TO authent
         description: "Your Telegram account has been successfully linked.",
       });
     } catch (error) {
-      console.error('Telegram connection error:', error);
+      logger.error('Telegram connection error', { telegramId: telegramIdTrimmed }, error as Error);
       toast({
         title: "Connection Failed",
         description: error instanceof Error ? error.message : "Failed to connect Telegram account. Please check your Telegram ID and try again.",
@@ -189,22 +184,22 @@ GRANT EXECUTE ON FUNCTION update_ambassador_telegram_info(text, text) TO authent
       }
 
       // Use secure function to disconnect Telegram
-      console.log('🚀 DASHBOARD: Disconnecting Telegram using secure function');
+      logger.info('Disconnecting Telegram using secure function');
       
       const { data: functionResult, error: functionError } = await supabase
         .rpc('disconnect_ambassador_telegram');
 
       if (functionError) {
-        console.error('Disconnect function error:', functionError);
+        logger.error('Disconnect function error', {}, functionError);
         throw functionError;
       }
 
       if (!functionResult || typeof functionResult !== 'object' || !(functionResult as any).success) {
-        console.error('Disconnect function returned error:', functionResult);
+        logger.error('Disconnect function returned error', { result: functionResult });
         throw new Error((functionResult as any)?.error || 'Failed to disconnect Telegram');
       }
 
-      console.log('✅ Telegram disconnected successfully:', functionResult);
+      logger.info('Telegram disconnected successfully');
       const error = null; // No error if we got here
 
       if (error) throw error;

@@ -333,22 +333,24 @@ const AdminDashboard = () => {
         </div>
         
         <div className="space-y-3">
-          {analyticsData?.topPerformers.slice(0, 5).map((performer, index) => (
-            <div key={performer.id} className="flex items-center justify-between p-3 rounded-lg border">
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
-                  {index + 1}
+          {analyticsData?.topPerformers && Array.isArray(analyticsData.topPerformers) && analyticsData.topPerformers.length > 0 ? (
+            analyticsData.topPerformers.slice(0, 5).map((performer, index) => (
+              <div key={performer.id} className="flex items-center justify-between p-3 rounded-lg border">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                    {index + 1}
+                  </div>
+                  <div>
+                    <div className="font-medium text-sm">{performer.name}</div>
+                    <div className="text-xs text-muted-foreground">{performer.referrals} referrals</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="font-medium text-sm">{performer.name}</div>
-                  <div className="text-xs text-muted-foreground">{performer.referrals} referrals</div>
+                <div className="text-sm font-bold text-success">
+                  ${performer.earnings.toFixed(2)}
                 </div>
               </div>
-              <div className="text-sm font-bold text-success">
-                ${performer.earnings.toFixed(2)}
-              </div>
-            </div>
-          )) || (
+            ))
+          ) : (
             <div className="text-center py-6 text-muted-foreground">
               <Award className="h-8 w-8 mx-auto mb-2 opacity-20" />
               <p className="text-sm">No performance data yet</p>
