@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAmbassadorProfile } from "@/hooks/useAmbassadorProfile";
 import { useTransactions } from "@/hooks/useTransactions";
@@ -27,7 +27,6 @@ import { PayoutHistory } from "@/components/dashboard/PayoutHistory";
 import { BottomNav } from "@/components/dashboard/BottomNav";
 import { SideNav } from "@/components/dashboard/SideNav";
 import { ReferralDashboard } from "@/components/dashboard/ReferralDashboard";
-import { AmbassadorAnalytics } from "@/components/dashboard/AmbassadorAnalytics";
 import { PerformanceGoals } from "@/components/dashboard/PerformanceGoals";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { TierLevelsDisplay } from "@/components/dashboard/TierLevelsDisplay";
@@ -40,6 +39,26 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { logger } from "@/lib/logger";
 import type { Transaction, Payout } from "@/types";
 import { ADMIN_EMAIL } from "@/config/env";
+
+const AmbassadorAnalytics = lazy(() =>
+  import("@/components/dashboard/AmbassadorAnalytics").then((module) => ({
+    default: module.AmbassadorAnalytics,
+  }))
+);
+
+const AnalyticsFallback = () => (
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    {[...Array(2)].map((_, index) => (
+      <Card key={index} className="p-6">
+        <div className="space-y-3">
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-48 w-full" />
+        </div>
+      </Card>
+    ))}
+  </div>
+);
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -218,7 +237,11 @@ const Dashboard = () => {
         return <TierLevelsDisplay ambassadorId={ambassadorProfile.id} />;
       
       case "analytics":
-        return <AmbassadorAnalytics data={analyticsData} isLoading={analyticsLoading} />;
+        return (
+          <Suspense fallback={<AnalyticsFallback />}>
+            <AmbassadorAnalytics data={analyticsData} isLoading={analyticsLoading} />
+          </Suspense>
+        );
       
       case "goals":
         return (

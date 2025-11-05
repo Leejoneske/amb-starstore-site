@@ -1,19 +1,42 @@
+import { lazy, Suspense, ReactNode } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, FileText, Users, TrendingUp, Settings, Database, Mail } from "lucide-react";
-import { AnalyticsCharts } from "@/components/dashboard/AnalyticsCharts";
 import { AmbassadorStatusList } from "@/components/dashboard/AmbassadorStatusList";
 import { SetupChecker } from "@/components/dashboard/SetupChecker";
-import { StarStoreDataViewer } from "@/components/dashboard/StarStoreDataViewer";
 import { MessageCenter } from "@/components/dashboard/MessageCenter";
 import { ManualMessageSender } from "@/components/dashboard/ManualMessageSender";
 import type { AdminAnalyticsData } from "@/types";
 
+const AnalyticsCharts = lazy(() =>
+  import("@/components/dashboard/AnalyticsCharts").then((module) => ({
+    default: module.AnalyticsCharts,
+  }))
+);
+
+const StarStoreDataViewer = lazy(() =>
+  import("@/components/dashboard/StarStoreDataViewer").then((module) => ({
+    default: module.StarStoreDataViewer,
+  }))
+);
+
+const ChartsFallback = () => (
+  <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+    Loading analytics...
+  </div>
+);
+
+const DataViewerFallback = () => (
+  <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+    Loading Star Store data tools...
+  </div>
+);
+
 interface AdminTabsProps {
   analyticsData?: AdminAnalyticsData | null;
   analyticsLoading: boolean;
-  overviewContent: React.ReactNode;
-  applicationsContent: React.ReactNode;
-  settingsContent: React.ReactNode;
+  overviewContent: ReactNode;
+  applicationsContent: ReactNode;
+  settingsContent: ReactNode;
 }
 
 export const AdminTabs = ({ 
@@ -62,7 +85,9 @@ export const AdminTabs = ({
 
       <TabsContent value="analytics" id="admin-analytics">
         {analyticsData && (
-          <AnalyticsCharts data={analyticsData} isLoading={analyticsLoading} />
+          <Suspense fallback={<ChartsFallback />}>
+            <AnalyticsCharts data={analyticsData} isLoading={analyticsLoading} />
+          </Suspense>
         )}
       </TabsContent>
 
@@ -80,7 +105,9 @@ export const AdminTabs = ({
       </TabsContent>
 
       <TabsContent value="starstore" className="space-y-6">
-        <StarStoreDataViewer />
+        <Suspense fallback={<DataViewerFallback />}>
+          <StarStoreDataViewer />
+        </Suspense>
       </TabsContent>
 
       <TabsContent value="settings" className="space-y-6">

@@ -48,12 +48,16 @@ export const StarStoreDataViewer = () => {
 
   // Load cached data on component mount
   useEffect(() => {
+    dataSyncService.startAutoSync();
     loadCachedData();
     updateSyncStatus();
     
     // Update sync status every 30 seconds
     const interval = setInterval(updateSyncStatus, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      dataSyncService.stopAutoSync();
+    };
   }, []);
 
   const updateSyncStatus = () => {

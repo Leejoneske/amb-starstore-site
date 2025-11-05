@@ -74,6 +74,7 @@ class DataSyncService {
   private syncInProgress = false;
   private lastSyncTime: Date | null = null;
   private syncInterval = 5 * 60 * 1000; // 5 minutes
+  private syncTimer: ReturnType<typeof setInterval> | null = null;
 
   // Sync all data from Star Store to Supabase
   async syncAllData(): Promise<{
@@ -408,7 +409,11 @@ class DataSyncService {
 
   // Auto sync with interval
   startAutoSync(): void {
-    setInterval(async () => {
+    if (this.syncTimer) {
+      return;
+    }
+
+    this.syncTimer = setInterval(async () => {
       if (!this.syncInProgress) {
         try {
           await this.syncAllData();
@@ -417,6 +422,13 @@ class DataSyncService {
         }
       }
     }, this.syncInterval);
+  }
+
+  stopAutoSync(): void {
+    if (this.syncTimer) {
+      clearInterval(this.syncTimer);
+      this.syncTimer = null;
+    }
   }
 
   // Get sync status
