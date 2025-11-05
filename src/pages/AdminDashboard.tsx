@@ -82,6 +82,8 @@ const AdminDashboard = () => {
             applicationId,
             applicantEmail: application.email,
             applicantName: application.full_name,
+            telegramId: application.telegram_id || null,
+            referralCode: application.referral_code || null,
           },
         });
 

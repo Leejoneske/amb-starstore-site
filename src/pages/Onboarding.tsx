@@ -31,6 +31,7 @@ const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [telegramId, setTelegramId] = useState("");
   const [telegramUsername, setTelegramUsername] = useState("");
+  const [referralCodeInput, setReferralCodeInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const { user } = useAuth();
@@ -178,19 +179,24 @@ const Onboarding = () => {
     }
   };
 
-  const handleGenerateReferralCode = async () => {
+  const handleSetReferralCode = async (code: string) => {
     if (!ambassadorProfile) return;
+    if (!code.trim()) {
+      toast({
+        title: "Invalid Code",
+        description: "Please enter a valid referral code",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setLoading(true);
     try {
-      // Generate a unique referral code
-      const newReferralCode = generateReferralCode();
-
-      // Update ambassador profile with referral code
+      // Update ambassador profile with user's referral code
       const { error } = await supabase
         .from('ambassador_profiles')
         .update({
-          referral_code: newReferralCode,
+          referral_code: code.trim().toUpperCase(),
           updated_at: new Date().toISOString()
         })
         .eq('id', ambassadorProfile.id);
@@ -203,21 +209,21 @@ const Onboarding = () => {
           email: ambassadorProfile.profiles?.email || '',
           fullName: ambassadorProfile.profiles?.full_name || '',
           tier: ambassadorProfile.current_tier,
-          referralCode: newReferralCode
+          referralCode: code.trim().toUpperCase()
         });
       }
 
       await refetch();
       
       toast({
-        title: "Referral Code Generated! 🚀",
-        description: "Your unique referral code is ready to use.",
+        title: "Referral Code Set! 🚀",
+        description: "Your StarStore referral code has been connected.",
       });
 
     } catch (error) {
       toast({
-        title: "Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate referral code",
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Failed to set referral code",
         variant: "destructive",
       });
     } finally {
@@ -435,32 +441,41 @@ const Onboarding = () => {
                   </Badge>
                 </div>
 
-                {/* Referral Code Generation */}
+                {/* Referral Code Setup */}
                 {!ambassadorProfile?.referral_code ? (
                   <div className="space-y-4">
                     <div className="text-center p-6 bg-muted/50 rounded-lg">
                       <Share2 className="h-12 w-12 text-primary mx-auto mb-4" />
-                      <h3 className="font-semibold mb-2">Generate Your Referral Code</h3>
+                      <h3 className="font-semibold mb-2">Enter Your StarStore Referral Code</h3>
                       <p className="text-sm text-muted-foreground mb-4">
-                        Create your unique referral code to start earning commissions
+                        Use the same referral code from your StarStore app
                       </p>
-                      <Button 
-                        onClick={handleGenerateReferralCode}
-                        disabled={loading}
-                        size="lg"
-                      >
-                        {loading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Generating...
-                          </>
-                        ) : (
-                          <>
-                            Generate Referral Code
-                            <Sparkles className="ml-2 h-4 w-4" />
-                          </>
-                        )}
-                      </Button>
+                      <div className="max-w-sm mx-auto space-y-3">
+                        <Input
+                          placeholder="Enter your referral code"
+                          value={referralCodeInput}
+                          onChange={(e) => setReferralCodeInput(e.target.value.toUpperCase())}
+                          className="text-center text-lg font-mono"
+                        />
+                        <Button 
+                          onClick={() => handleSetReferralCode(referralCodeInput)}
+                          disabled={loading || !referralCodeInput.trim()}
+                          size="lg"
+                          className="w-full"
+                        >
+                          {loading ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Setting Code...
+                            </>
+                          ) : (
+                            <>
+                              Set Referral Code
+                              <Sparkles className="ml-2 h-4 w-4" />
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ) : (

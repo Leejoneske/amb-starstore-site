@@ -10,6 +10,8 @@ type ApproveRequest = {
   applicationId: string;
   applicantEmail: string;
   applicantName: string;
+  telegramId?: string;
+  referralCode?: string;
 };
 
 function genTempPassword() {
@@ -61,7 +63,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get request data
-    const { applicationId, applicantEmail, applicantName }: ApproveRequest = await req.json();
+    const { applicationId, applicantEmail, applicantName, telegramId, referralCode: userReferralCode }: ApproveRequest = await req.json();
 
     // Validate required fields
     if (!applicationId || !applicantEmail || !applicantName) {
@@ -77,10 +79,11 @@ serve(async (req) => {
       );
     }
 
-    console.log('Processing approval for:', { applicationId, applicantEmail, applicantName });
+    console.log('Processing approval for:', { applicationId, applicantEmail, applicantName, telegramId, userReferralCode });
 
     const tempPassword = genTempPassword();
-    const referralCode = genReferralCode().toUpperCase();
+    // Use the user's referral code from StarStore if provided, otherwise generate one
+    const referralCode = userReferralCode || genReferralCode().toUpperCase();
     
     console.log('Generated credentials:', { 
       tempPassword, 
@@ -168,12 +171,13 @@ serve(async (req) => {
 
     console.log('Profile created successfully');
 
-    // 3) Upsert ambassador profile
+    // 3) Upsert ambassador profile with Telegram ID and referral code from application
     const { data: ambassadorData, error: ambErr } = await supabase
       .from('ambassador_profiles')
       .upsert({ 
         user_id: newUserId, 
         referral_code: referralCode, 
+        telegram_id: telegramId || null,
         status: 'active', 
         approved_at: new Date().toISOString(), 
         approved_by: newUserId // Using newUserId as approver for now

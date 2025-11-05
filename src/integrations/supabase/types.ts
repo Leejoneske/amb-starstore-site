@@ -150,12 +150,14 @@ export type Database = {
           full_name: string
           id: string
           phone: string | null
+          referral_code: string | null
           referral_strategy: string | null
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           social_media_links: Json | null
           status: string
+          telegram_id: string | null
           telegram_username: string | null
           user_id: string | null
           why_join: string | null
@@ -167,12 +169,14 @@ export type Database = {
           full_name: string
           id?: string
           phone?: string | null
+          referral_code?: string | null
           referral_strategy?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           social_media_links?: Json | null
           status?: string
+          telegram_id?: string | null
           telegram_username?: string | null
           user_id?: string | null
           why_join?: string | null
@@ -184,12 +188,14 @@ export type Database = {
           full_name?: string
           id?: string
           phone?: string | null
+          referral_code?: string | null
           referral_strategy?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           social_media_links?: Json | null
           status?: string
+          telegram_id?: string | null
           telegram_username?: string | null
           user_id?: string | null
           why_join?: string | null

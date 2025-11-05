@@ -17,6 +17,8 @@ const applicationSchema = z.object({
   email: z.string().trim().email("Invalid email address").max(255),
   phone: z.string().trim().optional(),
   telegram: z.string().trim().optional(),
+  telegramId: z.string().trim().min(5, "Telegram ID must be at least 5 digits").regex(/^\d+$/, "Telegram ID must be numeric").optional(),
+  referralCode: z.string().trim().min(4, "Referral code must be at least 4 characters").max(20).optional(),
   socialLinks: z.string().trim().max(1000).optional(),
   experience: z.string().trim().min(10, "Please provide more detail").max(2000),
   whyJoin: z.string().trim().min(10, "Please provide more detail").max(2000),
@@ -28,6 +30,8 @@ const Apply = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [telegram, setTelegram] = useState("");
+  const [telegramId, setTelegramId] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const [socialLinks, setSocialLinks] = useState("");
   const [experience, setExperience] = useState("");
   const [whyJoin, setWhyJoin] = useState("");
@@ -52,6 +56,8 @@ const Apply = () => {
         email,
         phone,
         telegram,
+        telegramId,
+        referralCode,
         socialLinks,
         experience,
         whyJoin,
@@ -96,6 +102,8 @@ const Apply = () => {
           email: validatedData.email,
           phone: validatedData.phone || null,
           telegram_username: validatedData.telegram || null,
+          telegram_id: validatedData.telegramId || null,
+          referral_code: validatedData.referralCode || null,
           social_media_links: parsedSocialLinks,
           experience: validatedData.experience,
           why_join: validatedData.whyJoin,
@@ -234,6 +242,43 @@ const Apply = () => {
                   onChange={(e) => setTelegram(e.target.value)}
                   placeholder="@username"
                 />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="telegramId">Telegram ID (from StarStore)</Label>
+                <Input
+                  id="telegramId"
+                  value={telegramId}
+                  onChange={(e) => setTelegramId(e.target.value)}
+                  placeholder="123456789"
+                  aria-invalid={errors.telegramId ? 'true' : 'false'}
+                  aria-describedby={errors.telegramId ? 'telegramId-error' : undefined}
+                />
+                {errors.telegramId && (
+                  <p id="telegramId-error" className="text-sm text-destructive mt-1">{errors.telegramId}</p>
+                )}
+                <p className="text-xs text-muted-foreground mt-1">
+                  Your numeric Telegram ID (get from @userinfobot)
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="referralCode">Your StarStore Referral Code</Label>
+                <Input
+                  id="referralCode"
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                  placeholder="ABC123XYZ"
+                  aria-invalid={errors.referralCode ? 'true' : 'false'}
+                  aria-describedby={errors.referralCode ? 'referralCode-error' : undefined}
+                />
+                {errors.referralCode && (
+                  <p id="referralCode-error" className="text-sm text-destructive mt-1">{errors.referralCode}</p>
+                )}
+                <p className="text-xs text-muted-foreground mt-1">
+                  The referral code you use in StarStore app
+                </p>
               </div>
             </div>
 
