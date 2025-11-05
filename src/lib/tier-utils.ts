@@ -192,16 +192,43 @@ export const TIER_CONFIGS: Record<string, TierConfig> = {
 };
 
 export const getTierInfo = (tier: string): TierInfo => {
-  return TIER_INFO[tier] || TIER_INFO.explorer;
+  // Map old tier names to new ones
+  const tierMap: Record<string, string> = {
+    'entry': 'explorer',
+    'growing': 'pioneer',
+    'advanced': 'trailblazer',
+    'elite': 'legend'
+  };
+  
+  const mappedTier = tierMap[tier] || tier;
+  return TIER_INFO[mappedTier] || TIER_INFO.explorer;
 };
 
 export const getTierConfig = (tier: string): TierConfig => {
-  return TIER_CONFIGS[tier] || TIER_CONFIGS.explorer;
+  // Map old tier names to new ones
+  const tierMap: Record<string, string> = {
+    'entry': 'explorer',
+    'growing': 'pioneer',
+    'advanced': 'trailblazer',
+    'elite': 'legend'
+  };
+  
+  const mappedTier = tierMap[tier] || tier;
+  return TIER_CONFIGS[mappedTier] || TIER_CONFIGS.explorer;
 };
 
 export const getNextTier = (currentTier: string): TierConfig | null => {
+  // Map old tier names to new ones
+  const tierMap: Record<string, string> = {
+    'entry': 'explorer',
+    'growing': 'pioneer',
+    'advanced': 'trailblazer',
+    'elite': 'legend'
+  };
+  
+  const mappedTier = tierMap[currentTier] || currentTier;
   const tiers = ['explorer', 'pioneer', 'trailblazer', 'legend'];
-  const currentIndex = tiers.indexOf(currentTier);
+  const currentIndex = tiers.indexOf(mappedTier);
   const nextTierName = tiers[currentIndex + 1];
   return nextTierName ? TIER_CONFIGS[nextTierName] : null;
 };

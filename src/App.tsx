@@ -21,6 +21,9 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
+// Import ResetPassword synchronously since it's a small component
+import { ResetPassword } from "./components/ResetPassword";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { retry: 2, refetchOnWindowFocus: false, staleTime: 5 * 60 * 1000 },
@@ -52,6 +55,13 @@ const App = () => (
                   <Route path="/" element={<Home />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/apply" element={<Apply />} />
+                  <Route path="/reset-password" element={
+                    <div className="min-h-screen flex items-center justify-center bg-background p-6">
+                      <div className="max-w-md w-full">
+                        <ResetPassword />
+                      </div>
+                    </div>
+                  } />
                   <Route path="/onboarding" element={
                     <ProtectedRoute>
                       <ErrorBoundary>

@@ -246,16 +246,17 @@ export const useCreateReferral = () => {
     mutationFn: async (params: {
       ambassadorId: string;
       referralCode: string;
-      telegramUserId?: string;
-      source?: 'web' | 'telegram' | 'api';
+      customerEmail?: string;
+      customerName?: string;
     }) => {
+      // The referral_code used here should match what's in ambassador_profiles
       const { data, error } = await supabase
         .from('referrals')
         .insert({
           ambassador_id: params.ambassadorId,
-          referral_code: params.referralCode,
-          mongo_referred_user_id: params.telegramUserId,
-          source: params.source || 'web',
+          referral_code: params.referralCode, // This matches onboarding referral_code
+          customer_email: params.customerEmail,
+          customer_name: params.customerName,
           status: 'pending',
           referred_at: new Date().toISOString()
         })

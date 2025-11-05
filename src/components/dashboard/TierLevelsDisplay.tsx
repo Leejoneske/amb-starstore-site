@@ -29,8 +29,9 @@ const { user } = useAuth();
     );
   }
 
-  const currentTier = getTierConfig(profile.current_tier as TierLevel);
-  const nextTier = getNextTier(profile.current_tier as TierLevel);
+  // Safely get tier configuration - handles both old and new tier names
+  const currentTier = getTierConfig(profile.current_tier);
+  const nextTier = getNextTier(profile.current_tier);
   const progress = calculateTierProgress(profile);
 
   const allTiers: TierLevel[] = ['explorer', 'pioneer', 'trailblazer', 'legend'];
@@ -68,7 +69,7 @@ const { user } = useAuth();
   return (
     <div className="space-y-6">
       {/* Current Tier Status */}
-      <Card className={`border-2 ${getTierBgColor(profile.current_tier as TierLevel)}`}>
+      <Card className="border-2 bg-card">{/* Removed dynamic class to prevent errors */}
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -85,10 +86,7 @@ const { user } = useAuth();
             {/* Current Tier Info */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                {(() => {
-                  const Icon = getTierIcon(profile.current_tier as TierLevel);
-                  return <Icon className={`h-8 w-8 ${getTierColor(profile.current_tier as TierLevel)}`} />;
-                })()}
+                <Star className="h-8 w-8 text-primary" />{/* Simplified icon display */}
                 <div>
                   <h3 className="text-xl font-semibold">{currentTier.displayName}</h3>
                   <p className="text-sm text-muted-foreground">Your current ambassador level</p>

@@ -24,21 +24,25 @@ export const useFirstLoginTracker = () => {
 
         // If first_login_at is null, this is the first login
         if (!ambassadorProfile.first_login_at) {
-          // Update the first login timestamp
-          const { error: updateError } = await supabase.rpc('update_first_login', {
-            user_uuid: user.id
-          });
+          // Update the first login timestamp directly
+          const { error: updateError } = await supabase
+            .from('ambassador_profiles')
+            .update({ 
+              first_login_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', user.id);
 
           if (updateError) {
             logger.error('Error updating first login status', { userId: user.id }, updateError);
             return;
           }
 
-          // Show welcome message for first login
+          // Show welcome message for first login ONLY
           toast({
             title: "Welcome to StarStore! 🎉",
-            description: "Your account has been activated successfully. Consider changing your password for security.",
-            duration: 10000,
+            description: "You're all set up and ready to start earning commissions!",
+            duration: 7000,
           });
         }
 

@@ -16,8 +16,7 @@ export const forgotPasswordService = {
     try {
       logger.info('Password reset requested', { email });
 
-      // Use Supabase's built-in password reset - it handles EVERYTHING
-      // No custom templates, no admin involvement, just works!
+      // Use Supabase's built-in password reset with proper redirect
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });

@@ -235,7 +235,18 @@ const Onboarding = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const finishOnboarding = () => {
+  const finishOnboarding = async () => {
+    // Mark onboarding as complete by setting first_login_at
+    if (ambassadorProfile?.id && !ambassadorProfile.first_login_at) {
+      await supabase
+        .from('ambassador_profiles')
+        .update({ 
+          first_login_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', ambassadorProfile.id);
+    }
+    
     toast({
       title: "Welcome to StarStore! 🎉",
       description: "You're all set up and ready to start earning commissions!",
