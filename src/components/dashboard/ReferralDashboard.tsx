@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react';
+import { memo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 // Removed Tabs import - simplified to direct rendering for better performance
 import { useToast } from '@/hooks/use-toast';
 import { useAmbassadorProfile } from '@/hooks/useAmbassadorProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { useReferralStats } from '@/hooks/useReferralTracking';
-import { generateTelegramReferralLink, generateReferralCode, ACTIVATION_THRESHOLD } from '@/config/telegram';
+import { generateTelegramReferralLink, ACTIVATION_THRESHOLD } from '@/config/telegram';
 import { 
   Users, 
   TrendingUp, 
@@ -27,11 +28,34 @@ interface ReferralDashboardProps {
   ambassadorId?: string;
 }
 
+// Memoized stats card component for better performance
+const StatsCard = memo(({ title, value, subtitle, icon: Icon, iconColor, valueColor }: {
+  title: string;
+  value: string | number;
+  subtitle: string;
+  icon: any;
+  iconColor: string;
+  valueColor?: string;
+}) => (
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle className="text-sm font-medium">{title}</CardTitle>
+      <Icon className={`h-4 w-4 ${iconColor}`} />
+    </CardHeader>
+    <CardContent>
+      <div className={`text-2xl font-bold ${valueColor || ''}`}>{value}</div>
+      <p className="text-xs text-muted-foreground">{subtitle}</p>
+    </CardContent>
+  </Card>
+));
+
+StatsCard.displayName = 'StatsCard';
+
 export const ReferralDashboard = ({ ambassadorId }: ReferralDashboardProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { data: profile } = useAmbassadorProfile(user?.id);
-  const { data: stats, refetch: refetchStats, isLoading } = useReferralStats(ambassadorId || profile?.id);
+  const { data: stats, refetch: refetchStats, isLoading, error } = useReferralStats(ambassadorId || profile?.id);
   
   // Disabled automatic activation checking to prevent errors
   // This feature requires mongo-proxy edge function which may not be available
@@ -70,11 +94,48 @@ export const ReferralDashboard = ({ ambassadorId }: ReferralDashboardProps) => {
 
   if (isLoading) {
     return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-64 mt-2" />
+          </CardHeader>
+        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-4 w-24" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-3 w-32" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
       <Card>
         <CardHeader>
-          <CardTitle>Referral Dashboard</CardTitle>
-          <CardDescription>Loading referral statistics...</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-destructive">
+            <AlertCircle className="h-5 w-5" />
+            Error Loading Referral Data
+          </CardTitle>
+          <CardDescription>
+            {error instanceof Error ? error.message : 'Failed to fetch referral statistics'}
+          </CardDescription>
         </CardHeader>
+        <CardContent>
+          <Button onClick={() => refetchStats()} variant="outline">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Try Again
+          </Button>
+        </CardContent>
       </Card>
     );
   }
@@ -144,61 +205,39 @@ export const ReferralDashboard = ({ ambassadorId }: ReferralDashboardProps) => {
         </CardContent>
       </Card>
 
-      {/* Statistics Cards */}
+      {/* Statistics Cards - Memoized for better performance */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Referrals</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalReferrals || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              +{stats?.thisMonthReferrals || 0} this month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Referrals</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats?.activeReferrals || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats?.conversionRate?.toFixed(1) || 0}% conversion rate
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Referrals</CardTitle>
-            <Clock className="h-4 w-4 text-orange-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{stats?.pendingReferrals || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Need {ACTIVATION_THRESHOLD}+ stars to activate
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
-            <DollarSign className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              ${stats?.totalEarnings?.toFixed(2) || '0.00'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              +${stats?.thisMonthEarnings?.toFixed(2) || '0.00'} this month
-            </p>
-          </CardContent>
-        </Card>
+        <StatsCard
+          title="Total Referrals"
+          value={stats?.totalReferrals || 0}
+          subtitle={`+${stats?.thisMonthReferrals || 0} this month`}
+          icon={Users}
+          iconColor="text-muted-foreground"
+        />
+        <StatsCard
+          title="Active Referrals"
+          value={stats?.activeReferrals || 0}
+          subtitle={`${stats?.conversionRate?.toFixed(1) || 0}% conversion rate`}
+          icon={CheckCircle2}
+          iconColor="text-green-500"
+          valueColor="text-green-600"
+        />
+        <StatsCard
+          title="Pending Referrals"
+          value={stats?.pendingReferrals || 0}
+          subtitle={`Need ${ACTIVATION_THRESHOLD}+ stars to activate`}
+          icon={Clock}
+          iconColor="text-orange-500"
+          valueColor="text-orange-600"
+        />
+        <StatsCard
+          title="Total Earnings"
+          value={`$${stats?.totalEarnings?.toFixed(2) || '0.00'}`}
+          subtitle={`+$${stats?.thisMonthEarnings?.toFixed(2) || '0.00'} this month`}
+          icon={DollarSign}
+          iconColor="text-green-500"
+          valueColor="text-green-600"
+        />
       </div>
 
       {/* Recent Referrals - Always Visible */}

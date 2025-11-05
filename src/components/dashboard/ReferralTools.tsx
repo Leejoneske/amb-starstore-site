@@ -15,7 +15,6 @@ export const ReferralTools = ({ referralCode }: ReferralToolsProps) => {
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
   const { toast } = useToast();
   
-  const webReferralUrl = `${window.location.origin}?ref=${referralCode}`;
   const telegramReferralUrl = generateTelegramReferralLink(referralCode);
 
   const copyToClipboard = async (text: string, label: string) => {
@@ -112,28 +111,6 @@ export const ReferralTools = ({ referralCode }: ReferralToolsProps) => {
               className="h-10 w-10 sm:h-11 sm:w-11 shrink-0"
             >
               <ExternalLink className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Web Referral Link */}
-        <div>
-          <label className="text-xs sm:text-sm font-medium text-muted-foreground mb-2 block">
-            Web Referral Link
-          </label>
-          <div className="flex gap-2">
-            <Input 
-              value={webReferralUrl} 
-              readOnly 
-              className="text-xs sm:text-sm h-10 sm:h-11 truncate bg-muted"
-            />
-            <Button 
-              variant="outline" 
-              size="icon"
-              onClick={() => copyToClipboard(webReferralUrl, 'Web referral link')}
-              className="h-10 w-10 sm:h-11 sm:w-11 shrink-0"
-            >
-              {copiedItem === 'Web referral link' ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
             </Button>
           </div>
         </div>
