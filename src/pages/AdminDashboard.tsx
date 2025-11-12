@@ -12,11 +12,18 @@ import { LiveActivityFeed } from "@/components/dashboard/LiveActivityFeed";
 import { ManualEmailSender } from "@/components/dashboard/ManualEmailSender";
 import { AdvancedFilters, FilterConfig } from "@/components/dashboard/AdvancedFilters";
 import { ExportDialog } from "@/components/dashboard/ExportDialog";
-import { AdminHeader } from "@/components/dashboard/AdminHeader";
 import { AdminStats } from "@/components/dashboard/AdminStats";
 import { AdminPerformanceMetrics } from "@/components/dashboard/AdminPerformanceMetrics";
-import { AdminTabs } from "@/components/dashboard/AdminTabs";
+import { AdminSidebar } from "@/components/dashboard/AdminSidebar";
+import { AdminTopBar } from "@/components/dashboard/AdminTopBar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { AmbassadorStatusList } from "@/components/dashboard/AmbassadorStatusList";
+import { SetupChecker } from "@/components/dashboard/SetupChecker";
+import { MessageCenter } from "@/components/dashboard/MessageCenter";
+import { ManualMessageSender } from "@/components/dashboard/ManualMessageSender";
+import { StarStoreDataViewer } from "@/components/dashboard/StarStoreDataViewer";
+import { AnalyticsCharts } from "@/components/dashboard/AnalyticsCharts";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { 
   UserCheck,
   UserX,
@@ -26,7 +33,7 @@ import {
   Mail,
   Download
 } from "lucide-react";
-import { useState } from "react";
+import { useState, Suspense, lazy } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -48,6 +55,7 @@ const AdminDashboard = () => {
   const [emailFailures, setEmailFailures] = useState<Map<string, { name: string; email: string; tempPassword?: string; referralCode?: string }>>(new Map());
   const [applicationFilters, setApplicationFilters] = useState<FilterConfig>({});
   const [ambassadorFilters, setAmbassadorFilters] = useState<FilterConfig>({});
+  const [activeView, setActiveView] = useState("dashboard");
 
   const loading = appsLoading || ambLoading;
 
@@ -508,29 +516,158 @@ const AdminDashboard = () => {
     </Card>
   );
 
+  const getViewTitle = () => {
+    switch (activeView) {
+      case "dashboard": return "Ambassador Management Dashboard";
+      case "applications": return "Application Management";
+      case "ambassadors": return "All Ambassadors";
+      case "messages": return "Message Center";
+      case "starstore": return "Star Store Data";
+      case "analytics": return "Analytics & Reports";
+      case "settings": return "Settings";
+      default: return "Dashboard";
+    }
+  };
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries();
+    toast({
+      title: "Refreshed",
+      description: "Data has been refreshed successfully.",
+    });
+  };
+
+  const renderContent = () => {
+    switch (activeView) {
+      case "dashboard":
+        return (
+          <div className="space-y-6">
+            <AdminStats 
+              applications={applications}
+              ambassadors={ambassadors}
+              analyticsData={analyticsData}
+            />
+            <AdminPerformanceMetrics analyticsData={analyticsData} />
+            {overviewContent}
+          </div>
+        );
+      case "applications":
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card className="p-4">
+                <div className="text-sm text-muted-foreground mb-1">Total Applications</div>
+                <div className="text-2xl font-bold">{applications?.length || 0}</div>
+              </Card>
+              <Card className="p-4">
+                <div className="text-sm text-muted-foreground mb-1">Pending</div>
+                <div className="text-2xl font-bold text-orange-600">
+                  {applications?.filter(a => a.status === 'pending').length || 0}
+                </div>
+              </Card>
+              <Card className="p-4">
+                <div className="text-sm text-muted-foreground mb-1">Approved</div>
+                <div className="text-2xl font-bold text-success">
+                  {applications?.filter(a => a.status === 'approved').length || 0}
+                </div>
+              </Card>
+              <Card className="p-4">
+                <div className="text-sm text-muted-foreground mb-1">Rejected</div>
+                <div className="text-2xl font-bold text-destructive">
+                  {applications?.filter(a => a.status === 'rejected').length || 0}
+                </div>
+              </Card>
+            </div>
+            {applicationsContent}
+          </div>
+        );
+      case "ambassadors":
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card className="p-4">
+                <div className="text-sm text-muted-foreground mb-1">Total Ambassadors</div>
+                <div className="text-2xl font-bold">{ambassadors?.length || 0}</div>
+              </Card>
+              <Card className="p-4">
+                <div className="text-sm text-muted-foreground mb-1">Active</div>
+                <div className="text-2xl font-bold text-success">
+                  {ambassadors?.filter(a => a.status === 'active').length || 0}
+                </div>
+              </Card>
+              <Card className="p-4">
+                <div className="text-sm text-muted-foreground mb-1">Total Earnings</div>
+                <div className="text-2xl font-bold text-primary">
+                  ${ambassadors?.reduce((sum, a) => sum + (a.total_earnings || 0), 0).toFixed(2)}
+                </div>
+              </Card>
+              <Card className="p-4">
+                <div className="text-sm text-muted-foreground mb-1">Total Referrals</div>
+                <div className="text-2xl font-bold">
+                  {ambassadors?.reduce((sum, a) => sum + (a.total_referrals || 0), 0)}
+                </div>
+              </Card>
+            </div>
+            <AmbassadorStatusList isAdmin={true} />
+          </div>
+        );
+      case "messages":
+        return (
+          <div className="space-y-6">
+            <MessageCenter />
+            <ManualMessageSender />
+          </div>
+        );
+      case "starstore":
+        return (
+          <Suspense fallback={<div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">Loading Star Store data tools...</div>}>
+            <StarStoreDataViewer />
+          </Suspense>
+        );
+      case "analytics":
+        return (
+          <div className="space-y-6">
+            {analyticsData && (
+              <Suspense fallback={<div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">Loading analytics...</div>}>
+                <AnalyticsCharts data={analyticsData} isLoading={analyticsLoading} />
+              </Suspense>
+            )}
+          </div>
+        );
+      case "settings":
+        return (
+          <div className="space-y-6">
+            <SetupChecker />
+            {settingsContent}
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background p-4 md:p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <AdminHeader userId={user?.id} />
-
-          <AdminStats 
-            applications={applications}
-            ambassadors={ambassadors}
-            analyticsData={analyticsData}
-          />
-
-          <AdminPerformanceMetrics analyticsData={analyticsData} />
-
-          <AdminTabs 
-            analyticsData={analyticsData}
-            analyticsLoading={analyticsLoading}
-            overviewContent={overviewContent}
-            applicationsContent={applicationsContent}
-            settingsContent={settingsContent}
-          />
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background">
+          <AdminSidebar activeView={activeView} onViewChange={setActiveView} />
+          
+          <div className="flex-1 flex flex-col">
+            <AdminTopBar 
+              userId={user?.id} 
+              title={getViewTitle()}
+              onRefresh={handleRefresh}
+              onExport={handleExportData}
+            />
+            
+            <main className="flex-1 overflow-auto p-6">
+              <div className="max-w-7xl mx-auto">
+                {renderContent()}
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
+      </SidebarProvider>
     </ErrorBoundary>
   );
 };
