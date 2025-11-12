@@ -18,7 +18,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Apply = lazy(() => import("./pages/Apply"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+import AdminDashboard from "./pages/AdminDashboard";
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Import ResetPassword synchronously since it's a small component
