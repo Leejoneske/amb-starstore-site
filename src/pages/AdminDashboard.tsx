@@ -553,27 +553,27 @@ const AdminDashboard = () => {
         );
       case "applications":
         return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className="p-4">
-                <div className="text-sm text-muted-foreground mb-1">Total Applications</div>
-                <div className="text-2xl font-bold">{applications?.length || 0}</div>
+          <div className="space-y-4 md:space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+              <Card className="p-3 md:p-4 bg-gradient-to-br from-blue-500/10 to-blue-600/10 border-0">
+                <div className="text-xs md:text-sm text-muted-foreground mb-1">Total</div>
+                <div className="text-xl md:text-2xl font-bold">{applications?.length || 0}</div>
               </Card>
-              <Card className="p-4">
-                <div className="text-sm text-muted-foreground mb-1">Pending</div>
-                <div className="text-2xl font-bold text-orange-600">
+              <Card className="p-3 md:p-4 bg-gradient-to-br from-orange-500/10 to-orange-600/10 border-0">
+                <div className="text-xs md:text-sm text-muted-foreground mb-1">Pending</div>
+                <div className="text-xl md:text-2xl font-bold text-orange-600">
                   {applications?.filter(a => a.status === 'pending').length || 0}
                 </div>
               </Card>
-              <Card className="p-4">
-                <div className="text-sm text-muted-foreground mb-1">Approved</div>
-                <div className="text-2xl font-bold text-success">
+              <Card className="p-3 md:p-4 bg-gradient-to-br from-green-500/10 to-green-600/10 border-0">
+                <div className="text-xs md:text-sm text-muted-foreground mb-1">Approved</div>
+                <div className="text-xl md:text-2xl font-bold text-success">
                   {applications?.filter(a => a.status === 'approved').length || 0}
                 </div>
               </Card>
-              <Card className="p-4">
-                <div className="text-sm text-muted-foreground mb-1">Rejected</div>
-                <div className="text-2xl font-bold text-destructive">
+              <Card className="p-3 md:p-4 bg-gradient-to-br from-red-500/10 to-red-600/10 border-0">
+                <div className="text-xs md:text-sm text-muted-foreground mb-1">Rejected</div>
+                <div className="text-xl md:text-2xl font-bold text-destructive">
                   {applications?.filter(a => a.status === 'rejected').length || 0}
                 </div>
               </Card>
@@ -583,27 +583,27 @@ const AdminDashboard = () => {
         );
       case "ambassadors":
         return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className="p-4">
-                <div className="text-sm text-muted-foreground mb-1">Total Ambassadors</div>
-                <div className="text-2xl font-bold">{ambassadors?.length || 0}</div>
+          <div className="space-y-4 md:space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+              <Card className="p-3 md:p-4 bg-gradient-to-br from-purple-500/10 to-purple-600/10 border-0">
+                <div className="text-xs md:text-sm text-muted-foreground mb-1">Total</div>
+                <div className="text-xl md:text-2xl font-bold">{ambassadors?.length || 0}</div>
               </Card>
-              <Card className="p-4">
-                <div className="text-sm text-muted-foreground mb-1">Active</div>
-                <div className="text-2xl font-bold text-success">
+              <Card className="p-3 md:p-4 bg-gradient-to-br from-green-500/10 to-green-600/10 border-0">
+                <div className="text-xs md:text-sm text-muted-foreground mb-1">Active</div>
+                <div className="text-xl md:text-2xl font-bold text-success">
                   {ambassadors?.filter(a => a.status === 'active').length || 0}
                 </div>
               </Card>
-              <Card className="p-4">
-                <div className="text-sm text-muted-foreground mb-1">Total Earnings</div>
-                <div className="text-2xl font-bold text-primary">
+              <Card className="p-3 md:p-4 bg-gradient-to-br from-blue-500/10 to-blue-600/10 border-0">
+                <div className="text-xs md:text-sm text-muted-foreground mb-1">Earnings</div>
+                <div className="text-xl md:text-2xl font-bold text-primary">
                   ${ambassadors?.reduce((sum, a) => sum + (a.total_earnings || 0), 0).toFixed(2)}
                 </div>
               </Card>
-              <Card className="p-4">
-                <div className="text-sm text-muted-foreground mb-1">Total Referrals</div>
-                <div className="text-2xl font-bold">
+              <Card className="p-3 md:p-4 bg-gradient-to-br from-orange-500/10 to-orange-600/10 border-0">
+                <div className="text-xs md:text-sm text-muted-foreground mb-1">Referrals</div>
+                <div className="text-xl md:text-2xl font-bold">
                   {ambassadors?.reduce((sum, a) => sum + (a.total_referrals || 0), 0)}
                 </div>
               </Card>
@@ -648,11 +648,11 @@ const AdminDashboard = () => {
 
   return (
     <ErrorBoundary>
-      <SidebarProvider>
+      <SidebarProvider defaultOpen={false}>
         <div className="min-h-screen flex w-full bg-background">
           <AdminSidebar activeView={activeView} onViewChange={setActiveView} />
           
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col min-w-0">
             <AdminTopBar 
               userId={user?.id} 
               title={getViewTitle()}
@@ -660,7 +660,7 @@ const AdminDashboard = () => {
               onExport={handleExportData}
             />
             
-            <main className="flex-1 overflow-auto p-6">
+            <main className="flex-1 overflow-auto p-3 md:p-6">
               <div className="max-w-7xl mx-auto">
                 {renderContent()}
               </div>

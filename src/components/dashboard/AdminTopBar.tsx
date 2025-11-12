@@ -23,37 +23,37 @@ export const AdminTopBar = ({ userId, title, onRefresh, onExport }: AdminTopBarP
   };
 
   return (
-    <div className="h-16 border-b border-border bg-background flex items-center justify-between px-6">
-      <div className="flex items-center gap-4">
+    <div className="sticky top-0 z-10 h-14 md:h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-3 md:px-6">
+      <div className="flex items-center gap-2 md:gap-4">
         <SidebarTrigger />
-        <h1 className="text-xl font-bold">{title}</h1>
+        <h1 className="text-base md:text-xl font-bold truncate max-w-[150px] md:max-w-none">{title}</h1>
       </div>
       
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 md:gap-3">
         {onRefresh && (
-          <Button variant="outline" size="sm" onClick={onRefresh}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh Data
+          <Button variant="ghost" size="sm" onClick={onRefresh} className="hidden md:flex">
+            <RefreshCw className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Refresh</span>
           </Button>
         )}
         
         {onExport && (
-          <Button variant="outline" size="sm" onClick={onExport} className="bg-success/10 hover:bg-success/20 text-success border-success/20">
-            <Download className="h-4 w-4 mr-2" />
-            Export Data
+          <Button variant="outline" size="sm" onClick={onExport} className="hidden sm:flex bg-success/10 hover:bg-success/20 text-success border-success/20">
+            <Download className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Export</span>
           </Button>
         )}
         
         <NotificationCenter userId={userId} isAdmin={true} />
         
-        <Button variant="destructive" size="sm" onClick={handleLogout}>
-          <LogOut className="h-4 w-4 mr-2" />
-          Logout
+        <Button variant="ghost" size="sm" onClick={handleLogout} className="hidden md:flex text-destructive hover:text-destructive hover:bg-destructive/10">
+          <LogOut className="h-4 w-4 md:mr-2" />
+          <span className="hidden lg:inline">Logout</span>
         </Button>
         
-        <Badge variant="destructive" className="flex items-center gap-1">
+        <Badge variant="destructive" className="hidden md:flex items-center gap-1">
           <Activity className="h-3 w-3" />
-          Admin Access
+          <span className="hidden lg:inline">Admin</span>
         </Badge>
       </div>
     </div>
