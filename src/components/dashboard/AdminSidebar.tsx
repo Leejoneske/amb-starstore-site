@@ -35,15 +35,15 @@ export const AdminSidebar = ({ activeView, onViewChange }: AdminSidebarProps) =>
   };
 
   return (
-    <Sidebar className="border-r border-border bg-sidebar-background">
-      <SidebarContent className="bg-sidebar-background">
-        <div className="p-4 border-b border-border bg-gradient-to-r from-primary/10 to-destructive/10">
+    <Sidebar className="border-r border-border bg-background">
+      <SidebarContent className="bg-background">
+        <div className="p-4 border-b border-border bg-gradient-to-r from-primary/10 to-destructive/10 backdrop-blur-none">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-destructive flex items-center justify-center shadow-lg">
               <BarChart3 className="h-5 w-5 text-primary-foreground" />
             </div>
             <div>
-              <h2 className="font-bold text-sm">Ambassador Admin</h2>
+              <h2 className="font-bold text-sm text-foreground">Ambassador Admin</h2>
               <p className="text-xs text-muted-foreground">Management Portal</p>
             </div>
           </div>
@@ -57,7 +57,7 @@ export const AdminSidebar = ({ activeView, onViewChange }: AdminSidebarProps) =>
                   <SidebarMenuButton
                     onClick={() => handleNavigation(item.id)}
                     className={cn(
-                      "w-full justify-start gap-3 hover:bg-accent transition-all duration-200",
+                      "w-full justify-start gap-3 hover:bg-accent hover:text-accent-foreground transition-all duration-200 text-foreground",
                       activeView === item.id && "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
                     )}
                   >
