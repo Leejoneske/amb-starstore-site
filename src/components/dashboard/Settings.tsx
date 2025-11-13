@@ -1,12 +1,17 @@
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { PasswordChangeDialog } from "@/components/dashboard/PasswordChangeDialog";
 import { User } from "@supabase/supabase-js";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { User as UserIcon, Mail, Shield, Key } from "lucide-react";
+import { User as UserIcon, Mail, Shield, Key, Bell, Database, Settings as SettingsIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 interface SettingsProps {
   user: User;
@@ -15,6 +20,11 @@ interface SettingsProps {
 }
 
 export const Settings = ({ user, tier, isAdmin }: SettingsProps) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [autoApproval, setAutoApproval] = useState(false);
+
   const { data: ambassadorProfile } = useQuery({
     queryKey: ['ambassador-profile-password', user.id],
     queryFn: async () => {
@@ -27,6 +37,24 @@ export const Settings = ({ user, tier, isAdmin }: SettingsProps) => {
       return data;
     },
     enabled: !isAdmin && !!user.id,
+  });
+
+  const { data: adminStats } = useQuery({
+    queryKey: ['admin-stats'],
+    queryFn: async () => {
+      if (!isAdmin) return null;
+      
+      const [applicationsRes, ambassadorsRes] = await Promise.all([
+        supabase.from('applications').select('id', { count: 'exact', head: true }),
+        supabase.from('ambassador_profiles').select('id', { count: 'exact', head: true })
+      ]);
+      
+      return {
+        totalApplications: applicationsRes.count || 0,
+        totalAmbassadors: ambassadorsRes.count || 0
+      };
+    },
+    enabled: isAdmin
   });
 
   const getInitials = (name: string) => {
@@ -116,6 +144,79 @@ export const Settings = ({ user, tier, isAdmin }: SettingsProps) => {
           </div>
         </div>
       </Card>
+
+      {/* Admin Settings */}
+      {isAdmin && (
+        <>
+          <Card className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <SettingsIcon className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <h3 className="text-lg font-semibold">Admin Preferences</h3>
+                <p className="text-sm text-muted-foreground">Configure your admin dashboard settings</p>
+              </div>
+            </div>
+
+            <Separator className="my-4" />
+
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="email-notifications" className="text-base">Email Notifications</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Receive email alerts for new applications and important events
+                  </p>
+                </div>
+                <Switch
+                  id="email-notifications"
+                  checked={emailNotifications}
+                  onCheckedChange={setEmailNotifications}
+                />
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="auto-approval" className="text-base">Auto-approve Applications</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Automatically approve applications that meet all criteria
+                  </p>
+                </div>
+                <Switch
+                  id="auto-approval"
+                  checked={autoApproval}
+                  onCheckedChange={setAutoApproval}
+                  disabled
+                />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <Database className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <h3 className="text-lg font-semibold">System Overview</h3>
+                <p className="text-sm text-muted-foreground">Quick stats about your ambassador program</p>
+              </div>
+            </div>
+
+            <Separator className="my-4" />
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                <div className="text-sm font-medium text-muted-foreground mb-1">Total Applications</div>
+                <div className="text-2xl font-bold text-primary">{adminStats?.totalApplications || 0}</div>
+              </div>
+              <div className="p-4 rounded-lg bg-success/5 border border-success/20">
+                <div className="text-sm font-medium text-muted-foreground mb-1">Active Ambassadors</div>
+                <div className="text-2xl font-bold text-success">{adminStats?.totalAmbassadors || 0}</div>
+              </div>
+            </div>
+          </Card>
+        </>
+      )}
 
       {/* Security Settings */}
       {!isAdmin && (

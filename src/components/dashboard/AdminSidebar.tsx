@@ -35,8 +35,8 @@ export const AdminSidebar = ({ activeView, onViewChange }: AdminSidebarProps) =>
   };
 
   return (
-    <Sidebar className="border-r border-border">
-      <SidebarContent>
+    <Sidebar className="border-r border-border bg-sidebar-background">
+      <SidebarContent className="bg-sidebar-background">
         <div className="p-4 border-b border-border bg-gradient-to-r from-primary/10 to-destructive/10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-destructive flex items-center justify-center shadow-lg">

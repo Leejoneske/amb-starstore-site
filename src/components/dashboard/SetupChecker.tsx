@@ -7,7 +7,6 @@ import {
   CheckCircle2, 
   AlertCircle, 
   Settings, 
-  Database,
   Mail,
   MessageSquare,
   RefreshCw
@@ -18,7 +17,6 @@ import { logger } from '@/lib/logger';
 
 interface SetupStatus {
   botUsername: boolean;
-  mongoConnection: boolean;
   emailService: boolean;
   edgeFunctions: boolean;
 }
@@ -26,7 +24,6 @@ interface SetupStatus {
 export const SetupChecker = () => {
   const [status, setStatus] = useState<SetupStatus>({
     botUsername: false,
-    mongoConnection: false,
     emailService: false,
     edgeFunctions: false
   });
@@ -36,7 +33,6 @@ export const SetupChecker = () => {
     setIsChecking(true);
     const newStatus: SetupStatus = {
       botUsername: false,
-      mongoConnection: false,
       emailService: false,
       edgeFunctions: false
     };
@@ -49,29 +45,12 @@ export const SetupChecker = () => {
       try {
         const { data: session } = await supabase.auth.getSession();
         if (session.session) {
-          // Test mongo-proxy function
-          const mongoResponse = await fetch('/functions/v1/mongo-proxy', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.session.access_token}`,
-            },
-            body: JSON.stringify({
-              collection: 'users',
-              operation: 'find',
-              query: {},
-              options: { limit: 1 }
-            })
-          });
-          
-          newStatus.edgeFunctions = mongoResponse.status !== 404;
-          newStatus.mongoConnection = mongoResponse.ok;
-
           // Test email function
           const emailResponse = await fetch('/functions/v1/send-approval-email', {
             method: 'OPTIONS'
           });
           newStatus.emailService = emailResponse.status !== 404;
+          newStatus.edgeFunctions = emailResponse.status !== 404;
         }
       } catch (error) {
         logger.warn('Function check failed', { function: 'setup-check' }, error as Error);
@@ -165,26 +144,11 @@ export const SetupChecker = () => {
             <div>
               <div className="font-medium">Edge Functions</div>
               <div className="text-sm text-muted-foreground">
-                MongoDB proxy and email functions
+                Email and approval functions
               </div>
             </div>
           </div>
           {getStatusBadge(status.edgeFunctions)}
-        </div>
-
-        {/* MongoDB Connection */}
-        <div className="flex items-center justify-between p-3 rounded-lg border">
-          <div className="flex items-center gap-3">
-            {getStatusIcon(status.mongoConnection)}
-            <Database className="h-4 w-4 text-muted-foreground" />
-            <div>
-              <div className="font-medium">MongoDB Connection</div>
-              <div className="text-sm text-muted-foreground">
-                Connection to your Telegram miniapp database
-              </div>
-            </div>
-          </div>
-          {getStatusBadge(status.mongoConnection)}
         </div>
 
         {/* Email Service */}
@@ -195,7 +159,7 @@ export const SetupChecker = () => {
             <div>
               <div className="font-medium">Email Service</div>
               <div className="text-sm text-muted-foreground">
-                Resend API for ambassador notifications
+                Email notifications for ambassadors
               </div>
             </div>
           </div>
@@ -214,11 +178,8 @@ export const SetupChecker = () => {
             {!status.edgeFunctions && (
               <li>Deploy edge functions via Supabase dashboard</li>
             )}
-            {!status.mongoConnection && (
-              <li>Add MONGO_CONNECTION_STRING environment variable</li>
-            )}
             {!status.emailService && (
-              <li>Add RESEND_API_KEY environment variable</li>
+              <li>Configure email service for notifications</li>
             )}
           </ol>
           <div className="mt-3">
