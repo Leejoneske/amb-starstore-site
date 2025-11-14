@@ -21,8 +21,8 @@ const Navbar = () => {
     });
   };
 
-  // Only show navbar for authenticated users on dashboard
-  const isAppRoute = location.pathname.startsWith('/dashboard');
+  // Check if user is on any dashboard route
+  const isAppRoute = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin');
 
   return (
     <nav className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-50">
