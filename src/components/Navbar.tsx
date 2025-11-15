@@ -45,7 +45,11 @@ const Navbar = () => {
             )}
             {user ? (
               <>
-                {!isAppRoute && <Link to="/dashboard"><Button variant="default" size="sm">Dashboard</Button></Link>}
+                {!isAppRoute && (
+                  <Link to={userRole === 'admin' ? "/admin" : "/dashboard"}>
+                    <Button variant="default" size="sm">Dashboard</Button>
+                  </Link>
+                )}
                 <Button variant="ghost" size="sm" onClick={handleSignOut}>
                   <LogOut className="h-4 w-4" />
                 </Button>
