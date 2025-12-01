@@ -199,44 +199,95 @@ const Home = () => {
       </section>
 
       {/* Earning Potential Section */}
-      <section className="py-20">
+      <section className="py-20 bg-gradient-to-b from-background to-muted/20">
         <div className="container mx-auto px-4">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold">Earning Potential</h2>
+            <Badge className="mb-2" variant="outline">
+              <DollarSign className="h-3 w-3 mr-1" />
+              Earning Potential
+            </Badge>
+            <h2 className="text-3xl lg:text-5xl font-bold">Your Earning Journey</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              See what our ambassadors are earning monthly
+              Progress through tiers and increase your monthly earnings
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-8">
             {earningRanges.map((tier, index) => (
-              <Card key={index} className={`p-6 ${tier.tier === 'Elite' ? 'ring-2 ring-primary' : ''}`}>
-                <div className="space-y-4">
-                  <Badge 
-                    variant={tier.tier === 'Elite' ? 'default' : 'secondary'}
-                    className="w-full justify-center text-sm py-1"
-                  >
+              <Card 
+                key={index} 
+                className={`relative overflow-hidden transition-all hover:shadow-xl ${
+                  tier.tier === 'Elite' 
+                    ? 'ring-2 ring-primary shadow-lg scale-105' 
+                    : 'hover:scale-105'
+                }`}
+              >
+                {/* Tier badge at top */}
+                <div className={`px-6 py-4 text-center ${
+                  tier.tier === 'Elite' 
+                    ? 'bg-gradient-to-r from-yellow-500 to-amber-500' 
+                    : 'bg-muted'
+                }`}>
+                  <div className={`text-xl font-bold ${
+                    tier.tier === 'Elite' ? 'text-white' : 'text-foreground'
+                  }`}>
                     {tier.icon} {tier.tier}
-                  </Badge>
-                  
-                  <div className="text-center py-3">
-                    <div className="text-3xl font-bold text-primary">{tier.range}</div>
-                    <div className="text-xs text-muted-foreground mt-1">minimum monthly</div>
+                  </div>
+                  {tier.tier === 'Elite' && (
+                    <div className="text-xs text-white/90 mt-1">Most Popular</div>
+                  )}
+                </div>
+
+                <div className="p-6 space-y-6">
+                  {/* Earnings - Large and prominent */}
+                  <div className="text-center py-4">
+                    <div className="text-5xl font-bold bg-gradient-to-br from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                      {tier.range}
+                    </div>
+                    <div className="text-sm text-muted-foreground mt-2 font-medium">
+                      per month minimum
+                    </div>
                   </div>
 
-                  <div className="space-y-2 text-sm pt-3 border-t">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Commission:</span>
-                      <span className="font-semibold">{tier.commission}</span>
+                  {/* Stats - Clear and readable */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-medium">Commission</span>
+                      </div>
+                      <span className="text-lg font-bold text-green-600">{tier.commission}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Referrals:</span>
-                      <span className="font-semibold">{tier.referrals}+</span>
+                    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-medium">Referrals</span>
+                      </div>
+                      <span className="text-lg font-bold">{tier.referrals}+</span>
                     </div>
                   </div>
                 </div>
               </Card>
             ))}
+          </div>
+
+          {/* Info banner */}
+          <div className="max-w-3xl mx-auto">
+            <Card className="p-6 bg-primary/5 border-primary/20">
+              <div className="flex items-start gap-4">
+                <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
+                  <Trophy className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">How Tier Progression Works</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Start as an Explorer and work your way up by increasing your monthly referrals. 
+                    Each tier unlocks higher commission rates and exclusive benefits. 
+                    Your earnings grow exponentially as you advance!
+                  </p>
+                </div>
+              </div>
+            </Card>
           </div>
         </div>
       </section>
