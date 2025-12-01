@@ -85,13 +85,13 @@ const AdminDashboard = () => {
       if (action === 'approve') {
         logger.info('Approving application', { applicationId, email: application.email });
         
+        // Note: referral_code is now always derived from telegram_id
         const { data, error: fnError } = await supabase.functions.invoke('admin-approve-application', {
           body: {
             applicationId,
             applicantEmail: application.email,
             applicantName: application.full_name,
-            telegramId: application.telegram_id || null,
-            referralCode: application.referral_code || null,
+            telegramId: application.telegram_id || application.referral_code || null,
           },
         });
 
