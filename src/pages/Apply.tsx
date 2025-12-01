@@ -221,48 +221,70 @@ const Apply = () => {
         </div>
 
         <Card className="p-8">
-          {/* Telegram Connect Section */}
+          {/* Telegram Auto-fill Banner - Always visible when not connected */}
           {!telegramData && !telegramLoading && (
-            <div className="mb-8 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+            <div className="mb-8 p-6 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-2 border-primary/30 rounded-xl">
               <div className="flex items-start gap-4">
-                <div className="p-2 bg-primary/10 rounded-full">
-                  <MessageCircle className="h-6 w-6 text-primary" />
+                <div className="p-3 bg-primary/20 rounded-full shrink-0">
+                  <MessageCircle className="h-8 w-8 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold mb-1">Connect with Telegram</h3>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Auto-fill your Telegram details by connecting your account. This makes the process faster!
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-lg font-bold">Quick Auto-Fill Available!</h3>
+                    <span className="px-2 py-0.5 bg-primary/20 text-primary text-xs font-medium rounded-full">Recommended</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    <strong>Skip typing!</strong> Connect your Telegram to automatically fill in your <strong>Name</strong>, <strong>Username</strong>, and <strong>Telegram ID</strong>. 
+                    Your Telegram ID will also be used as your unique referral code.
                   </p>
-                  <Button 
-                    type="button"
-                    variant="outline" 
-                    onClick={handleConnectTelegram}
-                    className="gap-2"
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    Connect via Telegram
-                  </Button>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Button 
+                      type="button"
+                      onClick={handleConnectTelegram}
+                      className="gap-2"
+                      size="lg"
+                    >
+                      <MessageCircle className="h-5 w-5" />
+                      Connect Telegram & Auto-Fill
+                    </Button>
+                    <span className="text-xs text-muted-foreground">Opens in Telegram app</span>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-primary/10">
+                    <p className="text-xs text-muted-foreground flex items-center gap-2">
+                      <CheckCircle2 className="h-3 w-3 text-success" />
+                      Fields auto-filled: Full Name, Telegram Username, Telegram ID (Referral Code)
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
+          {/* Success state when Telegram is connected */}
           {telegramData && (
-            <div className="mb-8 p-4 bg-success/5 border border-success/20 rounded-lg">
+            <div className="mb-8 p-4 bg-success/10 border-2 border-success/30 rounded-xl">
               <div className="flex items-center gap-3">
-                <CheckCircle2 className="h-5 w-5 text-success" />
-                <span className="font-medium">Telegram Connected</span>
-                <span className="text-sm text-muted-foreground">
-                  ({telegramData.username ? `@${telegramData.username}` : `ID: ${telegramData.telegramId}`})
-                </span>
+                <div className="p-2 bg-success/20 rounded-full">
+                  <CheckCircle2 className="h-6 w-6 text-success" />
+                </div>
+                <div>
+                  <span className="font-semibold text-success">Telegram Connected Successfully!</span>
+                  <p className="text-sm text-muted-foreground">
+                    {telegramData.username ? `@${telegramData.username}` : ''} 
+                    {telegramData.username && telegramData.telegramId ? ' • ' : ''}
+                    ID: {telegramData.telegramId}
+                  </p>
+                </div>
               </div>
             </div>
           )}
 
+          {/* WebApp detection */}
           {isInTelegram && (
-            <div className="mb-6 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-              <p className="text-sm text-blue-600 dark:text-blue-400">
-                📱 Opened from Telegram - your details have been auto-filled!
+            <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <p className="text-sm text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                <MessageCircle className="h-4 w-4" />
+                <span><strong>Telegram WebApp detected!</strong> Your details have been auto-filled below.</span>
               </p>
             </div>
           )}
