@@ -11,7 +11,7 @@ type ApproveRequest = {
   applicantEmail: string;
   applicantName: string;
   telegramId?: string;
-  referralCode?: string;
+  // referralCode is now always derived from telegramId
 };
 
 function genTempPassword() {
@@ -63,7 +63,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get request data
-    const { applicationId, applicantEmail, applicantName, telegramId, referralCode: userReferralCode }: ApproveRequest = await req.json();
+    const { applicationId, applicantEmail, applicantName, telegramId }: ApproveRequest = await req.json();
 
     // Validate required fields
     if (!applicationId || !applicantEmail || !applicantName) {
@@ -79,11 +79,13 @@ serve(async (req) => {
       );
     }
 
-    console.log('Processing approval for:', { applicationId, applicantEmail, applicantName, telegramId, userReferralCode });
+    // Referral code is now always the Telegram ID (they are the same)
+    // If no telegramId provided, generate a fallback code
+    const referralCode = telegramId || genReferralCode().toUpperCase();
+
+    console.log('Processing approval for:', { applicationId, applicantEmail, applicantName, telegramId, referralCode });
 
     const tempPassword = genTempPassword();
-    // Use the user's referral code from StarStore if provided, otherwise generate one
-    const referralCode = userReferralCode || genReferralCode().toUpperCase();
     
     console.log('Generated credentials:', { 
       tempPassword, 

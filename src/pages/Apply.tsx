@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,19 +6,19 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2, MessageCircle, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTelegramAutoFill } from "@/hooks/useTelegramAutoFill";
 import { z } from "zod";
 
-// Validation schema
+// Validation schema - removed referralCode as it will be auto-set to telegramId
 const applicationSchema = z.object({
   fullName: z.string().trim().min(2, "Name must be at least 2 characters").max(100),
   email: z.string().trim().email("Invalid email address").max(255),
   phone: z.string().trim().optional(),
   telegram: z.string().trim().optional(),
-  telegramId: z.string().trim().min(5, "Telegram ID must be at least 5 digits").regex(/^\d+$/, "Telegram ID must be numeric").optional(),
-  referralCode: z.string().trim().min(4, "Referral code must be at least 4 characters").max(20).optional(),
+  telegramId: z.string().trim().min(5, "Telegram ID must be at least 5 digits").regex(/^\d+$/, "Telegram ID must be numeric"),
   socialLinks: z.string().trim().max(1000).optional(),
   experience: z.string().trim().min(10, "Please provide more detail").max(2000),
   whyJoin: z.string().trim().min(10, "Please provide more detail").max(2000),
@@ -31,7 +31,6 @@ const Apply = () => {
   const [phone, setPhone] = useState("");
   const [telegram, setTelegram] = useState("");
   const [telegramId, setTelegramId] = useState("");
-  const [referralCode, setReferralCode] = useState("");
   const [socialLinks, setSocialLinks] = useState("");
   const [experience, setExperience] = useState("");
   const [whyJoin, setWhyJoin] = useState("");
@@ -43,6 +42,39 @@ const Apply = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
+  
+  // Telegram auto-fill hook
+  const { 
+    telegramData, 
+    isInTelegram, 
+    isLoading: telegramLoading, 
+    getTelegramConnectUrl 
+  } = useTelegramAutoFill();
+
+  // Auto-fill fields when Telegram data is available
+  useEffect(() => {
+    if (telegramData) {
+      if (telegramData.telegramId && !telegramId) {
+        setTelegramId(telegramData.telegramId);
+      }
+      if (telegramData.username && !telegram) {
+        setTelegram(telegramData.username.startsWith('@') ? telegramData.username : `@${telegramData.username}`);
+      }
+      if (telegramData.fullName && !fullName) {
+        setFullName(telegramData.fullName);
+      }
+      
+      toast({
+        title: "Telegram Connected",
+        description: "Your Telegram details have been auto-filled!",
+      });
+    }
+  }, [telegramData, telegramId, telegram, fullName, toast]);
+
+  const handleConnectTelegram = () => {
+    const url = getTelegramConnectUrl();
+    window.open(url, '_blank');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +89,6 @@ const Apply = () => {
         phone,
         telegram,
         telegramId,
-        referralCode,
         socialLinks,
         experience,
         whyJoin,
@@ -86,13 +117,15 @@ const Apply = () => {
       let parsedSocialLinks = null;
       if (validatedData.socialLinks) {
         try {
-          // Split by newlines and create object
           const links = validatedData.socialLinks.split('\n').filter(l => l.trim());
           parsedSocialLinks = { links };
         } catch {
           parsedSocialLinks = { raw: validatedData.socialLinks };
         }
       }
+
+      // Auto-set referral_code to telegram_id (they are the same)
+      const referralCode = validatedData.telegramId;
 
       const { error } = await supabase
         .from('applications')
@@ -102,8 +135,8 @@ const Apply = () => {
           email: validatedData.email,
           phone: validatedData.phone || null,
           telegram_username: validatedData.telegram || null,
-          telegram_id: validatedData.telegramId || null,
-          referral_code: validatedData.referralCode || null,
+          telegram_id: validatedData.telegramId,
+          referral_code: referralCode,
           social_media_links: parsedSocialLinks,
           experience: validatedData.experience,
           why_join: validatedData.whyJoin,
@@ -188,6 +221,52 @@ const Apply = () => {
         </div>
 
         <Card className="p-8">
+          {/* Telegram Connect Section */}
+          {!telegramData && !telegramLoading && (
+            <div className="mb-8 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+              <div className="flex items-start gap-4">
+                <div className="p-2 bg-primary/10 rounded-full">
+                  <MessageCircle className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-1">Connect with Telegram</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Auto-fill your Telegram details by connecting your account. This makes the process faster!
+                  </p>
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    onClick={handleConnectTelegram}
+                    className="gap-2"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Connect via Telegram
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {telegramData && (
+            <div className="mb-8 p-4 bg-success/5 border border-success/20 rounded-lg">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="h-5 w-5 text-success" />
+                <span className="font-medium">Telegram Connected</span>
+                <span className="text-sm text-muted-foreground">
+                  ({telegramData.username ? `@${telegramData.username}` : `ID: ${telegramData.telegramId}`})
+                </span>
+              </div>
+            </div>
+          )}
+
+          {isInTelegram && (
+            <div className="mb-6 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <p className="text-sm text-blue-600 dark:text-blue-400">
+                📱 Opened from Telegram - your details have been auto-filled!
+              </p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <div>
@@ -241,45 +320,49 @@ const Apply = () => {
                   value={telegram}
                   onChange={(e) => setTelegram(e.target.value)}
                   placeholder="@username"
+                  className={telegramData?.username ? 'bg-muted' : ''}
                 />
+                {telegramData?.username && (
+                  <p className="text-xs text-success mt-1">✓ Auto-filled from Telegram</p>
+                )}
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <Label htmlFor="telegramId">Telegram ID (from StarStore)</Label>
+            <div>
+              <Label htmlFor="telegramId">Telegram ID *</Label>
+              <div className="flex gap-2">
                 <Input
                   id="telegramId"
                   value={telegramId}
                   onChange={(e) => setTelegramId(e.target.value)}
                   placeholder="123456789"
+                  required
+                  className={`flex-1 ${telegramData?.telegramId ? 'bg-muted' : ''}`}
                   aria-invalid={errors.telegramId ? 'true' : 'false'}
                   aria-describedby={errors.telegramId ? 'telegramId-error' : undefined}
                 />
-                {errors.telegramId && (
-                  <p id="telegramId-error" className="text-sm text-destructive mt-1">{errors.telegramId}</p>
+                {!telegramData && (
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="icon"
+                    onClick={handleConnectTelegram}
+                    title="Get from Telegram"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
                 )}
-                <p className="text-xs text-muted-foreground mt-1">
-                  Your numeric Telegram ID (get from @userinfobot)
-                </p>
               </div>
-              <div>
-                <Label htmlFor="referralCode">Your StarStore Referral Code</Label>
-                <Input
-                  id="referralCode"
-                  value={referralCode}
-                  onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                  placeholder="ABC123XYZ"
-                  aria-invalid={errors.referralCode ? 'true' : 'false'}
-                  aria-describedby={errors.referralCode ? 'referralCode-error' : undefined}
-                />
-                {errors.referralCode && (
-                  <p id="referralCode-error" className="text-sm text-destructive mt-1">{errors.referralCode}</p>
-                )}
+              {errors.telegramId && (
+                <p id="telegramId-error" className="text-sm text-destructive mt-1">{errors.telegramId}</p>
+              )}
+              {telegramData?.telegramId ? (
+                <p className="text-xs text-success mt-1">✓ Auto-filled from Telegram (also used as your referral code)</p>
+              ) : (
                 <p className="text-xs text-muted-foreground mt-1">
-                  The referral code you use in StarStore app
+                  Your numeric Telegram ID - click "Connect via Telegram" above to auto-fill, or get it from @userinfobot
                 </p>
-              </div>
+              )}
             </div>
 
             <div>
