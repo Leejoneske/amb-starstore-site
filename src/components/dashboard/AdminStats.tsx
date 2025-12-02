@@ -11,8 +11,22 @@ interface AdminStatsProps {
 export const AdminStats = ({ applications, ambassadors, analyticsData }: AdminStatsProps) => {
   const pendingApps = applications?.filter(a => a.status === 'pending').length || 0;
   const totalAmbassadors = ambassadors?.length || 0;
+  const activeAmbassadors = ambassadors?.filter(a => a.status === 'active').length || 0;
+  
+  // Calculate total earnings from ambassador profiles (commission amounts)
   const totalEarnings = ambassadors?.reduce((sum, a) => sum + (a.total_earnings || 0), 0) || 0;
   const totalReferrals = ambassadors?.reduce((sum, a) => sum + (a.total_referrals || 0), 0) || 0;
+  
+  // Calculate average commission rate based on tier distribution
+  const avgCommissionRate = analyticsData?.performanceMetrics?.avgCommissionRate || 
+    (ambassadors && ambassadors.length > 0 
+      ? ambassadors.reduce((sum, a) => {
+          const tierMap: Record<string, number> = {
+            'entry': 5, 'growing': 7, 'advanced': 10, 'elite': 15
+          };
+          return sum + (tierMap[a.current_tier] || 5);
+        }, 0) / ambassadors.length
+      : 5);
 
   const stats = [
     {
@@ -28,18 +42,16 @@ export const AdminStats = ({ applications, ambassadors, analyticsData }: AdminSt
       title: "Active Ambassadors",
       value: totalAmbassadors,
       icon: Users,
-      trend: ambassadors?.filter(a => a.status === 'active').length + " active",
+      trend: `${activeAmbassadors} active, ${totalAmbassadors - activeAmbassadors} inactive`,
       gradient: "from-green-500/20 to-green-600/20",
       iconBg: "bg-green-500/10",
       iconColor: "text-green-600",
     },
     {
-      title: "Total Earnings",
+      title: "Total Commission Paid",
       value: `$${totalEarnings.toFixed(2)}`,
       icon: DollarSign,
-      trend: analyticsData?.performanceMetrics?.avgTransactionValue 
-        ? `$${analyticsData.performanceMetrics.avgTransactionValue.toFixed(2)} avg`
-        : "No data",
+      trend: `${avgCommissionRate.toFixed(1)}% avg commission rate`,
       gradient: "from-purple-500/20 to-purple-600/20",
       iconBg: "bg-purple-500/10",
       iconColor: "text-purple-600",
