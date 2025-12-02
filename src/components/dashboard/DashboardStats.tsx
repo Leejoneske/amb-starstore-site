@@ -1,7 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, Users, Clock, Star } from "lucide-react";
+import { DollarSign, Users, Clock, Star, Percent } from "lucide-react";
 import type { Ambassador, AnalyticsData } from "@/types";
+import { getTierInfo } from "@/lib/tier-utils";
 
 interface DashboardStatsProps {
   ambassadorProfile: Ambassador;
@@ -9,8 +10,10 @@ interface DashboardStatsProps {
 }
 
 export const DashboardStats = ({ ambassadorProfile, analyticsData }: DashboardStatsProps) => {
+  const tierInfo = getTierInfo(ambassadorProfile.current_tier);
+  
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
       <Card className="p-4 sm:p-5 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
         <div className="flex items-center justify-between mb-3">
           <div className="p-2 sm:p-2.5 rounded-lg bg-primary/20">
@@ -79,6 +82,24 @@ export const DashboardStats = ({ ambassadorProfile, analyticsData }: DashboardSt
         <div className="text-xs sm:text-sm text-muted-foreground">Lifetime Stars</div>
         <div className="text-xs text-info mt-2">
           Avg: {ambassadorProfile.avg_stars_per_transaction?.toFixed(0) || 0}/tx
+        </div>
+      </Card>
+
+      <Card className="p-4 sm:p-5 bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20">
+        <div className="flex items-center justify-between mb-3">
+          <div className="p-2 sm:p-2.5 rounded-lg bg-purple-500/20">
+            <Percent className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
+          </div>
+          <Badge variant="secondary" className="text-xs px-2 py-0.5">
+            {tierInfo.displayName} Tier
+          </Badge>
+        </div>
+        <div className="text-2xl sm:text-3xl font-bold mb-1">
+          {tierInfo.benefits.commissionRate}%
+        </div>
+        <div className="text-xs sm:text-sm text-muted-foreground">Commission Rate</div>
+        <div className="text-xs text-purple-600 mt-2">
+          ${tierInfo.benefits.minEarnings}+ min earnings
         </div>
       </Card>
     </div>

@@ -51,8 +51,8 @@ export const useAnalytics = (isAdmin: boolean = false) => {
 
       if (ambError) throw ambError;
 
-      // Calculate total revenue
-      const totalRevenue = transactions?.reduce((sum, t) => sum + t.amount, 0) || 0;
+      // Calculate total revenue (using commission_amount, not transaction amount)
+      const totalRevenue = transactions?.reduce((sum, t) => sum + t.commission_amount, 0) || 0;
       
       // Calculate monthly revenue (current month)
       const currentMonth = new Date().getMonth();
@@ -60,7 +60,7 @@ export const useAnalytics = (isAdmin: boolean = false) => {
       const monthlyRevenue = transactions?.filter(t => {
         const date = new Date(t.transaction_date);
         return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-      }).reduce((sum, t) => sum + t.amount, 0) || 0;
+      }).reduce((sum, t) => sum + t.commission_amount, 0) || 0;
 
       // Calculate conversion rate (simplified)
       const totalReferrals = ambassadors?.reduce((sum, a) => sum + a.total_referrals, 0) || 0;
@@ -91,7 +91,7 @@ export const useAnalytics = (isAdmin: boolean = false) => {
 
         revenueByMonth.push({
           month,
-          revenue: monthTransactions.reduce((sum, t) => sum + t.amount, 0),
+          revenue: monthTransactions.reduce((sum, t) => sum + t.commission_amount, 0),
           transactions: monthTransactions.length
         });
       }

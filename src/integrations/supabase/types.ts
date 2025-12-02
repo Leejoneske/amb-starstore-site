@@ -994,10 +994,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      calculate_tier: {
-        Args: { referral_count: number }
-        Returns: Database["public"]["Enums"]["app_tier"]
-      }
+      calculate_tier:
+        | {
+            Args: { referral_count: number }
+            Returns: Database["public"]["Enums"]["app_tier"]
+          }
+        | {
+            Args: {
+              quality_rate?: number
+              referral_count: number
+              social_posts?: number
+            }
+            Returns: Database["public"]["Enums"]["app_tier"]
+          }
       create_ambassador_as_admin: {
         Args: { approved_by?: string; referral_code: string; user_id: string }
         Returns: Json
