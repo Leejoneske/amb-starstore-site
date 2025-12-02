@@ -49,8 +49,11 @@ const Apply = () => {
     telegramData, 
     isInTelegram, 
     isLoading: telegramLoading, 
-    getTelegramConnectUrl 
+    fetchUserFromStarStore,
+    setTelegramData
   } = useTelegramAutoFill();
+  
+  const [fetchingFromStarStore, setFetchingFromStarStore] = useState(false);
 
   // Auto-fill fields when Telegram data is available
   useEffect(() => {
@@ -72,9 +75,41 @@ const Apply = () => {
     }
   }, [telegramData, telegramId, telegram, fullName, toast]);
 
-  const handleConnectTelegram = () => {
-    const url = getTelegramConnectUrl();
-    window.open(url, '_blank');
+  const handleFetchFromStarStore = async () => {
+    if (!telegramId || telegramId.length < 5) {
+      toast({
+        title: "Invalid Telegram ID",
+        description: "Please enter a valid Telegram ID first",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setFetchingFromStarStore(true);
+    try {
+      const userData = await fetchUserFromStarStore(telegramId);
+      if (userData) {
+        setTelegramData(userData);
+        toast({
+          title: "Success!",
+          description: "Your info has been fetched from StarStore",
+        });
+      } else {
+        toast({
+          title: "Not Found",
+          description: "No user found with this Telegram ID in StarStore",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch user info. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setFetchingFromStarStore(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -222,26 +257,31 @@ const Apply = () => {
         </div>
 
         <Card className="p-8">
-          {/* Compact Telegram connection notice - only shown if not connected */}
-          {!telegramData && !telegramLoading && (
-            <div className="mb-6 p-3 bg-primary/5 border border-primary/20 rounded-lg">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <MessageCircle className="h-4 w-4 text-primary" />
-                  <span className="text-muted-foreground">
-                    Connect Telegram to auto-fill Name, Username & ID
-                  </span>
+          {/* Auto-fill info banner */}
+          {!telegramData && !telegramLoading && !isInTelegram && (
+            <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+              <div className="flex items-start gap-3">
+                <MessageCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm mb-1">Auto-fill from StarStore</p>
+                  <p className="text-xs text-muted-foreground">
+                    Enter your Telegram ID below and click "Fetch Info" to auto-fill your name and username from StarStore
+                  </p>
                 </div>
-                <Button 
-                  type="button"
-                  onClick={handleConnectTelegram}
-                  variant="outline"
-                  size="sm"
-                  className="gap-1 shrink-0"
-                >
-                  <MessageCircle className="h-3.5 w-3.5" />
-                  Connect
-                </Button>
+              </div>
+            </div>
+          )}
+          
+          {isInTelegram && telegramData && (
+            <div className="mb-6 p-4 bg-success/5 border border-success/20 rounded-lg">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm mb-1">Auto-filled from Telegram</p>
+                  <p className="text-xs text-muted-foreground">
+                    Your details have been automatically filled from Telegram WebApp
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -341,16 +381,24 @@ const Apply = () => {
                   className={`flex-1 ${telegramData?.telegramId ? 'bg-muted' : ''}`}
                   aria-invalid={errors.telegramId ? 'true' : 'false'}
                   aria-describedby={errors.telegramId ? 'telegramId-error' : undefined}
+                  disabled={isInTelegram && !!telegramData}
                 />
-                {!telegramData && (
+                {!telegramData && !isInTelegram && (
                   <Button 
                     type="button" 
-                    variant="outline" 
-                    size="icon"
-                    onClick={handleConnectTelegram}
-                    title="Connect Telegram to auto-fill"
+                    variant="outline"
+                    onClick={handleFetchFromStarStore}
+                    disabled={fetchingFromStarStore || !telegramId || telegramId.length < 5}
+                    className="shrink-0"
                   >
-                    <MessageCircle className="h-4 w-4" />
+                    {fetchingFromStarStore ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Fetching...
+                      </>
+                    ) : (
+                      "Fetch Info"
+                    )}
                   </Button>
                 )}
               </div>
@@ -360,7 +408,7 @@ const Apply = () => {
               <p className="text-xs text-muted-foreground mt-1">
                 {telegramData?.telegramId 
                   ? "Also used as your referral code" 
-                  : "Get from @userinfobot or connect Telegram above"
+                  : "Your Telegram ID will be used as your referral code. Get it from @userinfobot on Telegram"
                 }
               </p>
             </div>
