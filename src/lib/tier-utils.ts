@@ -6,9 +6,7 @@ export interface TierInfo {
   icon: string;
   requirements: {
     referrals: number;
-    transactions: number;
     socialPosts: number;
-    avgStars: number;
     qualityRate: number;
   };
   benefits: {
@@ -37,6 +35,12 @@ export interface TierConfig {
   };
 }
 
+// Tier requirements match the database calculate_tier function
+// Entry/Explorer = base tier (no requirements)
+// Growing/Pioneer = 25 referrals, 8 social posts, 75% quality
+// Advanced/Trailblazer = 50 referrals, 12 social posts, 80% quality
+// Elite/Legend = 100 referrals, 15 social posts, 85% quality
+
 export const TIER_INFO: Record<string, TierInfo> = {
   explorer: {
     name: 'explorer',
@@ -45,17 +49,15 @@ export const TIER_INFO: Record<string, TierInfo> = {
     gradient: 'linear-gradient(135deg, #A78BFA 0%, #7C3AED 100%)',
     icon: '🧭',
     requirements: {
-      referrals: 10,
-      transactions: 30,
-      socialPosts: 4,
-      avgStars: 350,
-      qualityRate: 0.7
+      referrals: 0, // Base tier - no requirements
+      socialPosts: 0,
+      qualityRate: 0
     },
     benefits: {
-      minEarnings: 30,
+      minEarnings: 0,
       nftLevel: 1,
-      freeStars: 50,
-      commissionRate: 5,
+      freeStars: 0,
+      commissionRate: 3,
       extras: ['Access to ambassador group', 'Basic analytics dashboard']
     }
   },
@@ -67,16 +69,14 @@ export const TIER_INFO: Record<string, TierInfo> = {
     icon: '🚀',
     requirements: {
       referrals: 25,
-      transactions: 70,
       socialPosts: 8,
-      avgStars: 450,
-      qualityRate: 0.75
+      qualityRate: 75
     },
     benefits: {
-      minEarnings: 80,
-      nftLevel: 3,
-      freeStars: 150,
-      commissionRate: 7,
+      minEarnings: 50,
+      nftLevel: 2,
+      freeStars: 100,
+      commissionRate: 5,
       extras: ['Priority support', 'Co-marketing opportunities']
     }
   },
@@ -88,16 +88,14 @@ export const TIER_INFO: Record<string, TierInfo> = {
     icon: '⚡',
     requirements: {
       referrals: 50,
-      transactions: 100,
       socialPosts: 12,
-      avgStars: 500,
-      qualityRate: 0.8
+      qualityRate: 80
     },
     benefits: {
       minEarnings: 150,
-      nftLevel: 4,
+      nftLevel: 3,
       freeStars: 250,
-      commissionRate: 10,
+      commissionRate: 7,
       extras: ['Advanced analytics', 'Custom referral tools']
     }
   },
@@ -109,16 +107,14 @@ export const TIER_INFO: Record<string, TierInfo> = {
     icon: '👑',
     requirements: {
       referrals: 100,
-      transactions: 200,
       socialPosts: 15,
-      avgStars: 600,
-      qualityRate: 0.85
+      qualityRate: 85
     },
     benefits: {
       minEarnings: 300,
-      nftLevel: 5,
+      nftLevel: 4,
       freeStars: 500,
-      commissionRate: 15,
+      commissionRate: 10,
       extras: ['Revenue share participation', 'Lead monthly community events', 'VIP support']
     }
   }
@@ -130,15 +126,15 @@ export const TIER_CONFIGS: Record<string, TierConfig> = {
     displayName: 'Explorer',
     icon: '🧭',
     requirements: {
-      referrals: 10,
-      socialPosts: 4,
-      qualityRate: 0.7
+      referrals: 0,
+      socialPosts: 0,
+      qualityRate: 0
     },
     benefits: {
-      minEarnings: 30,
+      minEarnings: 0,
       nftLevel: 1,
-      freeStars: 50,
-      commissionRate: 5
+      freeStars: 0,
+      commissionRate: 3
     }
   },
   pioneer: {
@@ -148,13 +144,13 @@ export const TIER_CONFIGS: Record<string, TierConfig> = {
     requirements: {
       referrals: 25,
       socialPosts: 8,
-      qualityRate: 0.75
+      qualityRate: 75
     },
     benefits: {
-      minEarnings: 80,
-      nftLevel: 3,
-      freeStars: 150,
-      commissionRate: 7
+      minEarnings: 50,
+      nftLevel: 2,
+      freeStars: 100,
+      commissionRate: 5
     }
   },
   trailblazer: {
@@ -164,13 +160,13 @@ export const TIER_CONFIGS: Record<string, TierConfig> = {
     requirements: {
       referrals: 50,
       socialPosts: 12,
-      qualityRate: 0.8
+      qualityRate: 80
     },
     benefits: {
       minEarnings: 150,
-      nftLevel: 4,
+      nftLevel: 3,
       freeStars: 250,
-      commissionRate: 10
+      commissionRate: 7
     }
   },
   legend: {
@@ -180,13 +176,13 @@ export const TIER_CONFIGS: Record<string, TierConfig> = {
     requirements: {
       referrals: 100,
       socialPosts: 15,
-      qualityRate: 0.85
+      qualityRate: 85
     },
     benefits: {
       minEarnings: 300,
-      nftLevel: 5,
+      nftLevel: 4,
       freeStars: 500,
-      commissionRate: 15
+      commissionRate: 10
     }
   }
 };
@@ -254,9 +250,15 @@ export const calculateTierProgress = (profile: any): {
     };
   }
 
-  const referralsProgress = Math.min(100, (profile.total_referrals / nextTier.requirements.referrals) * 100);
-  const socialPostsProgress = Math.min(100, (profile.social_posts_this_month / nextTier.requirements.socialPosts) * 100);
-  const qualityRateProgress = Math.min(100, ((profile.quality_transaction_rate || 0) / nextTier.requirements.qualityRate) * 100);
+  const referralsProgress = nextTier.requirements.referrals > 0 
+    ? Math.min(100, (profile.total_referrals / nextTier.requirements.referrals) * 100)
+    : 100;
+  const socialPostsProgress = nextTier.requirements.socialPosts > 0
+    ? Math.min(100, (profile.social_posts_this_month / nextTier.requirements.socialPosts) * 100)
+    : 100;
+  const qualityRateProgress = nextTier.requirements.qualityRate > 0
+    ? Math.min(100, ((profile.quality_transaction_rate || 0) / nextTier.requirements.qualityRate) * 100)
+    : 100;
 
   const referralsComplete = profile.total_referrals >= nextTier.requirements.referrals;
   const socialPostsComplete = profile.social_posts_this_month >= nextTier.requirements.socialPosts;
