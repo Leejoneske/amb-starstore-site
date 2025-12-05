@@ -3,8 +3,9 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useAmbassadorProfile } from '@/hooks/useAmbassadorProfile';
 import { useAuth } from '@/contexts/AuthContext';
-import { getTierConfig, getNextTier, calculateTierProgress } from '@/lib/tier-utils';
-import { Star, Trophy, Target, Zap, Crown, Sparkles } from 'lucide-react';
+import { getTierConfig, getNextTier, calculateTierProgress, TIER_CONFIGS } from '@/lib/tier-utils';
+import { Star, Trophy, Target, Zap, Crown, Sparkles, Check } from 'lucide-react';
+
 type TierLevel = 'explorer' | 'pioneer' | 'trailblazer' | 'legend';
 
 interface TierLevelsDisplayProps {
@@ -12,7 +13,7 @@ interface TierLevelsDisplayProps {
 }
 
 export const TierLevelsDisplay = ({ ambassadorId }: TierLevelsDisplayProps) => {
-const { user } = useAuth();
+  const { user } = useAuth();
   const { data: profile } = useAmbassadorProfile(user?.id);
 
   if (!profile) {
@@ -35,6 +36,15 @@ const { user } = useAuth();
   const progress = calculateTierProgress(profile);
 
   const allTiers: TierLevel[] = ['explorer', 'pioneer', 'trailblazer', 'legend'];
+
+  // Map old tier names to new for comparison
+  const tierNameMap: Record<string, string> = {
+    'entry': 'explorer',
+    'growing': 'pioneer',
+    'advanced': 'trailblazer',
+    'elite': 'legend'
+  };
+  const currentTierMapped = tierNameMap[profile.current_tier] || profile.current_tier;
 
   const getTierIcon = (tier: TierLevel) => {
     const icons = {
@@ -66,10 +76,17 @@ const { user } = useAuth();
     return colors[tier];
   };
 
+  const formatRequirement = (value: number, type: 'referrals' | 'socialPosts' | 'qualityRate') => {
+    if (value === 0) return 'Starting tier';
+    if (type === 'qualityRate') return `${value}% quality rate`;
+    if (type === 'socialPosts') return `${value} social posts`;
+    return `${value} referrals`;
+  };
+
   return (
     <div className="space-y-6">
       {/* Current Tier Status */}
-      <Card className="border-2 bg-card">{/* Removed dynamic class to prevent errors */}
+      <Card className="border-2 bg-card">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -86,7 +103,7 @@ const { user } = useAuth();
             {/* Current Tier Info */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <Star className="h-8 w-8 text-primary" />{/* Simplified icon display */}
+                <Star className="h-8 w-8 text-primary" />
                 <div>
                   <h3 className="text-xl font-semibold">{currentTier.displayName}</h3>
                   <p className="text-sm text-muted-foreground">Your current ambassador level</p>
@@ -142,7 +159,7 @@ const { user } = useAuth();
                   <div className="flex justify-between">
                     <span>Quality Rate</span>
                     <span className={progress.qualityRateComplete ? 'text-green-600' : 'text-muted-foreground'}>
-                      {((profile.quality_transaction_rate || 0) * 100).toFixed(1)}%/{(nextTier.requirements.qualityRate * 100).toFixed(0)}%
+                      {(profile.quality_transaction_rate || 0).toFixed(1)}%/{nextTier.requirements.qualityRate}%
                       {progress.qualityRateComplete && ' ✓'}
                     </span>
                   </div>
@@ -166,11 +183,12 @@ const { user } = useAuth();
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {allTiers.map((tierKey) => {
-              const tier = getTierConfig(tierKey);
+            {allTiers.map((tierKey, index) => {
+              const tier = TIER_CONFIGS[tierKey];
               const Icon = getTierIcon(tierKey);
-              const isCurrentTier = (profile.current_tier as string) === tierKey;
-              const isUnlocked = allTiers.indexOf((profile.current_tier === 'entry' || profile.current_tier === 'growing' || profile.current_tier === 'advanced' || profile.current_tier === 'elite' ? profile.current_tier : 'explorer') as TierLevel) >= allTiers.indexOf(tierKey);
+              const isCurrentTier = currentTierMapped === tierKey;
+              const currentTierIndex = allTiers.indexOf(currentTierMapped as TierLevel);
+              const isUnlocked = index <= currentTierIndex;
 
               return (
                 <div
@@ -201,16 +219,29 @@ const { user } = useAuth();
                     <div className="space-y-2 text-xs">
                       <div className="space-y-1">
                         <p className="font-medium text-muted-foreground">Requirements:</p>
-                        <p>{tier.requirements.referrals} referrals</p>
-                        <p>{tier.requirements.socialPosts} social posts</p>
-                        <p>{(tier.requirements.qualityRate * 100).toFixed(0)}% quality rate</p>
+                        {tier.requirements.referrals === 0 ? (
+                          <p className="text-green-600 flex items-center justify-center gap-1">
+                            <Check className="h-3 w-3" />
+                            Starting tier
+                          </p>
+                        ) : (
+                          <>
+                            <p>{tier.requirements.referrals} referrals</p>
+                            <p>{tier.requirements.socialPosts} social posts</p>
+                            <p>{tier.requirements.qualityRate}% quality rate</p>
+                          </>
+                        )}
                       </div>
                       
                       <div className="space-y-1 pt-2 border-t border-muted-foreground/20">
                         <p className="font-medium text-muted-foreground">Benefits:</p>
                         <p className="text-green-600">{tier.benefits.commissionRate}% commission</p>
-                        <p>${tier.benefits.minEarnings} min earnings</p>
-                        <p className="text-blue-600">{tier.benefits.freeStars} free stars</p>
+                        {tier.benefits.minEarnings > 0 && (
+                          <p>${tier.benefits.minEarnings} min earnings</p>
+                        )}
+                        {tier.benefits.freeStars > 0 && (
+                          <p className="text-blue-600">{tier.benefits.freeStars} free stars</p>
+                        )}
                         <p className="text-purple-600">Level {tier.benefits.nftLevel} NFT</p>
                       </div>
                     </div>

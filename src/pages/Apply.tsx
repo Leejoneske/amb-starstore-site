@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,12 +6,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle2, MessageCircle, Loader2, Search } from "lucide-react";
+import { CheckCircle2, MessageCircle, ExternalLink, HelpCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { z } from "zod";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-// Validation schema - removed referralCode as it will be auto-set to telegramId
+// Validation schema
 const applicationSchema = z.object({
   fullName: z.string().trim().min(2, "Name must be at least 2 characters").max(100),
   email: z.string().trim().email("Invalid email address").max(255),
@@ -42,93 +47,6 @@ const Apply = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
-  
-  const [isLookingUp, setIsLookingUp] = useState(false);
-  const [isAutoFilled, setIsAutoFilled] = useState(false);
-
-  // Lookup user from StarStore by username
-  const handleLookupByUsername = async () => {
-    const cleanUsername = telegram.replace('@', '').trim();
-    if (!cleanUsername) {
-      toast({
-        title: "Enter Username",
-        description: "Please enter your Telegram username first",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLookingUp(true);
-    try {
-      const response = await fetch(`https://starstore.site/api/users/by-username/${cleanUsername}`, {
-        headers: {
-          'x-api-key': 'amb_starstore_secure_key_2024',
-          'User-Agent': 'Ambassador-Dashboard'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.user) {
-          setTelegramId(String(data.user.id));
-          setFullName(data.user.first_name ? 
-            [data.user.first_name, data.user.last_name].filter(Boolean).join(' ') : 
-            fullName
-          );
-          setIsAutoFilled(true);
-          toast({
-            title: "Found!",
-            description: "Your Telegram ID has been auto-filled",
-          });
-          return;
-        }
-      }
-
-      // Fallback: try by ID if username lookup fails (in case they entered an ID)
-      if (/^\d+$/.test(cleanUsername)) {
-        const idResponse = await fetch(`https://starstore.site/api/users/${cleanUsername}`, {
-          headers: {
-            'x-api-key': 'amb_starstore_secure_key_2024',
-            'User-Agent': 'Ambassador-Dashboard'
-          }
-        });
-        
-        if (idResponse.ok) {
-          const data = await idResponse.json();
-          if (data.user) {
-            setTelegramId(String(data.user.id));
-            setTelegram(data.user.username ? `@${data.user.username}` : telegram);
-            setFullName(data.user.first_name ? 
-              [data.user.first_name, data.user.last_name].filter(Boolean).join(' ') : 
-              fullName
-            );
-            setIsAutoFilled(true);
-            toast({
-              title: "Found!",
-              description: "Your details have been auto-filled",
-            });
-            return;
-          }
-        }
-      }
-
-      toast({
-        title: "Not Found",
-        description: "Username not found in StarStore. Please make sure you've used StarStore before.",
-        variant: "destructive",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Lookup failed. You can enter your Telegram ID manually.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLookingUp(false);
-    }
-  };
-
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -178,7 +96,7 @@ const Apply = () => {
         }
       }
 
-      // Auto-set referral_code to telegram_id (they are the same)
+      // Auto-set referral_code to telegram_id
       const referralCode = validatedData.telegramId;
 
       const { error } = await supabase
@@ -275,35 +193,6 @@ const Apply = () => {
         </div>
 
         <Card className="p-8">
-          {/* Auto-fill info banner */}
-          {!isAutoFilled && (
-            <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-              <div className="flex items-start gap-3">
-                <MessageCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm mb-1">StarStore User? Auto-fill your details</p>
-                  <p className="text-xs text-muted-foreground">
-                    Enter your Telegram username below and click "Lookup" to auto-fill your Telegram ID
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {isAutoFilled && (
-            <div className="mb-6 p-4 bg-success/5 border border-success/20 rounded-lg">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm mb-1">Details Auto-filled</p>
-                  <p className="text-xs text-muted-foreground">
-                    Your Telegram ID has been found from StarStore
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <div>
@@ -351,68 +240,66 @@ const Apply = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="telegram">Telegram Username *</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="telegram"
-                    value={telegram}
-                    onChange={(e) => setTelegram(e.target.value)}
-                    placeholder="@username"
-                    className="flex-1"
-                    required
-                  />
-                  <Button 
-                    type="button" 
-                    variant="outline"
-                    onClick={handleLookupByUsername}
-                    disabled={isLookingUp || !telegram.replace('@', '').trim()}
-                    className="shrink-0"
-                  >
-                    {isLookingUp ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Search className="h-4 w-4 mr-1" />
-                        Lookup
-                      </>
-                    )}
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Enter your username and click Lookup to auto-fill your Telegram ID
-                </p>
+                <Label htmlFor="telegram">Telegram Username</Label>
+                <Input
+                  id="telegram"
+                  value={telegram}
+                  onChange={(e) => setTelegram(e.target.value)}
+                  placeholder="@username"
+                />
               </div>
             </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <Label htmlFor="telegramId">Telegram ID *</Label>
-                {isAutoFilled && (
-                  <span className="text-xs text-success flex items-center gap-1">
-                    <CheckCircle2 className="h-3 w-3" />
-                    Auto-filled
-                  </span>
-                )}
+            {/* Telegram ID with help */}
+            <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-4">
+              <div className="flex items-start gap-3">
+                <MessageCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-medium text-sm mb-1">Your Telegram ID is required</p>
+                  <p className="text-xs text-muted-foreground">
+                    Your Telegram ID will be used as your referral code. Don't know your ID? 
+                    Message <a 
+                      href="https://t.me/userinfobot" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline inline-flex items-center gap-1"
+                    >
+                      @userinfobot <ExternalLink className="h-3 w-3" />
+                    </a> on Telegram and it will tell you.
+                  </p>
+                </div>
               </div>
-              <Input
-                id="telegramId"
-                value={telegramId}
-                onChange={(e) => setTelegramId(e.target.value)}
-                placeholder="123456789"
-                required
-                className={isAutoFilled ? 'bg-muted' : ''}
-                aria-invalid={errors.telegramId ? 'true' : 'false'}
-                aria-describedby={errors.telegramId ? 'telegramId-error' : undefined}
-              />
-              {errors.telegramId && (
-                <p id="telegramId-error" className="text-sm text-destructive mt-1">{errors.telegramId}</p>
-              )}
-              <p className="text-xs text-muted-foreground mt-1">
-                {isAutoFilled 
-                  ? "Also used as your referral code" 
-                  : "Your Telegram ID will be used as your referral code. Don't know it? Use Lookup above or message @userinfobot"
-                }
-              </p>
+
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Label htmlFor="telegramId">Telegram ID *</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>Your Telegram ID is a unique number (e.g., 123456789). Message @userinfobot on Telegram to get it.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Input
+                  id="telegramId"
+                  value={telegramId}
+                  onChange={(e) => setTelegramId(e.target.value.replace(/\D/g, ''))}
+                  placeholder="123456789"
+                  required
+                  aria-invalid={errors.telegramId ? 'true' : 'false'}
+                  aria-describedby={errors.telegramId ? 'telegramId-error' : undefined}
+                />
+                {errors.telegramId && (
+                  <p id="telegramId-error" className="text-sm text-destructive mt-1">{errors.telegramId}</p>
+                )}
+                <p className="text-xs text-muted-foreground mt-1">
+                  This will also be your referral code
+                </p>
+              </div>
             </div>
 
             <div>
@@ -470,7 +357,7 @@ const Apply = () => {
                 value={strategy}
                 onChange={(e) => setStrategy(e.target.value)}
                 required
-                placeholder="Describe your promotional strategy, target audience, and planned activities..."
+                placeholder="Describe your promotional strategy..."
                 rows={4}
                 aria-invalid={errors.strategy ? 'true' : 'false'}
                 aria-describedby={errors.strategy ? 'strategy-error' : undefined}
@@ -480,29 +367,25 @@ const Apply = () => {
               )}
             </div>
 
-            <div className="border-t pt-6">
-              <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  "Submit Application"
-                )}
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Button type="submit" className="flex-1" disabled={loading}>
+                {loading ? "Submitting..." : "Submit Application"}
               </Button>
-              <p className="text-xs text-center text-muted-foreground mt-4">
-                By submitting, you agree to our Terms of Service and Privacy Policy
-              </p>
+              <Link to="/" className="flex-1">
+                <Button type="button" variant="outline" className="w-full">
+                  Cancel
+                </Button>
+              </Link>
             </div>
           </form>
         </Card>
 
-        <div className="text-center mt-6">
-          <Link to="/" className="text-primary hover:underline">
-            ← Back to Home
+        <p className="text-center text-sm text-muted-foreground mt-8">
+          Already have an account?{" "}
+          <Link to="/auth" className="text-primary hover:underline">
+            Sign in
           </Link>
-        </div>
+        </p>
       </div>
     </div>
   );

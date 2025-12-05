@@ -97,7 +97,7 @@ export const ForgotPassword = ({ onBack }: ForgotPasswordProps) => {
 
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground text-center">
-            Didn't receive the email? Check your spam folder or try another email address.
+            No email? Make sure you entered the correct address. For security reasons, we don't confirm if an email exists in our system.
           </p>
           <div className="flex gap-3">
             <Button
