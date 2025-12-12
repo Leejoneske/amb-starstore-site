@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft, CheckCircle2, AlertCircle, Mail } from 'lucide-react';
+import { Loader2, ArrowLeft, CheckCircle2, Mail, Send, Clock, AlertTriangle } from 'lucide-react';
 import { forgotPasswordService } from '@/services/forgotPasswordService';
+import { cn } from '@/lib/utils';
 
 interface ForgotPasswordProps {
   onBack?: () => void;
@@ -17,7 +17,6 @@ export const ForgotPassword = ({ onBack }: ForgotPasswordProps) => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,19 +39,19 @@ export const ForgotPassword = ({ onBack }: ForgotPasswordProps) => {
         setSubmitted(true);
         toast({
           title: 'Check Your Email',
-          description: 'If your email is registered with us, you will receive a password reset link.',
+          description: 'If registered, you will receive a password reset link.',
         });
       } else {
         toast({
           title: 'Error',
-          description: result.error || 'Failed to send reset email. Please try again.',
+          description: result.error || 'Failed to send reset email.',
           variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'An unexpected error occurred. Please try again later.',
+        description: 'An unexpected error occurred. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -63,62 +62,77 @@ export const ForgotPassword = ({ onBack }: ForgotPasswordProps) => {
   if (submitted) {
     return (
       <div className="space-y-6">
-        <div className="text-center space-y-3">
-          <div className="flex justify-center">
-            <div className="rounded-full bg-green-100 p-3">
-              <CheckCircle2 className="h-8 w-8 text-green-600" />
+        {/* Success Header */}
+        <div className="text-center space-y-4">
+          <div className="relative mx-auto w-fit">
+            <div className="absolute inset-0 animate-pulse rounded-full bg-success/20 blur-lg" />
+            <div className="relative p-4 rounded-full bg-success/10 ring-4 ring-success/20">
+              <CheckCircle2 className="h-10 w-10 text-success" />
             </div>
           </div>
-          <h2 className="text-2xl font-bold">Check Your Email</h2>
-          <p className="text-muted-foreground">
-            We've sent a password reset link to <span className="font-medium text-foreground">{email}</span>
-          </p>
+          <div>
+            <h2 className="text-2xl font-bold">Check Your Email</h2>
+            <p className="text-muted-foreground mt-1">
+              We've sent a reset link to <span className="font-medium text-foreground">{email}</span>
+            </p>
+          </div>
         </div>
 
-        <Card className="p-6 bg-muted/50 border-border">
-          <div className="space-y-4">
+        {/* Instructions Card */}
+        <Card className="bg-muted/50 border-0">
+          <CardContent className="p-5 space-y-4">
             <div className="flex gap-3">
-              <Mail className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-              <div className="space-y-2 text-sm">
-                <p className="font-medium">What to do next:</p>
-                <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                  <li>Check your email inbox (and spam folder)</li>
-                  <li>Click the "Reset Password" link in the email</li>
-                  <li>You'll be redirected to create a new password</li>
-                  <li>Log in with your new password</li>
+              <Mail className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              <div className="space-y-3">
+                <p className="font-medium text-sm">What to do next:</p>
+                <ol className="space-y-2 text-sm text-muted-foreground">
+                  {[
+                    'Check your email inbox (and spam folder)',
+                    'Click the "Reset Password" link in the email',
+                    'Create your new password',
+                    'Log in with your new credentials'
+                  ].map((step, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary flex-shrink-0">
+                        {i + 1}
+                      </span>
+                      {step}
+                    </li>
+                  ))}
                 </ol>
-                <p className="text-xs text-muted-foreground mt-3">
-                  The reset link will expire in 1 hour for security.
-                </p>
               </div>
             </div>
-          </div>
+
+            <div className="flex items-center gap-2 pt-2 border-t border-border text-xs text-muted-foreground">
+              <Clock className="h-3.5 w-3.5" />
+              The reset link expires in 1 hour for security
+            </div>
+          </CardContent>
         </Card>
 
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground text-center">
-            No email? Make sure you entered the correct address. For security reasons, we don't confirm if an email exists in our system.
-          </p>
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => {
-                setSubmitted(false);
-                setEmail('');
-              }}
-            >
-              Try Another Email
-            </Button>
-            <Button
-              className="flex-1"
-              onClick={() => {
-                onBack?.();
-              }}
-            >
-              Back to Login
-            </Button>
-          </div>
+        {/* Security Notice */}
+        <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/30 p-3 rounded-lg">
+          <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+          <span>
+            For security, we don't confirm if an email exists in our system. If you don't receive an email, verify you entered the correct address.
+          </span>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => {
+              setSubmitted(false);
+              setEmail('');
+            }}
+          >
+            Try Another Email
+          </Button>
+          <Button className="flex-1" onClick={onBack}>
+            Back to Login
+          </Button>
         </div>
       </div>
     );
@@ -126,36 +140,47 @@ export const ForgotPassword = ({ onBack }: ForgotPasswordProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-2xl font-bold">Reset Your Password</h2>
-        <p className="text-muted-foreground">
-          Enter your email address and we'll send you a link to reset your password.
+      {/* Header */}
+      <div className="text-center space-y-2">
+        <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-2">
+          <Mail className="h-6 w-6 text-primary" />
+        </div>
+        <h2 className="text-2xl font-bold">Reset Password</h2>
+        <p className="text-muted-foreground text-sm">
+          Enter your email and we'll send you a reset link
         </p>
       </div>
 
+      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="reset-email">Email Address</Label>
-          <Input
-            id="reset-email"
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="h-11"
-            disabled={loading}
-          />
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="reset-email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="h-12 pl-10"
+              disabled={loading}
+            />
+          </div>
         </div>
 
-        <Button type="submit" className="w-full h-11" disabled={loading}>
+        <Button type="submit" className="w-full h-12 gap-2" disabled={loading}>
           {loading ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Sending Reset Link...
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Sending...
             </>
           ) : (
-            'Send Reset Link'
+            <>
+              <Send className="h-4 w-4" />
+              Send Reset Link
+            </>
           )}
         </Button>
       </form>
@@ -164,18 +189,13 @@ export const ForgotPassword = ({ onBack }: ForgotPasswordProps) => {
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-border" />
         </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-background text-muted-foreground">or</span>
+        <div className="relative flex justify-center">
+          <span className="px-3 bg-background text-xs text-muted-foreground">or</span>
         </div>
       </div>
 
-      <Button
-        variant="ghost"
-        className="w-full"
-        onClick={onBack}
-        disabled={loading}
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
+      <Button variant="ghost" className="w-full gap-2" onClick={onBack} disabled={loading}>
+        <ArrowLeft className="h-4 w-4" />
         Back to Login
       </Button>
     </div>

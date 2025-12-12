@@ -99,7 +99,7 @@ export const DashboardStats = ({ ambassadorProfile, analyticsData }: DashboardSt
         </div>
         <div className="text-xs sm:text-sm text-muted-foreground">Commission Rate</div>
         <div className="text-xs text-purple-600 mt-2">
-          ${tierInfo.benefits.minEarnings}+ min earnings
+          ${tierInfo.benefits.baseEarnings}+ base earnings
         </div>
       </Card>
     </div>
