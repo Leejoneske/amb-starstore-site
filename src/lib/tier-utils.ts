@@ -1,275 +1,263 @@
 export interface TierInfo {
   name: string;
   displayName: string;
+  level: number;
   color: string;
   gradient: string;
   icon: string;
   requirements: {
     referrals: number;
     socialPosts: number;
-    qualityRate: number;
+    minTransactions: number;
   };
   benefits: {
-    minEarnings: number;
-    nftLevel: number;
-    freeStars: number;
+    baseEarnings: number;
+    qualityBonus: number;
     commissionRate: number;
-    extras?: string[];
   };
 }
 
 export interface TierConfig {
   tier: string;
   displayName: string;
+  level: number;
   icon: string;
   requirements: {
     referrals: number;
     socialPosts: number;
-    qualityRate: number;
+    minTransactions: number;
   };
   benefits: {
-    minEarnings: number;
-    nftLevel: number;
-    freeStars: number;
+    baseEarnings: number;
+    qualityBonus: number;
     commissionRate: number;
   };
 }
 
-// Tier requirements match the database calculate_tier function
-// Entry/Explorer = base tier (no requirements)
-// Growing/Pioneer = 25 referrals, 8 social posts, 75% quality
-// Advanced/Trailblazer = 50 referrals, 12 social posts, 80% quality
-// Elite/Legend = 100 referrals, 15 social posts, 85% quality
+// Tier data based on actual database tier_configs table
+// Entry = 30 referrals, 0 social posts, 0 min transactions, 6% commission
+// Growing = 50 referrals, 4 social posts, 30 min transactions, 70% commission
+// Advanced = 70 referrals, 6 social posts, 50 min transactions, 75% commission
+// Elite = 100 referrals, 8 social posts, 70 min transactions, 30% commission
 
 export const TIER_INFO: Record<string, TierInfo> = {
-  explorer: {
-    name: 'explorer',
-    displayName: 'Explorer',
+  entry: {
+    name: 'entry',
+    displayName: 'Entry Level',
+    level: 1,
     color: '#A78BFA',
     gradient: 'linear-gradient(135deg, #A78BFA 0%, #7C3AED 100%)',
-    icon: '🧭',
+    icon: '🌟',
     requirements: {
-      referrals: 0, // Base tier - no requirements
+      referrals: 0,
       socialPosts: 0,
-      qualityRate: 0
+      minTransactions: 0
     },
     benefits: {
-      minEarnings: 0,
-      nftLevel: 1,
-      freeStars: 0,
-      commissionRate: 3,
-      extras: ['Access to ambassador group', 'Basic analytics dashboard']
+      baseEarnings: 13,
+      qualityBonus: 30,
+      commissionRate: 6
     }
   },
-  pioneer: {
-    name: 'pioneer',
-    displayName: 'Pioneer',
+  growing: {
+    name: 'growing',
+    displayName: 'Growing Ambassador',
+    level: 2,
     color: '#60A5FA',
     gradient: 'linear-gradient(135deg, #60A5FA 0%, #2563EB 100%)',
     icon: '🚀',
     requirements: {
-      referrals: 25,
-      socialPosts: 8,
-      qualityRate: 75
+      referrals: 30,
+      socialPosts: 4,
+      minTransactions: 30
     },
     benefits: {
-      minEarnings: 50,
-      nftLevel: 2,
-      freeStars: 100,
-      commissionRate: 5,
-      extras: ['Priority support', 'Co-marketing opportunities']
+      baseEarnings: 35,
+      qualityBonus: 25,
+      commissionRate: 70
     }
   },
-  trailblazer: {
-    name: 'trailblazer',
-    displayName: 'Trailblazer',
+  advanced: {
+    name: 'advanced',
+    displayName: 'Advanced Ambassador',
+    level: 3,
     color: '#A855F7',
     gradient: 'linear-gradient(135deg, #A855F7 0%, #7C3AED 100%)',
     icon: '⚡',
     requirements: {
       referrals: 50,
-      socialPosts: 12,
-      qualityRate: 80
+      socialPosts: 6,
+      minTransactions: 50
     },
     benefits: {
-      minEarnings: 150,
-      nftLevel: 3,
-      freeStars: 250,
-      commissionRate: 7,
-      extras: ['Advanced analytics', 'Custom referral tools']
+      baseEarnings: 52.5,
+      qualityBonus: 28.5,
+      commissionRate: 75
     }
   },
-  legend: {
-    name: 'legend',
-    displayName: 'Legend',
+  elite: {
+    name: 'elite',
+    displayName: 'Elite Ambassador',
+    level: 4,
     color: '#F59E0B',
     gradient: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
     icon: '👑',
     requirements: {
-      referrals: 100,
-      socialPosts: 15,
-      qualityRate: 85
+      referrals: 70,
+      socialPosts: 8,
+      minTransactions: 70
     },
     benefits: {
-      minEarnings: 300,
-      nftLevel: 4,
-      freeStars: 500,
-      commissionRate: 10,
-      extras: ['Revenue share participation', 'Lead monthly community events', 'VIP support']
+      baseEarnings: 30,
+      qualityBonus: 30,
+      commissionRate: 30
     }
   }
 };
 
 export const TIER_CONFIGS: Record<string, TierConfig> = {
-  explorer: {
-    tier: 'explorer',
-    displayName: 'Explorer',
-    icon: '🧭',
+  entry: {
+    tier: 'entry',
+    displayName: 'Entry Level',
+    level: 1,
+    icon: '🌟',
     requirements: {
       referrals: 0,
       socialPosts: 0,
-      qualityRate: 0
+      minTransactions: 0
     },
     benefits: {
-      minEarnings: 0,
-      nftLevel: 1,
-      freeStars: 0,
-      commissionRate: 3
+      baseEarnings: 13,
+      qualityBonus: 30,
+      commissionRate: 6
     }
   },
-  pioneer: {
-    tier: 'pioneer',
-    displayName: 'Pioneer',
+  growing: {
+    tier: 'growing',
+    displayName: 'Growing Ambassador',
+    level: 2,
     icon: '🚀',
     requirements: {
-      referrals: 25,
-      socialPosts: 8,
-      qualityRate: 75
+      referrals: 30,
+      socialPosts: 4,
+      minTransactions: 30
     },
     benefits: {
-      minEarnings: 50,
-      nftLevel: 2,
-      freeStars: 100,
-      commissionRate: 5
+      baseEarnings: 35,
+      qualityBonus: 25,
+      commissionRate: 70
     }
   },
-  trailblazer: {
-    tier: 'trailblazer',
-    displayName: 'Trailblazer',
+  advanced: {
+    tier: 'advanced',
+    displayName: 'Advanced Ambassador',
+    level: 3,
     icon: '⚡',
     requirements: {
       referrals: 50,
-      socialPosts: 12,
-      qualityRate: 80
+      socialPosts: 6,
+      minTransactions: 50
     },
     benefits: {
-      minEarnings: 150,
-      nftLevel: 3,
-      freeStars: 250,
-      commissionRate: 7
+      baseEarnings: 52.5,
+      qualityBonus: 28.5,
+      commissionRate: 75
     }
   },
-  legend: {
-    tier: 'legend',
-    displayName: 'Legend',
+  elite: {
+    tier: 'elite',
+    displayName: 'Elite Ambassador',
+    level: 4,
     icon: '👑',
     requirements: {
-      referrals: 100,
-      socialPosts: 15,
-      qualityRate: 85
+      referrals: 70,
+      socialPosts: 8,
+      minTransactions: 70
     },
     benefits: {
-      minEarnings: 300,
-      nftLevel: 4,
-      freeStars: 500,
-      commissionRate: 10
+      baseEarnings: 30,
+      qualityBonus: 30,
+      commissionRate: 30
     }
   }
 };
 
+// Map display names for backward compatibility
+const tierDisplayMap: Record<string, string> = {
+  'explorer': 'entry',
+  'pioneer': 'growing',
+  'trailblazer': 'advanced',
+  'legend': 'elite'
+};
+
 export const getTierInfo = (tier: string): TierInfo => {
-  // Map old tier names to new ones
-  const tierMap: Record<string, string> = {
-    'entry': 'explorer',
-    'growing': 'pioneer',
-    'advanced': 'trailblazer',
-    'elite': 'legend'
-  };
-  
-  const mappedTier = tierMap[tier] || tier;
-  return TIER_INFO[mappedTier] || TIER_INFO.explorer;
+  const mappedTier = tierDisplayMap[tier.toLowerCase()] || tier.toLowerCase();
+  return TIER_INFO[mappedTier] || TIER_INFO.entry;
 };
 
 export const getTierConfig = (tier: string): TierConfig => {
-  // Map old tier names to new ones
-  const tierMap: Record<string, string> = {
-    'entry': 'explorer',
-    'growing': 'pioneer',
-    'advanced': 'trailblazer',
-    'elite': 'legend'
-  };
-  
-  const mappedTier = tierMap[tier] || tier;
-  return TIER_CONFIGS[mappedTier] || TIER_CONFIGS.explorer;
+  const mappedTier = tierDisplayMap[tier.toLowerCase()] || tier.toLowerCase();
+  return TIER_CONFIGS[mappedTier] || TIER_CONFIGS.entry;
 };
 
 export const getNextTier = (currentTier: string): TierConfig | null => {
-  // Map old tier names to new ones
-  const tierMap: Record<string, string> = {
-    'entry': 'explorer',
-    'growing': 'pioneer',
-    'advanced': 'trailblazer',
-    'elite': 'legend'
-  };
-  
-  const mappedTier = tierMap[currentTier] || currentTier;
-  const tiers = ['explorer', 'pioneer', 'trailblazer', 'legend'];
-  const currentIndex = tiers.indexOf(mappedTier);
-  const nextTierName = tiers[currentIndex + 1];
+  const mappedTier = tierDisplayMap[currentTier.toLowerCase()] || currentTier.toLowerCase();
+  const tierOrder = ['entry', 'growing', 'advanced', 'elite'];
+  const currentIndex = tierOrder.indexOf(mappedTier);
+  const nextTierName = tierOrder[currentIndex + 1];
   return nextTierName ? TIER_CONFIGS[nextTierName] : null;
 };
 
 export const getTierBadgeClass = (tier: string): string => {
-  return `level-${tier}`;
+  const mappedTier = tierDisplayMap[tier.toLowerCase()] || tier.toLowerCase();
+  return `level-${mappedTier}`;
 };
 
-export const calculateTierProgress = (profile: any): {
+export const getAllTiers = (): TierConfig[] => {
+  return Object.values(TIER_CONFIGS).sort((a, b) => a.level - b.level);
+};
+
+export const calculateTierProgress = (profile: {
+  total_referrals: number;
+  social_posts_this_month: number;
+  current_tier: string;
+}): {
   overallProgress: number;
+  referralsProgress: number;
+  socialPostsProgress: number;
   referralsComplete: boolean;
   socialPostsComplete: boolean;
-  qualityRateComplete: boolean;
 } => {
   const nextTier = getNextTier(profile.current_tier);
   
   if (!nextTier) {
     return {
       overallProgress: 100,
+      referralsProgress: 100,
+      socialPostsProgress: 100,
       referralsComplete: true,
-      socialPostsComplete: true,
-      qualityRateComplete: true
+      socialPostsComplete: true
     };
   }
 
   const referralsProgress = nextTier.requirements.referrals > 0 
     ? Math.min(100, (profile.total_referrals / nextTier.requirements.referrals) * 100)
     : 100;
+    
   const socialPostsProgress = nextTier.requirements.socialPosts > 0
     ? Math.min(100, (profile.social_posts_this_month / nextTier.requirements.socialPosts) * 100)
-    : 100;
-  const qualityRateProgress = nextTier.requirements.qualityRate > 0
-    ? Math.min(100, ((profile.quality_transaction_rate || 0) / nextTier.requirements.qualityRate) * 100)
     : 100;
 
   const referralsComplete = profile.total_referrals >= nextTier.requirements.referrals;
   const socialPostsComplete = profile.social_posts_this_month >= nextTier.requirements.socialPosts;
-  const qualityRateComplete = (profile.quality_transaction_rate || 0) >= nextTier.requirements.qualityRate;
 
-  const overallProgress = (referralsProgress + socialPostsProgress + qualityRateProgress) / 3;
+  const overallProgress = (referralsProgress + socialPostsProgress) / 2;
 
   return {
     overallProgress,
+    referralsProgress,
+    socialPostsProgress,
     referralsComplete,
-    socialPostsComplete,
-    qualityRateComplete
+    socialPostsComplete
   };
 };

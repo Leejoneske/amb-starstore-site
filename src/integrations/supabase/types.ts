@@ -1023,14 +1023,14 @@ export type Database = {
       generate_referral_code: { Args: never; Returns: string }
       has_role:
         | {
-            Args: { check_user_id: string; role_name: string }
-            Returns: boolean
-          }
-        | {
             Args: {
               _role: Database["public"]["Enums"]["app_role"]
               _user_id: string
             }
+            Returns: boolean
+          }
+        | {
+            Args: { check_user_id: string; role_name: string }
             Returns: boolean
           }
       update_ambassador_telegram_info: {
