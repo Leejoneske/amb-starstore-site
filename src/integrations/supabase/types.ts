@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      ambassador_emails: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          mongo_id: string | null
+          referral_code: string | null
+          source: string
+          synced_at: string
+          telegram_id: string | null
+          tier: string | null
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id?: string
+          mongo_id?: string | null
+          referral_code?: string | null
+          source?: string
+          synced_at?: string
+          telegram_id?: string | null
+          tier?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          mongo_id?: string | null
+          referral_code?: string | null
+          source?: string
+          synced_at?: string
+          telegram_id?: string | null
+          tier?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
       ambassador_profiles: {
         Row: {
           active_referrals: number
