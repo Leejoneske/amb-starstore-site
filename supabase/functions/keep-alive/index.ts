@@ -5,6 +5,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Track sync timing - sync emails every hour (12 pings * 5 min = 60 min)
+let pingCount = 0;
+const SYNC_EVERY_N_PINGS = 12;
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -30,11 +34,41 @@ Deno.serve(async (req) => {
 
     console.log(`Keep-alive ping successful at ${new Date().toISOString()} - ${count} profiles`);
 
+    pingCount++;
+    let syncResult = null;
+
+    // Trigger ambassador email sync every hour
+    if (pingCount >= SYNC_EVERY_N_PINGS) {
+      pingCount = 0;
+      console.log('Triggering ambassador email sync...');
+      
+      try {
+        const syncResponse = await fetch(`${supabaseUrl}/functions/v1/sync-ambassador-emails`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseKey}`,
+          },
+        });
+        
+        if (syncResponse.ok) {
+          syncResult = await syncResponse.json();
+          console.log('Email sync completed:', syncResult);
+        } else {
+          console.error('Email sync failed:', await syncResponse.text());
+        }
+      } catch (syncError) {
+        console.error('Email sync error:', syncError);
+      }
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 
         timestamp: new Date().toISOString(),
-        message: 'Database is active'
+        message: 'Database is active',
+        emailSyncTriggered: syncResult !== null,
+        syncResult
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
