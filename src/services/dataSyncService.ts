@@ -2,7 +2,7 @@
 // This ensures data availability even when main app is down
 
 import { supabase } from '@/integrations/supabase/client';
-import { starStoreService } from './starStoreService';
+import { TELEGRAM_CONFIG } from '@/config/telegram';
 import { logger } from '@/lib/logger';
 
 interface StarStoreUser {
@@ -75,6 +75,39 @@ class DataSyncService {
   private lastSyncTime: Date | null = null;
   private syncInterval = 5 * 60 * 1000; // 5 minutes
   private syncTimer: ReturnType<typeof setInterval> | null = null;
+  private baseUrl = TELEGRAM_CONFIG.SERVER_URL;
+
+  // Helper method to make API requests to StarStore
+  private async makeApiRequest<T>(endpoint: string): Promise<T> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'Ambassador-Dashboard/1.0',
+          'X-API-Key': 'amb_starstore_secure_key_2024',
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Request timeout');
+      }
+      throw error;
+    }
+  }
 
   // Sync all data from Star Store to Supabase
   async syncAllData(): Promise<{
@@ -157,11 +190,13 @@ class DataSyncService {
 
   // Sync users data from Star Store
   private async syncUsersData(): Promise<number> {
-    const response = await fetch(`${starStoreService['baseUrl']}/api/admin/users-data?limit=500`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    
-    const data = await response.json();
-    const users: StarStoreUser[] = data.users;
+    const data = await this.makeApiRequest<{ users: StarStoreUser[] }>('/api/admin/users-data?limit=500');
+    const users = data.users || [];
+
+    if (users.length === 0) {
+      logger.warn('No users data returned from StarStore API');
+      return 0;
+    }
 
     // Clear existing cached users data
     await supabase.from('starstore_users_cache').delete().neq('id', '');
@@ -195,11 +230,13 @@ class DataSyncService {
 
   // Sync referrals data from Star Store
   private async syncReferralsData(): Promise<number> {
-    const response = await fetch(`${starStoreService['baseUrl']}/api/admin/referrals-data?limit=500`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    
-    const data = await response.json();
-    const referrals: StarStoreReferral[] = data.referrals;
+    const data = await this.makeApiRequest<{ referrals: StarStoreReferral[] }>('/api/admin/referrals-data?limit=500');
+    const referrals = data.referrals || [];
+
+    if (referrals.length === 0) {
+      logger.warn('No referrals data returned from StarStore API');
+      return 0;
+    }
 
     // Clear existing cached referrals data
     await supabase.from('starstore_referrals_cache').delete().neq('id', '');
@@ -229,11 +266,13 @@ class DataSyncService {
 
   // Sync transactions data from Star Store
   private async syncTransactionsData(): Promise<number> {
-    const response = await fetch(`${starStoreService['baseUrl']}/api/admin/transactions-data?limit=500`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    
-    const data = await response.json();
-    const transactions: StarStoreTransaction[] = data.transactions;
+    const data = await this.makeApiRequest<{ transactions: StarStoreTransaction[] }>('/api/admin/transactions-data?limit=500');
+    const transactions = data.transactions || [];
+
+    if (transactions.length === 0) {
+      logger.warn('No transactions data returned from StarStore API');
+      return 0;
+    }
 
     // Clear existing cached transactions data
     await supabase.from('starstore_transactions_cache').delete().neq('id', '');
@@ -264,10 +303,25 @@ class DataSyncService {
 
   // Sync analytics data from Star Store
   private async syncAnalyticsData(): Promise<void> {
-    const response = await fetch(`${starStoreService['baseUrl']}/api/admin/analytics`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    
-    const data = await response.json();
+    const data = await this.makeApiRequest<{
+      overview?: {
+        totalUsers?: number;
+        totalReferrals?: number;
+        activeReferrals?: number;
+        totalTransactions?: number | string;
+        conversionRate?: number | string;
+      };
+      growth?: {
+        today?: { users?: number; referrals?: number };
+        week?: { users?: number; referrals?: number };
+        month?: { users?: number; referrals?: number };
+      };
+      financial?: {
+        totalEarnings?: number;
+        totalStarsTraded?: number;
+      };
+      timestamp?: string;
+    }>('/api/admin/analytics');
 
     // Clear existing cached analytics data
     await supabase.from('starstore_analytics_cache').delete().neq('id', '');
@@ -279,8 +333,8 @@ class DataSyncService {
         total_users: data.overview?.totalUsers || 0,
         total_referrals: data.overview?.totalReferrals || 0,
         active_referrals: data.overview?.activeReferrals || 0,
-        total_transactions: parseInt(data.overview?.totalTransactions) || 0,
-        conversion_rate: parseFloat(data.overview?.conversionRate) || 0,
+        total_transactions: parseInt(String(data.overview?.totalTransactions)) || 0,
+        conversion_rate: parseFloat(String(data.overview?.conversionRate)) || 0,
         today_users: data.growth?.today?.users || 0,
         today_referrals: data.growth?.today?.referrals || 0,
         week_users: data.growth?.week?.users || 0,
