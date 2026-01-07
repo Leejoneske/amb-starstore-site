@@ -35,7 +35,7 @@ interface StarStoreUser {
 async function fetchFromStarStore<T>(endpoint: string): Promise<T | null> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
     console.log(`Fetching: ${STARSTORE_URL}${endpoint}`);
     
@@ -45,6 +45,7 @@ async function fetchFromStarStore<T>(endpoint: string): Promise<T | null> {
         'Content-Type': 'application/json',
         'User-Agent': 'Ambassador-Dashboard/1.0',
         'X-API-Key': AMBASSADOR_API_KEY,
+        'X-Ambassador-App': 'true',
       },
       signal: controller.signal,
     });
@@ -60,7 +61,7 @@ async function fetchFromStarStore<T>(endpoint: string): Promise<T | null> {
     }
 
     const data = await response.json();
-    console.log(`Successfully fetched data from ${endpoint}`);
+    console.log(`Successfully fetched data from ${endpoint}`, JSON.stringify(data).substring(0, 200));
     return data;
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
