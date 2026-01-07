@@ -4,6 +4,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useApplications } from "@/hooks/useApplications";
 import { useAllAmbassadors } from "@/hooks/useAllAmbassadors";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import { useAutoSync } from "@/hooks/useAutoSync";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -56,6 +57,9 @@ const AdminDashboard = () => {
   const [applicationFilters, setApplicationFilters] = useState<FilterConfig>({});
   const [ambassadorFilters, setAmbassadorFilters] = useState<FilterConfig>({});
   const [activeView, setActiveView] = useState("dashboard");
+
+  // Enable auto-sync for StarStore data and ambassador emails
+  useAutoSync({ enabled: true });
 
   const loading = appsLoading || ambLoading;
 

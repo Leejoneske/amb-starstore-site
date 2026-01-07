@@ -3,8 +3,17 @@ project_id = "jrtqbntwwkqxpexpplly"
 [functions.send-approval-email]
 verify_jwt = false
 
+[functions.send-email]
+verify_jwt = false
+
 [functions.keep-alive]
 verify_jwt = false
 
 [functions.sync-ambassador-emails]
+verify_jwt = false
+
+[functions.admin-approve-application]
+verify_jwt = false
+
+[functions.mongo-proxy]
 verify_jwt = false

@@ -5,9 +5,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Track sync timing - sync emails every hour (12 pings * 5 min = 60 min)
+// Track sync timing - sync emails every 30 min (6 pings * 5 min = 30 min)
 let pingCount = 0;
-const SYNC_EVERY_N_PINGS = 12;
+const SYNC_EVERY_N_PINGS = 6;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     pingCount++;
     let syncResult = null;
 
-    // Trigger ambassador email sync every hour
+    // Trigger ambassador email sync every 30 minutes (6 pings)
     if (pingCount >= SYNC_EVERY_N_PINGS) {
       pingCount = 0;
       console.log('Triggering ambassador email sync...');
@@ -55,10 +55,13 @@ Deno.serve(async (req) => {
           syncResult = await syncResponse.json();
           console.log('Email sync completed:', syncResult);
         } else {
-          console.error('Email sync failed:', await syncResponse.text());
+          const errorText = await syncResponse.text();
+          console.error('Email sync failed:', errorText);
+          syncResult = { error: errorText };
         }
       } catch (syncError) {
         console.error('Email sync error:', syncError);
+        syncResult = { error: String(syncError) };
       }
     }
 
@@ -67,6 +70,8 @@ Deno.serve(async (req) => {
         success: true, 
         timestamp: new Date().toISOString(),
         message: 'Database is active',
+        pingCount,
+        nextEmailSync: SYNC_EVERY_N_PINGS - pingCount,
         emailSyncTriggered: syncResult !== null,
         syncResult
       }),
@@ -80,4 +85,3 @@ Deno.serve(async (req) => {
     );
   }
 });
-
