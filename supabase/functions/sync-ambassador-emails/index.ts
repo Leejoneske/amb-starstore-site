@@ -12,6 +12,7 @@ const AMBASSADOR_API_KEY = 'amb_starstore_secure_key_2024';
 
 interface WaitlistEntry {
   id: string;
+  _id?: string;
   email: string;
   fullName: string;
   username?: string;
@@ -30,11 +31,11 @@ interface StarStoreUser {
   isAmbassador?: boolean;
 }
 
-// Helper to fetch from StarStore API with longer timeout
+// Helper to fetch from StarStore API with timeout
 async function fetchFromStarStore<T>(endpoint: string): Promise<T | null> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
 
     console.log(`Fetching: ${STARSTORE_URL}${endpoint}`);
     
@@ -93,10 +94,58 @@ serve(async (req) => {
     let errorCount = 0;
     const errors: string[] = [];
 
-    // Method 1: Fetch users with ambassador data from StarStore admin API
+    // Method 1: Fetch ambassador waitlist entries
+    console.log('Fetching ambassador waitlist from StarStore...');
+    try {
+      const waitlistData = await fetchFromStarStore<{ success: boolean; waitlist: WaitlistEntry[] }>('/api/admin/ambassador-waitlist');
+      
+      if (waitlistData && waitlistData.success && waitlistData.waitlist) {
+        console.log(`Found ${waitlistData.waitlist.length} waitlist entries`);
+
+        for (const entry of waitlistData.waitlist) {
+          if (!entry.email) continue;
+          
+          try {
+            const { error } = await supabase
+              .from('ambassador_emails')
+              .upsert({
+                email: entry.email.toLowerCase(),
+                full_name: entry.fullName || entry.username,
+                username: entry.username,
+                mongo_id: entry._id || entry.id,
+                source: 'waitlist',
+                synced_at: new Date().toISOString(),
+              }, {
+                onConflict: 'email',
+                ignoreDuplicates: false
+              });
+
+            if (error) {
+              console.error(`Error upserting waitlist ${entry.email}:`, error.message);
+              errorCount++;
+              errors.push(`Waitlist ${entry.email}: ${error.message}`);
+            } else {
+              syncedCount++;
+            }
+          } catch (e: unknown) {
+            errorCount++;
+            const errMsg = e instanceof Error ? e.message : String(e);
+            errors.push(`Waitlist ${entry.email}: ${errMsg}`);
+          }
+        }
+      } else {
+        console.warn('No waitlist data returned from StarStore API - endpoint may not exist yet');
+      }
+    } catch (e: unknown) {
+      const errMsg = e instanceof Error ? e.message : String(e);
+      console.error('Error fetching waitlist from StarStore:', errMsg);
+      errors.push(`Waitlist fetch error: ${errMsg}`);
+    }
+
+    // Method 2: Fetch users with ambassador data
     console.log('Fetching users with ambassador data from StarStore...');
     try {
-      const usersData = await fetchFromStarStore<{ users: StarStoreUser[] }>('/api/admin/users-data?limit=500');
+      const usersData = await fetchFromStarStore<{ users: StarStoreUser[] }>('/api/admin/users-data?limit=1000');
       
       if (usersData && usersData.users) {
         const ambassadorUsers = usersData.users.filter(
@@ -113,7 +162,7 @@ serve(async (req) => {
               .from('ambassador_emails')
               .upsert({
                 telegram_id: String(user.id),
-                email: user.ambassadorEmail?.toLowerCase(),
+                email: user.ambassadorEmail.toLowerCase(),
                 full_name: user.ambassadorFullName || user.username,
                 username: user.username,
                 tier: user.ambassadorTier,
@@ -148,13 +197,12 @@ serve(async (req) => {
       errors.push(`Users fetch error: ${errMsg}`);
     }
 
-    // Method 2: Try to get waitlist from referrals data (as alternative source)
-    console.log('Fetching additional ambassador data from referrals...');
+    // Method 3: Extract ambassador info from referrals
+    console.log('Fetching ambassador data from referrals...');
     try {
-      const referralsData = await fetchFromStarStore<{ referrals: Array<{ referrerUserId: string; referrerUsername?: string; referrerIsAmbassador?: boolean; referrerTier?: string }> }>('/api/admin/referrals-data?limit=500');
+      const referralsData = await fetchFromStarStore<{ referrals: Array<{ referrerUserId: string; referrerUsername?: string; referrerIsAmbassador?: boolean; referrerTier?: string }> }>('/api/admin/referrals-data?limit=1000');
       
       if (referralsData && referralsData.referrals) {
-        // Extract unique ambassador referrers
         const ambassadorReferrers = new Map<string, { username?: string; tier?: string }>();
         
         for (const ref of referralsData.referrals) {
@@ -168,19 +216,19 @@ serve(async (req) => {
         
         console.log(`Found ${ambassadorReferrers.size} unique ambassador referrers`);
         
-        // These are tracked separately - they have telegram IDs but may not have emails
-        // We'll store them for reference
         for (const [telegramId, data] of ambassadorReferrers) {
+          if (!data.username) continue;
+          
           try {
-            // Check if we already have this ambassador
+            // Check if we already have this ambassador by telegram_id
             const { data: existing } = await supabase
               .from('ambassador_emails')
               .select('id')
               .eq('telegram_id', telegramId)
               .maybeSingle();
             
-            if (!existing && data.username) {
-              // Create placeholder entry without email
+            if (!existing) {
+              // Create placeholder entry
               const { error } = await supabase
                 .from('ambassador_emails')
                 .upsert({
