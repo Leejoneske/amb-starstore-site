@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+import emailTemplates from "../_shared/email-templates.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,6 +13,9 @@ interface ApprovalEmailRequest {
   tempPassword: string;
   referralCode: string;
 }
+
+// Dashboard URL - update this to your actual domain
+const DASHBOARD_URL = "https://starstore.site/auth";
 
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
@@ -56,68 +58,64 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending approval email to ${userEmail} for ${userName}`);
 
+    // Build professional HTML email
+    const emailContent = `
+      ${emailTemplates.greeting(userName)}
+      ${emailTemplates.heading("Your application has been approved.")}
+      ${emailTemplates.paragraph("Congratulations! You have been accepted into the StarStore Ambassador Program. We're excited to have you on board and can't wait to see the impact you'll make.")}
+      ${emailTemplates.credentialsBox([
+        { label: 'Email', value: userEmail },
+        { label: 'Temporary Password', value: tempPassword },
+        { label: 'Your Referral Code', value: referralCode }
+      ])}
+      ${emailTemplates.notice("Please change your password immediately after your first login for security.", "warning")}
+      ${emailTemplates.ctaButton("Login to Dashboard", DASHBOARD_URL)}
+      ${emailTemplates.paragraph("Here's how to get started:")}
+      ${emailTemplates.numberedList([
+        "Log in to your ambassador dashboard using the credentials above",
+        "Complete your profile and change your password",
+        "Share your unique referral code with friends and followers",
+        "Track your earnings and referrals in real-time"
+      ])}
+      ${emailTemplates.paragraph('If you have questions about your account or the program, please don\'t hesitate to <a href="https://t.me/thestarstore" style="color: #1a1a2e; text-decoration: underline;">get in touch</a> with us.')}
+      ${emailTemplates.signature()}
+    `;
+
+    const htmlEmail = emailTemplates.emailWrapper(
+      emailContent, 
+      "Your StarStore Ambassador application has been approved! Here are your login credentials."
+    );
+
+    // Generate plain text version for anti-spam
+    const plainTextEmail = emailTemplates.generatePlainText([
+      { type: 'greeting', content: userName },
+      { type: 'heading', content: 'Your application has been approved.' },
+      { type: 'paragraph', content: 'Congratulations! You have been accepted into the StarStore Ambassador Program.' },
+      { type: 'credentials', content: [
+        { label: 'Email', value: userEmail },
+        { label: 'Temporary Password', value: tempPassword },
+        { label: 'Your Referral Code', value: referralCode }
+      ]},
+      { type: 'notice', content: { type: 'warning', text: 'Please change your password immediately after your first login.' }},
+      { type: 'button', content: { text: 'Login to Dashboard', url: DASHBOARD_URL }},
+      { type: 'paragraph', content: "Here's how to get started:" },
+      { type: 'list', content: [
+        'Log in to your ambassador dashboard',
+        'Complete your profile and change your password', 
+        'Share your unique referral code',
+        'Track your earnings in real-time'
+      ]}
+    ]);
+
+    // Initialize Resend
+    const resend = new Resend(resendApiKey);
+
     const emailResponse = await resend.emails.send({
-      from: "StarStore Ambassador Program <onboarding@resend.dev>",
+      from: "StarStore <noreply@starstore.site>",
       to: [userEmail],
-      subject: "🎉 Welcome to StarStore Ambassador Program!",
-      html: `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <style>
-              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
-              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-              .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 8px 8px 0 0; }
-              .content { background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 8px 8px; }
-              .credentials { background: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #667eea; }
-              .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
-              .footer { text-align: center; margin-top: 30px; color: #666; font-size: 14px; }
-              code { background: #fff3cd; padding: 2px 6px; border-radius: 3px; font-family: monospace; color: #856404; }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header">
-                <h1 style="margin: 0; font-size: 28px;">✨ Welcome to StarStore!</h1>
-              </div>
-              <div class="content">
-                <p>Hi ${userName},</p>
-                
-                <p><strong>Congratulations!</strong> Your application to become a StarStore Ambassador has been approved! 🎊</p>
-                
-                <div class="credentials">
-                  <h3 style="margin-top: 0; color: #667eea;">Your Login Credentials</h3>
-                  <p><strong>Email:</strong> ${userEmail}</p>
-                  <p><strong>Temporary Password:</strong> <code>${tempPassword}</code></p>
-                  <p><strong>Your Referral Code:</strong> <code>${referralCode}</code></p>
-                </div>
-                
-                <p><strong>⚠️ Important:</strong> Please change your password after your first login for security.</p>
-                
-                <a href="https://jrtqbntwwkqxpexpplly.supabase.co" class="button">Login to Your Dashboard</a>
-                
-                <h3>🚀 Next Steps:</h3>
-                <ol>
-                  <li>Log in to your ambassador dashboard</li>
-                  <li>Complete your profile setup</li>
-                  <li>Start sharing your referral code: <code>${referralCode}</code></li>
-                  <li>Track your earnings and referrals in real-time</li>
-                </ol>
-                
-                <p>If you have any questions, please don't hesitate to reach out to our support team.</p>
-                
-                <p>Best regards,<br><strong>The StarStore Team</strong></p>
-              </div>
-              <div class="footer">
-                <p>This email was sent to ${userEmail}</p>
-                <p>© ${new Date().getFullYear()} StarStore. All rights reserved.</p>
-              </div>
-            </div>
-          </body>
-        </html>
-      `,
+      subject: "Your StarStore Ambassador Application is Approved",
+      html: htmlEmail,
+      text: plainTextEmail,
     });
 
     if (emailResponse.error) {
