@@ -33,41 +33,57 @@ export const ManualEmailSender = ({
     });
   };
 
-  const emailTemplate = `Subject: 🎉 Welcome to StarStore Ambassador Program!
+  // Professional plain text email template (matching the HTML version)
+  const emailTemplate = `Subject: Your StarStore Ambassador Application is Approved
 
-Hi ${applicantName},
+StarStore
 
-Congratulations! Your application to become a StarStore Ambassador has been approved! 🎊
+Hello, ${applicantName}
 
-Your Login Credentials:
-• Email: ${applicantEmail}
-• Temporary Password: ${tempPassword || '[TEMP_PASSWORD]'}
-• Your Referral Code: ${referralCode || '[REFERRAL_CODE]'}
+Your application has been approved.
+==========================================
 
-⚠️ Important: Please change your password after your first login for security.
+Congratulations! You have been accepted into the StarStore Ambassador Program. We're excited to have you on board and can't wait to see the impact you'll make.
 
-Next Steps:
-1. Log in to your ambassador dashboard at: ${window.location.origin}/auth
-2. Complete your profile setup
-3. Start sharing your referral code: ${referralCode || '[REFERRAL_CODE]'}
+YOUR CREDENTIALS
+---
+Email: ${applicantEmail}
+Temporary Password: ${tempPassword || '[TEMP_PASSWORD]'}
+Your Referral Code: ${referralCode || '[REFERRAL_CODE]'}
+---
+
+[IMPORTANT] Please change your password immediately after your first login for security.
+
+Login to Dashboard: ${window.location.origin}/auth
+
+HERE'S HOW TO GET STARTED:
+
+1. Log in to your ambassador dashboard using the credentials above
+2. Complete your profile and change your password
+3. Share your unique referral code with friends and followers
 4. Track your earnings and referrals in real-time
 
-If you have any questions, please don't hesitate to reach out to our support team.
+If you have questions about your account or the program, please don't hesitate to get in touch with us on Telegram: https://t.me/thestarstore
 
-Best regards,
+---
+Thank you for being part of StarStore.
 The StarStore Team
 
 ---
-This email was sent to ${applicantEmail}
-© ${new Date().getFullYear()} StarStore. All rights reserved.`;
+© ${new Date().getFullYear()} StarStore. All rights reserved.
+Help: https://starstore.site/help
+Support: https://starstore.site/support
+Telegram: https://t.me/thestarstore`;
 
   const copyEmailTemplate = () => {
     copyToClipboard(emailTemplate, 'Email template');
   };
 
   const openEmailClient = () => {
-    const subject = encodeURIComponent('🎉 Welcome to StarStore Ambassador Program!');
-    const body = encodeURIComponent(emailTemplate);
+    const subject = encodeURIComponent('Your StarStore Ambassador Application is Approved');
+    // Remove subject line from body since it's in the subject field
+    const bodyText = emailTemplate.replace('Subject: Your StarStore Ambassador Application is Approved\n\n', '');
+    const body = encodeURIComponent(bodyText);
     const mailtoLink = `mailto:${applicantEmail}?subject=${subject}&body=${body}`;
     window.open(mailtoLink);
   };
