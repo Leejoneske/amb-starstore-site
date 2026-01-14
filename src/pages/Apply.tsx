@@ -39,6 +39,41 @@ const applicationSchema = z.object({
   strategy: z.string().trim().min(10, "Please provide more detail").max(2000),
 });
 
+// InputField component defined OUTSIDE the main component to prevent re-creation
+interface InputFieldProps {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  placeholder: string;
+  required?: boolean;
+  error?: string;
+}
+
+const InputField = ({ 
+  id, label, icon: Icon, value, onChange, type = "text", 
+  placeholder, required = false, error 
+}: InputFieldProps) => (
+  <div className="space-y-2">
+    <Label htmlFor={id} className="flex items-center gap-2 text-sm font-medium">
+      <Icon className="h-4 w-4 text-muted-foreground" />
+      {label} {required && <span className="text-destructive">*</span>}
+    </Label>
+    <Input
+      id={id}
+      type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      required={required}
+      className={cn("h-11", error && "border-destructive")}
+    />
+    {error && <p className="text-sm text-destructive">{error}</p>}
+  </div>
+);
+
 const Apply = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -187,31 +222,7 @@ const Apply = () => {
     );
   }
 
-  const InputField = ({ 
-    id, label, icon: Icon, value, onChange, type = "text", 
-    placeholder, required = false, error 
-  }: { 
-    id: string; label: string; icon: React.ElementType; 
-    value: string; onChange: (v: string) => void; 
-    type?: string; placeholder: string; required?: boolean; error?: string;
-  }) => (
-    <div className="space-y-2">
-      <Label htmlFor={id} className="flex items-center gap-2 text-sm font-medium">
-        <Icon className="h-4 w-4 text-muted-foreground" />
-        {label} {required && <span className="text-destructive">*</span>}
-      </Label>
-      <Input
-        id={id}
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        required={required}
-        className={cn("h-11", error && "border-destructive")}
-      />
-      {error && <p className="text-sm text-destructive">{error}</p>}
-    </div>
-  );
+  // InputField is now moved outside component to prevent re-creation on state changes
 
   return (
     <div className="min-h-screen bg-background py-8 sm:py-12 px-4">
