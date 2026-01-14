@@ -61,7 +61,8 @@ const emailWrapper = (content: string, previewText?: string): string => `
           </p>
           <div class="footer-links">
             <a href="https://starstore.site">Visit StarStore</a>
-            <a href="https://t.me/staraborr">Telegram Support</a>
+            <a href="https://t.me/StarStore_app">Telegram Support</a>
+            <a href="https://t.me/TgStarStore_bot">Start Bot</a>
           </div>
           <p class="footer-text" style="margin-top: 16px; font-size: 11px; color: #94a3b8;">
             If you didn't apply for the Ambassador Program, please ignore this email.
@@ -91,7 +92,8 @@ WHAT HAPPENS NEXT:
 3. Access your dashboard to start earning commissions
 
 While you wait, you can:
-- Follow us on Telegram: https://t.me/staraborr
+- Join our Telegram group: https://t.me/StarStore_app
+- Start the Telegram bot: https://t.me/TgStarStore_bot
 - Visit our website: https://starstore.site
 
 If you have any questions, feel free to reach out to our support team.
@@ -237,8 +239,11 @@ const handler = async (req: Request): Promise<Response> => {
         <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; color: #1e40af; margin: 0 0 12px 0; font-weight: 500;">
           While you wait, join our Telegram community
         </p>
-        <a href="https://t.me/staraborr" style="display: inline-block; background-color: #3b82f6; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; font-weight: 600; text-decoration: none; padding: 12px 24px; border-radius: 6px;">
-          Join Telegram →
+        <a href="https://t.me/StarStore_app" style="display: inline-block; background-color: #3b82f6; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; font-weight: 600; text-decoration: none; padding: 12px 24px; border-radius: 6px; margin-right: 8px;">
+          Join Community →
+        </a>
+        <a href="https://t.me/TgStarStore_bot" style="display: inline-block; background-color: #10b981; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; font-weight: 600; text-decoration: none; padding: 12px 24px; border-radius: 6px;">
+          Start Bot →
         </a>
       </div>
       
