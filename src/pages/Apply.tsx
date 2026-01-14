@@ -91,7 +91,7 @@ const Apply = () => {
         parsedSocialLinks = { links };
       }
 
-      const { error } = await supabase.from('applications').insert({
+      const { data: applicationData, error } = await supabase.from('applications').insert({
         user_id: user?.id || null,
         full_name: validatedData.fullName,
         email: validatedData.email,
@@ -103,14 +103,29 @@ const Apply = () => {
         experience: validatedData.experience,
         why_join: validatedData.whyJoin,
         referral_strategy: validatedData.strategy,
-      });
+      }).select('id').single();
 
       if (error) throw error;
+
+      // Send welcome email asynchronously (don't block submission)
+      try {
+        await supabase.functions.invoke('send-welcome-email', {
+          body: {
+            to: validatedData.email,
+            fullName: validatedData.fullName,
+            applicationId: applicationData?.id
+          }
+        });
+        console.log('Welcome email sent successfully');
+      } catch (emailError) {
+        // Log but don't fail the submission if email fails
+        console.error('Failed to send welcome email:', emailError);
+      }
 
       setSubmitted(true);
       toast({
         title: "Application Submitted!",
-        description: "We'll review your application and get back to you soon.",
+        description: "We'll review your application and get back to you soon. Check your email for confirmation.",
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
