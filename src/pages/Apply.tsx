@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -13,14 +13,12 @@ import {
   ExternalLink, 
   User, 
   Mail, 
-  Phone, 
   MessageCircle,
-  Share2,
-  FileText,
-  Target,
-  Sparkles,
   ArrowRight,
-  Loader2
+  Loader2,
+  Sparkles,
+  Shield,
+  Clock
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -30,13 +28,10 @@ import { cn } from "@/lib/utils";
 const applicationSchema = z.object({
   fullName: z.string().trim().min(2, "Name must be at least 2 characters").max(100),
   email: z.string().trim().email("Invalid email address").max(255),
-  phone: z.string().trim().optional(),
   telegram: z.string().trim().optional(),
   telegramId: z.string().trim().min(5, "Telegram ID must be at least 5 digits").regex(/^\d+$/, "Telegram ID must be numeric"),
-  socialLinks: z.string().trim().max(1000).optional(),
   experience: z.string().trim().min(10, "Please provide more detail").max(2000),
   whyJoin: z.string().trim().min(10, "Please provide more detail").max(2000),
-  strategy: z.string().trim().min(10, "Please provide more detail").max(2000),
 });
 
 // InputField component defined OUTSIDE the main component to prevent re-creation
@@ -77,13 +72,10 @@ const InputField = ({
 const Apply = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [telegram, setTelegram] = useState("");
   const [telegramId, setTelegramId] = useState("");
-  const [socialLinks, setSocialLinks] = useState("");
   const [experience, setExperience] = useState("");
   const [whyJoin, setWhyJoin] = useState("");
-  const [strategy, setStrategy] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -99,8 +91,7 @@ const Apply = () => {
 
     try {
       const validatedData = applicationSchema.parse({
-        fullName, email, phone, telegram, telegramId,
-        socialLinks, experience, whyJoin, strategy,
+        fullName, email, telegram, telegramId, experience, whyJoin,
       });
 
       const { data: existing } = await supabase
@@ -120,24 +111,15 @@ const Apply = () => {
         return;
       }
 
-      let parsedSocialLinks = null;
-      if (validatedData.socialLinks) {
-        const links = validatedData.socialLinks.split('\n').filter(l => l.trim());
-        parsedSocialLinks = { links };
-      }
-
       const { data: applicationData, error } = await supabase.from('applications').insert({
         user_id: user?.id || null,
         full_name: validatedData.fullName,
         email: validatedData.email,
-        phone: validatedData.phone || null,
         telegram_username: validatedData.telegram || null,
         telegram_id: validatedData.telegramId,
         referral_code: validatedData.telegramId,
-        social_media_links: parsedSocialLinks,
         experience: validatedData.experience,
         why_join: validatedData.whyJoin,
-        referral_strategy: validatedData.strategy,
       }).select('id').single();
 
       if (error) throw error;
@@ -153,7 +135,6 @@ const Apply = () => {
         });
         console.log('Welcome email sent successfully');
       } catch (emailError) {
-        // Log but don't fail the submission if email fails
         console.error('Failed to send welcome email:', emailError);
       }
 
@@ -188,31 +169,33 @@ const Apply = () => {
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-lg border-0 shadow-xl">
-          <CardContent className="pt-12 pb-8 text-center">
-            <div className="relative mx-auto w-fit mb-6">
-              <div className="absolute inset-0 animate-pulse rounded-full bg-success/20 blur-xl" />
-              <div className="relative p-5 rounded-full bg-success/10 ring-4 ring-success/20">
-                <CheckCircle2 className="h-14 w-14 text-success" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-muted/30 to-background p-4">
+        <Card className="w-full max-w-md border-0 shadow-2xl">
+          <CardContent className="pt-12 pb-10 text-center">
+            <div className="relative mx-auto w-fit mb-8">
+              <div className="absolute inset-0 animate-pulse rounded-full bg-emerald-500/20 blur-xl" />
+              <div className="relative p-5 rounded-full bg-emerald-500/10 ring-4 ring-emerald-500/20">
+                <CheckCircle2 className="h-12 w-12 text-emerald-500" />
               </div>
             </div>
             
-            <h1 className="text-3xl font-bold mb-3">Application Submitted!</h1>
-            <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
-              Thank you for applying to become a StarStore Ambassador. We'll review your application and contact you within 48 hours.
+            <h1 className="text-2xl font-bold mb-3">Application Submitted!</h1>
+            <p className="text-muted-foreground mb-8 text-sm max-w-xs mx-auto leading-relaxed">
+              Thank you for applying. We'll review your application and contact you within 24-48 hours.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <div className="flex flex-col gap-3">
               <Link to="/">
-                <Button size="lg" className="gap-2">
+                <Button size="lg" className="w-full gap-2">
                   Back to Home
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               {user && (
                 <Link to="/dashboard">
-                  <Button size="lg" variant="outline">Go to Dashboard</Button>
+                  <Button size="lg" variant="outline" className="w-full">
+                    Go to Dashboard
+                  </Button>
                 </Link>
               )}
             </div>
@@ -222,168 +205,110 @@ const Apply = () => {
     );
   }
 
-  // InputField is now moved outside component to prevent re-creation on state changes
-
   return (
-    <div className="min-h-screen bg-background py-8 sm:py-12 px-4">
-      <div className="container mx-auto max-w-2xl">
+    <div className="min-h-screen bg-gradient-to-b from-muted/30 to-background py-10 px-4">
+      <div className="container mx-auto max-w-lg">
         {/* Header */}
-        <div className="text-center mb-8 space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
-            <Sparkles className="h-4 w-4" />
+        <div className="text-center mb-8 space-y-3">
+          <Badge variant="outline" className="px-4 py-1.5">
+            <Sparkles className="h-3.5 w-3.5 mr-2" />
             Ambassador Program
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-bold">Become an Ambassador</h1>
-          <p className="text-muted-foreground max-w-md mx-auto">
-            Join our program and start earning up to 75% commission on every referral
+          </Badge>
+          <h1 className="text-2xl sm:text-3xl font-bold">Join StarStore</h1>
+          <p className="text-muted-foreground text-sm max-w-sm mx-auto">
+            Apply to become an ambassador and start earning commissions
           </p>
         </div>
 
         <Card className="border-0 shadow-xl">
           <CardContent className="p-6 sm:p-8">
-            <form onSubmit={handleSubmit} className="space-y-8">
-              {/* Personal Info Section */}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Basic Info */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                  <User className="h-4 w-4" />
-                  Personal Information
-                </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <InputField
-                    id="fullName"
-                    label="Full Name"
-                    icon={User}
-                    value={fullName}
-                    onChange={setFullName}
-                    placeholder="John Doe"
-                    required
-                    error={errors.fullName}
-                  />
-                  <InputField
-                    id="email"
-                    label="Email"
-                    icon={Mail}
-                    type="email"
-                    value={email}
-                    onChange={setEmail}
-                    placeholder="you@example.com"
-                    required
-                    error={errors.email}
-                  />
-                </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <InputField
-                    id="phone"
-                    label="Phone Number"
-                    icon={Phone}
-                    type="tel"
-                    value={phone}
-                    onChange={setPhone}
-                    placeholder="+1 (555) 000-0000"
-                  />
-                  <InputField
-                    id="telegram"
-                    label="Telegram Username"
-                    icon={MessageCircle}
-                    value={telegram}
-                    onChange={setTelegram}
-                    placeholder="@username"
-                  />
-                </div>
+                <InputField
+                  id="fullName"
+                  label="Full Name"
+                  icon={User}
+                  value={fullName}
+                  onChange={setFullName}
+                  placeholder="Your full name"
+                  required
+                  error={errors.fullName}
+                />
+                <InputField
+                  id="email"
+                  label="Email Address"
+                  icon={Mail}
+                  type="email"
+                  value={email}
+                  onChange={setEmail}
+                  placeholder="you@example.com"
+                  required
+                  error={errors.email}
+                />
+                <InputField
+                  id="telegram"
+                  label="Telegram Username"
+                  icon={MessageCircle}
+                  value={telegram}
+                  onChange={setTelegram}
+                  placeholder="@username (optional)"
+                />
               </div>
 
-              {/* Telegram ID Section */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                  <MessageCircle className="h-4 w-4" />
-                  Telegram Integration
-                </div>
-                
-                <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-4">
-                  <div className="flex gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10 h-fit">
-                      <MessageCircle className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      <p className="font-medium text-sm">Your Telegram ID is required</p>
-                      <p className="text-xs text-muted-foreground">
-                        This will be your unique referral code. To find your Telegram ID, message{" "}
-                        <a 
-                          href="https://t.me/userinfobot" 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline inline-flex items-center gap-1 font-medium"
-                        >
-                          @userinfobot
-                          <ExternalLink className="h-3 w-3" />
-                        </a>{" "}
-                        on Telegram.
-                      </p>
-                    </div>
+              {/* Telegram ID */}
+              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-4">
+                <div className="flex gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10 h-fit">
+                    <MessageCircle className="h-5 w-5 text-primary" />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="telegramId" className="text-sm font-medium">
-                      Telegram ID <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="telegramId"
-                      value={telegramId}
-                      onChange={(e) => setTelegramId(e.target.value.replace(/\D/g, ''))}
-                      placeholder="123456789"
-                      required
-                      className={cn("h-11 font-mono", errors.telegramId && "border-destructive")}
-                    />
-                    {errors.telegramId && (
-                      <p className="text-sm text-destructive">{errors.telegramId}</p>
-                    )}
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Badge variant="secondary" className="text-xs">Note</Badge>
-                      This number will also be your referral code
+                  <div className="flex-1">
+                    <p className="font-medium text-sm mb-1">Telegram ID Required</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Your Telegram ID becomes your referral code. Find it by messaging{" "}
+                      <a 
+                        href="https://t.me/userinfobot" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline inline-flex items-center gap-1 font-medium"
+                      >
+                        @userinfobot
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
                     </p>
                   </div>
                 </div>
-              </div>
 
-              {/* Social Media Section */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                  <Share2 className="h-4 w-4" />
-                  Social Presence
-                </div>
                 <div className="space-y-2">
-                  <Label htmlFor="socialLinks">Social Media Links</Label>
-                  <Textarea
-                    id="socialLinks"
-                    value={socialLinks}
-                    onChange={(e) => setSocialLinks(e.target.value)}
-                    placeholder={"Instagram: @yourhandle\nTikTok: @yourhandle\nYouTube: channel link"}
-                    rows={3}
-                    className="resize-none"
+                  <Label htmlFor="telegramId" className="text-sm font-medium">
+                    Telegram ID <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="telegramId"
+                    value={telegramId}
+                    onChange={(e) => setTelegramId(e.target.value.replace(/\D/g, ''))}
+                    placeholder="123456789"
+                    required
+                    className={cn("h-11 font-mono", errors.telegramId && "border-destructive")}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    List your social media profiles (one per line)
-                  </p>
+                  {errors.telegramId && (
+                    <p className="text-sm text-destructive">{errors.telegramId}</p>
+                  )}
                 </div>
               </div>
 
-              {/* Experience Section */}
+              {/* Experience */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                  <FileText className="h-4 w-4" />
-                  Your Experience
-                </div>
-                
                 <div className="space-y-2">
-                  <Label htmlFor="experience">
-                    Previous Marketing Experience <span className="text-destructive">*</span>
+                  <Label htmlFor="experience" className="text-sm font-medium">
+                    Tell us about yourself <span className="text-destructive">*</span>
                   </Label>
                   <Textarea
                     id="experience"
                     value={experience}
                     onChange={(e) => setExperience(e.target.value)}
-                    placeholder="Tell us about your experience with affiliate marketing, social media promotion, or similar activities..."
-                    rows={4}
+                    placeholder="Share your experience with marketing, social media, or community building..."
+                    rows={3}
                     required
                     className={cn("resize-none", errors.experience && "border-destructive")}
                   />
@@ -391,75 +316,63 @@ const Apply = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="whyJoin">
+                  <Label htmlFor="whyJoin" className="text-sm font-medium">
                     Why do you want to join? <span className="text-destructive">*</span>
                   </Label>
                   <Textarea
                     id="whyJoin"
                     value={whyJoin}
                     onChange={(e) => setWhyJoin(e.target.value)}
-                    placeholder="Share your motivation for becoming a StarStore Ambassador..."
-                    rows={4}
+                    placeholder="What motivates you to become a StarStore Ambassador?"
+                    rows={3}
                     required
                     className={cn("resize-none", errors.whyJoin && "border-destructive")}
                   />
                   {errors.whyJoin && <p className="text-sm text-destructive">{errors.whyJoin}</p>}
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="strategy" className="flex items-center gap-2">
-                    <Target className="h-4 w-4 text-muted-foreground" />
-                    How would you promote StarStore? <span className="text-destructive">*</span>
-                  </Label>
-                  <Textarea
-                    id="strategy"
-                    value={strategy}
-                    onChange={(e) => setStrategy(e.target.value)}
-                    placeholder="Describe your promotional strategy..."
-                    rows={4}
-                    required
-                    className={cn("resize-none", errors.strategy && "border-destructive")}
-                  />
-                  {errors.strategy && <p className="text-sm text-destructive">{errors.strategy}</p>}
-                </div>
               </div>
 
               {/* Submit */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                <Button 
-                  type="submit" 
-                  size="lg" 
-                  className="flex-1 gap-2" 
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4" />
-                      Submit Application
-                    </>
-                  )}
-                </Button>
-                <Link to="/" className="flex-1">
-                  <Button type="button" variant="outline" size="lg" className="w-full">
-                    Cancel
-                  </Button>
-                </Link>
+              <Button 
+                type="submit" 
+                size="lg" 
+                className="w-full gap-2 shadow-lg shadow-primary/20" 
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4" />
+                    Submit Application
+                  </>
+                )}
+              </Button>
+
+              {/* Trust indicators */}
+              <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground pt-2">
+                <div className="flex items-center gap-1.5">
+                  <Shield className="h-3.5 w-3.5 text-emerald-500" />
+                  <span>Secure</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5 text-blue-500" />
+                  <span>24-48h Review</span>
+                </div>
               </div>
             </form>
           </CardContent>
         </Card>
 
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          Already have an account?{" "}
-          <Link to="/auth" className="text-primary hover:underline font-medium">
-            Sign in
+        {/* Back link */}
+        <div className="text-center mt-6">
+          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            ← Back to Home
           </Link>
-        </p>
+        </div>
       </div>
     </div>
   );
