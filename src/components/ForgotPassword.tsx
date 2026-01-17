@@ -4,9 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft, CheckCircle2, Mail, Send, Clock, AlertTriangle } from 'lucide-react';
+import { Loader2, ArrowLeft, CheckCircle2, Mail, Send, Clock, Shield, Inbox, RefreshCw } from 'lucide-react';
 import { forgotPasswordService } from '@/services/forgotPasswordService';
-import { cn } from '@/lib/utils';
 
 interface ForgotPasswordProps {
   onBack?: () => void;
@@ -38,8 +37,8 @@ export const ForgotPassword = ({ onBack }: ForgotPasswordProps) => {
       if (result.success) {
         setSubmitted(true);
         toast({
-          title: 'Check Your Email',
-          description: 'If registered, you will receive a password reset link.',
+          title: 'Email Sent',
+          description: 'Check your inbox for the reset link.',
         });
       } else {
         toast({
@@ -59,81 +58,125 @@ export const ForgotPassword = ({ onBack }: ForgotPasswordProps) => {
     }
   };
 
+  const handleResend = async () => {
+    setLoading(true);
+    try {
+      await forgotPasswordService.requestPasswordReset(email);
+      toast({
+        title: 'Email Resent',
+        description: 'A new reset link has been sent to your email.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to resend email. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (submitted) {
     return (
       <div className="space-y-6">
         {/* Success Header */}
         <div className="text-center space-y-4">
           <div className="relative mx-auto w-fit">
-            <div className="absolute inset-0 animate-pulse rounded-full bg-success/20 blur-lg" />
-            <div className="relative p-4 rounded-full bg-success/10 ring-4 ring-success/20">
-              <CheckCircle2 className="h-10 w-10 text-success" />
+            <div className="absolute inset-0 animate-pulse rounded-full bg-blue-500/20 blur-xl" />
+            <div className="relative p-5 rounded-full bg-gradient-to-br from-blue-500/20 to-indigo-500/20 ring-4 ring-blue-500/10">
+              <Inbox className="h-10 w-10 text-blue-500" />
             </div>
           </div>
-          <div>
-            <h2 className="text-2xl font-bold">Check Your Email</h2>
-            <p className="text-muted-foreground mt-1">
-              We've sent a reset link to <span className="font-medium text-foreground">{email}</span>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold">Check Your Inbox</h2>
+            <p className="text-muted-foreground text-sm max-w-xs mx-auto">
+              We've sent a password reset link to
+            </p>
+            <p className="font-medium text-foreground bg-muted px-4 py-2 rounded-lg inline-block text-sm">
+              {email}
             </p>
           </div>
         </div>
 
-        {/* Instructions Card */}
-        <Card className="bg-muted/50 border-0">
-          <CardContent className="p-5 space-y-4">
-            <div className="flex gap-3">
-              <Mail className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+        {/* Steps Card */}
+        <Card className="border-0 bg-gradient-to-br from-muted/50 to-muted/30">
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <p className="font-medium text-sm flex items-center gap-2">
+                <Mail className="h-4 w-4 text-primary" />
+                Follow these steps
+              </p>
               <div className="space-y-3">
-                <p className="font-medium text-sm">What to do next:</p>
-                <ol className="space-y-2 text-sm text-muted-foreground">
-                  {[
-                    'Check your email inbox (and spam folder)',
-                    'Click the "Reset Password" link in the email',
-                    'Create your new password',
-                    'Log in with your new credentials'
-                  ].map((step, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary flex-shrink-0">
-                        {i + 1}
-                      </span>
-                      {step}
-                    </li>
-                  ))}
-                </ol>
+                {[
+                  { text: 'Open your email inbox', sub: 'Check spam if needed' },
+                  { text: 'Click the reset link', sub: 'Valid for 1 hour' },
+                  { text: 'Create a new password', sub: 'Make it strong & unique' },
+                ].map((step, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold flex-shrink-0">
+                      {i + 1}
+                    </div>
+                    <div className="pt-0.5">
+                      <p className="text-sm font-medium">{step.text}</p>
+                      <p className="text-xs text-muted-foreground">{step.sub}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-
-            <div className="flex items-center gap-2 pt-2 border-t border-border text-xs text-muted-foreground">
-              <Clock className="h-3.5 w-3.5" />
-              The reset link expires in 1 hour for security
             </div>
           </CardContent>
         </Card>
 
-        {/* Security Notice */}
-        <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/30 p-3 rounded-lg">
-          <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-          <span>
-            For security, we don't confirm if an email exists in our system. If you don't receive an email, verify you entered the correct address.
-          </span>
+        {/* Info badges */}
+        <div className="flex flex-wrap items-center justify-center gap-3 text-xs">
+          <div className="flex items-center gap-1.5 text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full">
+            <Clock className="h-3.5 w-3.5 text-amber-500" />
+            <span>Expires in 1 hour</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full">
+            <Shield className="h-3.5 w-3.5 text-emerald-500" />
+            <span>Secure link</span>
+          </div>
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            className="flex-1"
-            onClick={() => {
-              setSubmitted(false);
-              setEmail('');
-            }}
+        <div className="space-y-3 pt-2">
+          <Button 
+            variant="outline" 
+            className="w-full gap-2" 
+            onClick={handleResend}
+            disabled={loading}
           >
-            Try Another Email
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            Resend Email
           </Button>
-          <Button className="flex-1" onClick={onBack}>
-            Back to Login
-          </Button>
+          
+          <div className="flex gap-3">
+            <Button
+              variant="ghost"
+              className="flex-1"
+              onClick={() => {
+                setSubmitted(false);
+                setEmail('');
+              }}
+            >
+              Try Different Email
+            </Button>
+            <Button className="flex-1" onClick={onBack}>
+              Back to Login
+            </Button>
+          </div>
         </div>
+
+        {/* Security note */}
+        <p className="text-xs text-center text-muted-foreground">
+          Didn't receive an email? Check your spam folder or verify the email address is correct.
+        </p>
       </div>
     );
   }
@@ -141,22 +184,26 @@ export const ForgotPassword = ({ onBack }: ForgotPasswordProps) => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="text-center space-y-2">
-        <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-2">
-          <Mail className="h-6 w-6 text-primary" />
+      <div className="text-center space-y-3">
+        <div className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5">
+          <Mail className="h-7 w-7 text-primary" />
         </div>
-        <h2 className="text-2xl font-bold">Reset Password</h2>
-        <p className="text-muted-foreground text-sm">
-          Enter your email and we'll send you a reset link
-        </p>
+        <div>
+          <h2 className="text-2xl font-bold">Forgot Password?</h2>
+          <p className="text-muted-foreground text-sm mt-1">
+            No worries, we'll send you reset instructions
+          </p>
+        </div>
       </div>
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="reset-email">Email Address</Label>
+          <Label htmlFor="reset-email" className="text-sm font-medium">
+            Email Address
+          </Label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               id="reset-email"
               type="email"
@@ -164,13 +211,17 @@ export const ForgotPassword = ({ onBack }: ForgotPasswordProps) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="h-12 pl-10"
+              className="h-12 pl-11"
               disabled={loading}
             />
           </div>
         </div>
 
-        <Button type="submit" className="w-full h-12 gap-2" disabled={loading}>
+        <Button 
+          type="submit" 
+          className="w-full h-12 gap-2 shadow-lg shadow-primary/20" 
+          disabled={loading}
+        >
           {loading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -185,16 +236,13 @@ export const ForgotPassword = ({ onBack }: ForgotPasswordProps) => {
         </Button>
       </form>
 
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center">
-          <span className="px-3 bg-background text-xs text-muted-foreground">or</span>
-        </div>
-      </div>
-
-      <Button variant="ghost" className="w-full gap-2" onClick={onBack} disabled={loading}>
+      {/* Back button */}
+      <Button 
+        variant="ghost" 
+        className="w-full gap-2 text-muted-foreground hover:text-foreground" 
+        onClick={onBack} 
+        disabled={loading}
+      >
         <ArrowLeft className="h-4 w-4" />
         Back to Login
       </Button>
