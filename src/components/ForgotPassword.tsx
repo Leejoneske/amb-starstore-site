@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -6,6 +6,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, ArrowLeft, CheckCircle2, Mail, Send, Clock, Shield, Inbox, RefreshCw } from 'lucide-react';
 import { forgotPasswordService } from '@/services/forgotPasswordService';
+
+const RESEND_COOLDOWN_SECONDS = 60;
 
 interface ForgotPasswordProps {
   onBack?: () => void;
@@ -15,7 +17,19 @@ export const ForgotPassword = ({ onBack }: ForgotPasswordProps) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const { toast } = useToast();
+
+  // Countdown timer for resend cooldown
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +50,7 @@ export const ForgotPassword = ({ onBack }: ForgotPasswordProps) => {
 
       if (result.success) {
         setSubmitted(true);
+        setResendCooldown(RESEND_COOLDOWN_SECONDS); // Start cooldown after initial send
         toast({
           title: 'Email Sent',
           description: 'Check your inbox for the reset link.',
@@ -59,9 +74,12 @@ export const ForgotPassword = ({ onBack }: ForgotPasswordProps) => {
   };
 
   const handleResend = async () => {
+    if (resendCooldown > 0) return;
+    
     setLoading(true);
     try {
       await forgotPasswordService.requestPasswordReset(email);
+      setResendCooldown(RESEND_COOLDOWN_SECONDS); // Start cooldown after resend
       toast({
         title: 'Email Resent',
         description: 'A new reset link has been sent to your email.',
@@ -146,14 +164,16 @@ export const ForgotPassword = ({ onBack }: ForgotPasswordProps) => {
             variant="outline" 
             className="w-full gap-2" 
             onClick={handleResend}
-            disabled={loading}
+            disabled={loading || resendCooldown > 0}
           >
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
+            ) : resendCooldown > 0 ? (
+              <Clock className="h-4 w-4" />
             ) : (
               <RefreshCw className="h-4 w-4" />
             )}
-            Resend Email
+            {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Email'}
           </Button>
           
           <div className="flex gap-3">
