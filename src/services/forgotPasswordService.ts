@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from '@/lib/logger';
+import { supabaseConfig } from '@/config/env';
 
 export interface ForgotPasswordRequest {
   email: string;
@@ -16,7 +17,8 @@ export const forgotPasswordService = {
     try {
       logger.info('Password reset requested', { email });
 
-      // Use Supabase's built-in password reset with proper redirect
+      // Generate the reset URL using Supabase's built-in flow
+      // This triggers Supabase to generate a secure token
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
@@ -30,7 +32,40 @@ export const forgotPasswordService = {
         };
       }
 
-      logger.info('Password reset email sent successfully', { email });
+      // Also send our custom professional email via edge function
+      // This provides a better user experience with branded emails
+      try {
+        const resetUrl = `${window.location.origin}/reset-password`;
+        
+        const response = await fetch(
+          `${supabaseConfig.functionsUrl}/send-password-reset`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseConfig.anonKey}`,
+            },
+            body: JSON.stringify({
+              email,
+              resetUrl,
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          logger.warn('Custom password reset email failed, falling back to Supabase email', { 
+            email, 
+            error: errorData.error 
+          });
+          // Don't fail the whole operation - Supabase already sent its email
+        } else {
+          logger.info('Custom password reset email sent successfully', { email });
+        }
+      } catch (customEmailError) {
+        logger.warn('Failed to send custom password reset email', { email }, customEmailError as Error);
+        // Don't fail - Supabase email was already sent
+      }
 
       return {
         success: true,
