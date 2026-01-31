@@ -1,12 +1,25 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, Users, Clock, Star, Percent } from "lucide-react";
-import type { Ambassador, AnalyticsData } from "@/types";
 import { getTierInfo } from "@/lib/tier-utils";
 
+interface AmbassadorProfileData {
+  current_tier: string;
+  total_earnings: number;
+  total_referrals: number;
+  pending_earnings: number;
+  lifetime_stars: number;
+  avg_stars_per_transaction?: number | null;
+}
+
+interface AnalyticsDataSubset {
+  monthlyEarnings?: number;
+  conversionRate?: number;
+}
+
 interface DashboardStatsProps {
-  ambassadorProfile: Ambassador;
-  analyticsData?: AnalyticsData | null;
+  ambassadorProfile: AmbassadorProfileData;
+  analyticsData?: AnalyticsDataSubset | null;
 }
 
 export const DashboardStats = ({ ambassadorProfile, analyticsData }: DashboardStatsProps) => {

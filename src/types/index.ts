@@ -21,39 +21,57 @@ export interface Ambassador {
   total_earnings: number;
   pending_earnings: number;
   lifetime_stars: number;
-  avg_stars_per_transaction?: number;
-  quality_transaction_rate?: number;
+  avg_stars_per_transaction?: number | null;
+  quality_transaction_rate?: number | null;
   active_referrals: number;
   social_posts_this_month: number;
-  status: 'active' | 'inactive' | 'suspended';
+  status: string;
+  telegram_id?: string | null;
+  telegram_username?: string | null;
+  tier_progress?: number;
+  first_login_at?: string | null;
+  password_change_required?: boolean | null;
+  approved_at?: string | null;
+  approved_by?: string | null;
   created_at: string;
-  approved_at?: string;
+  updated_at?: string;
   profiles?: {
-    full_name: string;
+    full_name: string | null;
     email: string;
-  };
+  } | null;
 }
 
 export interface Transaction {
   id: string;
   ambassador_id: string;
+  amount: number;
   commission_amount: number;
   commission_rate: number;
   transaction_date: string;
-  status: 'pending' | 'completed' | 'failed';
+  status: 'pending' | 'completed' | 'cancelled' | 'refunded';
   stars_awarded: number;
   tier_at_transaction: string;
+  order_id?: string | null;
+  referral_id?: string | null;
+  qualifies_for_bonus?: boolean;
+  notes?: string | null;
+  created_at?: string;
 }
 
 export interface Payout {
   id: string;
   ambassador_id: string;
+  amount: number;
   total_amount: number;
+  quality_bonus?: number | null;
   period_start: string;
   period_end: string;
-  status: 'pending' | 'completed' | 'failed';
-  payment_method?: string;
-  processed_at?: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  payment_method?: string | null;
+  payment_reference?: string | null;
+  notes?: string | null;
+  paid_at?: string | null;
+  created_at?: string;
 }
 
 export interface AnalyticsData {

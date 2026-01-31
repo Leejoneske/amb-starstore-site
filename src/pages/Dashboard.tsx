@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useState, lazy, Suspense } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAmbassadorProfile } from "@/hooks/useAmbassadorProfile";
@@ -33,11 +32,9 @@ import { TierLevelsDisplay } from "@/components/dashboard/TierLevelsDisplay";
 import { LiveActivityFeed } from "@/components/dashboard/LiveActivityFeed";
 import { Settings } from "@/components/dashboard/Settings";
 import { Link, useNavigate } from "react-router-dom";
-import AdminDashboard from "./AdminDashboard";
 import { getTierInfo, getNextTier, getTierBadgeClass } from "@/lib/tier-utils";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { logger } from "@/lib/logger";
-import type { Transaction, Payout } from "@/types";
 import { ADMIN_EMAIL } from "@/config/env";
 
 const AmbassadorAnalytics = lazy(() =>
@@ -204,16 +201,16 @@ const Dashboard = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-3 md:gap-4 pt-4 border-t border-border">
                   <div className="space-y-1">
-                    <div className="text-xs text-muted-foreground">Min Earnings</div>
-                    <div className="text-lg md:text-xl font-semibold text-primary">${currentTierInfo.benefits.minEarnings}+</div>
+                    <div className="text-xs text-muted-foreground">Base Earnings</div>
+                    <div className="text-lg md:text-xl font-semibold text-primary">${currentTierInfo.benefits.baseEarnings}+</div>
                   </div>
                   <div className="space-y-1">
-                    <div className="text-xs text-muted-foreground">NFT Level</div>
-                    <div className="text-lg md:text-xl font-semibold">Level {currentTierInfo.benefits.nftLevel}</div>
+                    <div className="text-xs text-muted-foreground">Commission Rate</div>
+                    <div className="text-lg md:text-xl font-semibold">{currentTierInfo.benefits.commissionRate}%</div>
                   </div>
                   <div className="space-y-1">
-                    <div className="text-xs text-muted-foreground">Free Stars</div>
-                    <div className="text-lg md:text-xl font-semibold">{currentTierInfo.benefits.freeStars}/month</div>
+                    <div className="text-xs text-muted-foreground">Quality Bonus</div>
+                    <div className="text-lg md:text-xl font-semibold">{currentTierInfo.benefits.qualityBonus}%</div>
                   </div>
                   <div className="space-y-1">
                     <div className="text-xs text-muted-foreground">Social Posts</div>

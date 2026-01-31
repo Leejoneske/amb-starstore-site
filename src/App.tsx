@@ -8,6 +8,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./components/theme/ThemeProvider";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { SkipLink } from "./components/SkipLink";
+import { SEOHead } from "./components/SEOHead";
 import Navbar from "./components/Navbar";
 import { Loader2 } from "lucide-react";
 import { logger } from "./lib/logger";
@@ -33,8 +35,9 @@ const queryClient = new QueryClient({
 
 
 const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  <div className="min-h-screen flex items-center justify-center" role="status" aria-label="Loading">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
+    <span className="sr-only">Loading...</span>
   </div>
 );
 
@@ -49,43 +52,47 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <SkipLink />
+              <SEOHead />
               <Navbar />
-              <Suspense fallback={<LoadingSpinner />}>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/apply" element={<Apply />} />
-                  <Route path="/reset-password" element={
-                    <div className="min-h-screen flex items-center justify-center bg-background p-6">
-                      <div className="max-w-md w-full">
-                        <ResetPassword />
+              <main id="main-content" tabIndex={-1}>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/apply" element={<Apply />} />
+                    <Route path="/reset-password" element={
+                      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+                        <div className="max-w-md w-full">
+                          <ResetPassword />
+                        </div>
                       </div>
-                    </div>
-                  } />
-                  <Route path="/onboarding" element={
-                    <ProtectedRoute>
-                      <ErrorBoundary>
-                        <Onboarding />
-                      </ErrorBoundary>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/dashboard" element={
-                    <ProtectedRoute>
-                      <ErrorBoundary>
-                        <Dashboard />
-                      </ErrorBoundary>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/admin" element={
-                    <ProtectedRoute>
-                      <ErrorBoundary>
-                        <AdminDashboard />
-                      </ErrorBoundary>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
+                    } />
+                    <Route path="/onboarding" element={
+                      <ProtectedRoute>
+                        <ErrorBoundary>
+                          <Onboarding />
+                        </ErrorBoundary>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/dashboard" element={
+                      <ProtectedRoute>
+                        <ErrorBoundary>
+                          <Dashboard />
+                        </ErrorBoundary>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/admin" element={
+                      <ProtectedRoute>
+                        <ErrorBoundary>
+                          <AdminDashboard />
+                        </ErrorBoundary>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </main>
             </BrowserRouter>
           </TooltipProvider>
         </AuthProvider>
