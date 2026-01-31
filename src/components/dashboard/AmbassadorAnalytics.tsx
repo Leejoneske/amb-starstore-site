@@ -1,7 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import type { ActivityEvent } from '@/types';
 import {
   ChartContainer,
   ChartTooltip,
@@ -43,8 +42,8 @@ interface AmbassadorAnalyticsProps {
     conversionRate: number;
     totalReferrals: number;
     convertedReferrals: number;
-    recentActivity: ActivityEvent[];
-  } | null;
+    recentActivity: unknown[]; // Can be transactions or activity events
+  } | null | undefined;
   isLoading?: boolean;
 }
 
