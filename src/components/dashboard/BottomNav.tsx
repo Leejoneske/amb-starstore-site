@@ -1,4 +1,4 @@
-import { Home, Users, TrendingUp, Settings, Crown } from "lucide-react";
+import { Home, Users, TrendingUp, Settings, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BottomNavProps {
@@ -9,7 +9,7 @@ interface BottomNavProps {
 const navItems = [
   { id: "home", label: "Home", icon: Home },
   { id: "referrals", label: "Referrals", icon: Users },
-  { id: "tiers", label: "Tiers", icon: Crown },
+  { id: "withdraw", label: "Withdraw", icon: Wallet },
   { id: "analytics", label: "Stats", icon: TrendingUp },
   { id: "settings", label: "Settings", icon: Settings },
 ];

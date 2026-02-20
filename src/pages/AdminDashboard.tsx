@@ -24,6 +24,7 @@ import { MessageCenter } from "@/components/dashboard/MessageCenter";
 import { ManualMessageSender } from "@/components/dashboard/ManualMessageSender";
 import { StarStoreDataViewer } from "@/components/dashboard/StarStoreDataViewer";
 import { AnalyticsCharts } from "@/components/dashboard/AnalyticsCharts";
+import { AdminWithdrawals } from "@/components/dashboard/AdminWithdrawals";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { 
   UserCheck,
@@ -525,6 +526,7 @@ const AdminDashboard = () => {
       case "dashboard": return "Ambassador Management Dashboard";
       case "applications": return "Application Management";
       case "ambassadors": return "All Ambassadors";
+      case "withdrawals": return "Withdrawal Management";
       case "messages": return "Message Center";
       case "starstore": return "Star Store Data";
       case "analytics": return "Analytics & Reports";
@@ -615,6 +617,8 @@ const AdminDashboard = () => {
             <AmbassadorStatusList isAdmin={true} />
           </div>
         );
+      case "withdrawals":
+        return <AdminWithdrawals />;
       case "messages":
         return (
           <div className="space-y-6">

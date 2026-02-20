@@ -35,10 +35,11 @@ export interface Ambassador {
   approved_by?: string | null;
   created_at: string;
   updated_at?: string;
+  // profiles may be a SelectQueryError shape at runtime; keep loose
   profiles?: {
-    full_name: string | null;
-    email: string;
-  } | null;
+    full_name?: string | null;
+    email?: string;
+  } | null | unknown;
 }
 
 export interface Transaction {
