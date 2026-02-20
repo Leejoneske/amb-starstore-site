@@ -481,6 +481,50 @@ export type Database = {
           },
         ]
       }
+      payout_methods: {
+        Row: {
+          ambassador_id: string
+          created_at: string
+          details: Json
+          id: string
+          is_default: boolean
+          is_verified: boolean
+          label: string
+          method_type: string
+          updated_at: string
+        }
+        Insert: {
+          ambassador_id: string
+          created_at?: string
+          details?: Json
+          id?: string
+          is_default?: boolean
+          is_verified?: boolean
+          label: string
+          method_type: string
+          updated_at?: string
+        }
+        Update: {
+          ambassador_id?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          is_default?: boolean
+          is_verified?: boolean
+          label?: string
+          method_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payout_methods_ambassador_id_fkey"
+            columns: ["ambassador_id"]
+            isOneToOne: false
+            referencedRelation: "ambassador_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payouts: {
         Row: {
           ambassador_id: string
@@ -1034,6 +1078,84 @@ export type Database = {
           },
         ]
       }
+      withdrawal_requests: {
+        Row: {
+          admin_notes: string | null
+          ambassador_id: string
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          method_details: Json
+          method_type: string
+          minimum_amount_at_request: number | null
+          payment_reference: string | null
+          payout_method_id: string | null
+          processed_at: string | null
+          processed_by: string | null
+          rejection_reason: string | null
+          requested_at: string
+          status: string
+          tier_at_request: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          ambassador_id: string
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          method_details?: Json
+          method_type: string
+          minimum_amount_at_request?: number | null
+          payment_reference?: string | null
+          payout_method_id?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          rejection_reason?: string | null
+          requested_at?: string
+          status?: string
+          tier_at_request?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          ambassador_id?: string
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          method_details?: Json
+          method_type?: string
+          minimum_amount_at_request?: number | null
+          payment_reference?: string | null
+          payout_method_id?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          rejection_reason?: string | null
+          requested_at?: string
+          status?: string
+          tier_at_request?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_requests_ambassador_id_fkey"
+            columns: ["ambassador_id"]
+            isOneToOne: false
+            referencedRelation: "ambassador_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_payout_method_id_fkey"
+            columns: ["payout_method_id"]
+            isOneToOne: false
+            referencedRelation: "payout_methods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1064,8 +1186,20 @@ export type Database = {
         }
         Returns: Json
       }
+      create_withdrawal_request: {
+        Args: {
+          p_ambassador_id: string
+          p_amount: number
+          p_currency?: string
+          p_method_details: Json
+          p_method_type: string
+          p_payout_method_id?: string
+        }
+        Returns: Json
+      }
       disconnect_ambassador_telegram: { Args: never; Returns: Json }
       generate_referral_code: { Args: never; Returns: string }
+      get_min_withdrawal_amount: { Args: { p_tier: string }; Returns: number }
       has_role:
         | {
             Args: {
@@ -1078,6 +1212,16 @@ export type Database = {
             Args: { check_user_id: string; role_name: string }
             Returns: boolean
           }
+      process_withdrawal_request: {
+        Args: {
+          p_action: string
+          p_admin_notes?: string
+          p_payment_reference?: string
+          p_rejection_reason?: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
       update_ambassador_telegram_info: {
         Args: { p_telegram_id: string; p_telegram_username?: string }
         Returns: Json

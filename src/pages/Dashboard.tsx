@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { 
-  DollarSign, 
   CheckCircle2,
   AlertCircle,
   Star,
@@ -31,6 +30,9 @@ import { QuickActions } from "@/components/dashboard/QuickActions";
 import { TierLevelsDisplay } from "@/components/dashboard/TierLevelsDisplay";
 import { LiveActivityFeed } from "@/components/dashboard/LiveActivityFeed";
 import { Settings } from "@/components/dashboard/Settings";
+import { EarningsWidget } from "@/components/dashboard/EarningsWidget";
+import { PayoutPreferences } from "@/components/dashboard/PayoutPreferences";
+import { WithdrawalHistory } from "@/components/dashboard/WithdrawalHistory";
 import { Link, useNavigate } from "react-router-dom";
 import { getTierInfo, getNextTier, getTierBadgeClass } from "@/lib/tier-utils";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -180,47 +182,49 @@ const Dashboard = () => {
               </Card>
             </div>
 
-            {/* Tier Progress & Referral Tools */}
+            {/* Earnings Widget + Referral Tools */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-              <Card className="p-4 md:p-6">
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-                    <h3 className="text-base md:text-lg font-semibold font-serif">Tier Progress</h3>
-                    <Badge variant="outline" className={`text-white border-none text-xs md:text-sm ${getTierBadgeClass(ambassadorProfile.current_tier)}`}>
-                      {currentTierInfo.icon} {currentTierInfo.displayName}
-                    </Badge>
-                  </div>
-                  <div className="text-xs md:text-sm text-muted-foreground mb-4">
-                    {nextTierInfo ? (
-                      <>{ambassadorProfile.total_referrals} / {nextTierInfo.requirements.referrals} referrals to {nextTierInfo.displayName}</>
-                    ) : (
-                      "Maximum tier achieved! 🎉"
-                    )}
-                  </div>
-                  <Progress value={tierProgress} className="h-3" />
-                </div>
-                <div className="grid grid-cols-2 gap-3 md:gap-4 pt-4 border-t border-border">
-                  <div className="space-y-1">
-                    <div className="text-xs text-muted-foreground">Base Earnings</div>
-                    <div className="text-lg md:text-xl font-semibold text-primary">${currentTierInfo.benefits.baseEarnings}+</div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-xs text-muted-foreground">Commission Rate</div>
-                    <div className="text-lg md:text-xl font-semibold">{currentTierInfo.benefits.commissionRate}%</div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-xs text-muted-foreground">Quality Bonus</div>
-                    <div className="text-lg md:text-xl font-semibold">{currentTierInfo.benefits.qualityBonus}%</div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-xs text-muted-foreground">Social Posts</div>
-                    <div className="text-lg md:text-xl font-semibold">{ambassadorProfile.social_posts_this_month}/{currentTierInfo.requirements.socialPosts}</div>
-                  </div>
-                </div>
-              </Card>
-
+              <EarningsWidget ambassadorProfile={ambassadorProfile} />
               <ReferralTools referralCode={ambassadorProfile.referral_code} />
             </div>
+
+            {/* Tier Progress */}
+            <Card className="p-4 md:p-6">
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                  <h3 className="text-base md:text-lg font-semibold font-serif">Tier Progress</h3>
+                  <Badge variant="outline" className={`text-white border-none text-xs md:text-sm ${getTierBadgeClass(ambassadorProfile.current_tier)}`}>
+                    {currentTierInfo.icon} {currentTierInfo.displayName}
+                  </Badge>
+                </div>
+                <div className="text-xs md:text-sm text-muted-foreground mb-4">
+                  {nextTierInfo ? (
+                    <>{ambassadorProfile.total_referrals} / {nextTierInfo.requirements.referrals} referrals to {nextTierInfo.displayName}</>
+                  ) : (
+                    "Maximum tier achieved! 🎉"
+                  )}
+                </div>
+                <Progress value={tierProgress} className="h-3" />
+              </div>
+              <div className="grid grid-cols-2 gap-3 md:gap-4 pt-4 border-t border-border">
+                <div className="space-y-1">
+                  <div className="text-xs text-muted-foreground">Base Earnings</div>
+                  <div className="text-lg md:text-xl font-semibold text-primary">${currentTierInfo.benefits.baseEarnings}+</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs text-muted-foreground">Commission Rate</div>
+                  <div className="text-lg md:text-xl font-semibold">{currentTierInfo.benefits.commissionRate}%</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs text-muted-foreground">Quality Bonus</div>
+                  <div className="text-lg md:text-xl font-semibold">{currentTierInfo.benefits.qualityBonus}%</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs text-muted-foreground">Social Posts</div>
+                  <div className="text-lg md:text-xl font-semibold">{ambassadorProfile.social_posts_this_month}/{currentTierInfo.requirements.socialPosts}</div>
+                </div>
+              </div>
+            </Card>
 
             <TransactionsList transactions={transactions} isLoading={transactionsLoading} />
             {payouts && payouts.length > 0 && <PayoutHistory payouts={payouts} />}
@@ -250,6 +254,19 @@ const Dashboard = () => {
       
       case "actions":
         return <QuickActions referralCode={ambassadorProfile.referral_code} isAdmin={isAdmin} />;
+
+      case "withdraw":
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold font-serif">Withdraw Earnings</h2>
+              <p className="text-muted-foreground mt-1">Manage your payout methods and withdrawal requests</p>
+            </div>
+            <EarningsWidget ambassadorProfile={ambassadorProfile} />
+            <PayoutPreferences ambassadorProfile={ambassadorProfile} />
+            <WithdrawalHistory ambassadorId={ambassadorProfile.id} />
+          </div>
+        );
       
       case "settings":
         return <Settings user={user!} tier={ambassadorProfile.current_tier} isAdmin={isAdmin} />;

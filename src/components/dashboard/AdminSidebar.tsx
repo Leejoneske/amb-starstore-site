@@ -1,4 +1,4 @@
-import { BarChart3, FileText, Users, TrendingUp, Settings, Database, Mail, LayoutDashboard } from "lucide-react";
+import { BarChart3, FileText, Users, TrendingUp, Settings, Database, Mail, LayoutDashboard, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Sidebar,
@@ -20,6 +20,7 @@ const menuItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "applications", label: "Applications", icon: FileText },
   { id: "ambassadors", label: "Ambassadors", icon: Users },
+  { id: "withdrawals", label: "Withdrawals", icon: Wallet },
   { id: "messages", label: "Messages", icon: Mail },
   { id: "starstore", label: "Star Store", icon: Database },
   { id: "analytics", label: "Analytics", icon: TrendingUp },
