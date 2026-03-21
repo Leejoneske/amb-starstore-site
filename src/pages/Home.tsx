@@ -761,7 +761,7 @@ const Home = () => {
               },
               {
                 q: "What payout methods are available?",
-                a: "We currently support USDT on the TON network, PayPal, and AirTM. Additional methods may be added based on regional demand. Check your dashboard for the latest available options.",
+                a: "The recommended payout method is USDT on the TON network, which is completely free. Alternative methods may be available but will have processing fees deducted from your earnings. We strongly recommend USDT on TON to keep 100% of your pay.",
               },
               {
                 q: "Can I rejoin the program after opting out?",
