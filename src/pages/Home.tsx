@@ -336,8 +336,8 @@ const Home = () => {
               },
               {
                 step: "05",
-                title: "Withdraw Your Earnings",
-                desc: `Once your balance meets the minimum withdrawal threshold for your level, you can request a payout through your preferred method. We support USDT (TON network), PayPal, AirTM, and more. Payouts are processed within 3–7 business days, depending on the method and your level.`,
+                title: "Receive Your Monthly Payout",
+                desc: `Payouts are made automatically on the 1st of each month. Your earnings are sent directly to your configured USDT (TON network) wallet address — completely free of charge. Alternative payout methods are available but processing fees will be deducted from your earnings, so we strongly recommend USDT on TON. There is no minimum withdrawal — even if your balance is as low as 0.5 USDT, it will be paid out.`,
               },
             ].map((item) => (
               <div key={item.step} className="flex gap-4">
