@@ -632,11 +632,20 @@ const Home = () => {
                 <MessageCircle className="w-5 h-5 text-primary" />
                 <h4 className="text-sm font-semibold text-foreground">Method 2: Telegram Bot</h4>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Open the StarStore bot on Telegram at <strong>@TgStarStore_bot</strong>. Type the command
+              <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                Open the StarStore bot on Telegram. Type the command
                 <strong> /opt_out</strong> and follow the on-screen prompts. You'll be asked to confirm your decision.
                 Bot-initiated opt-outs are processed <strong>automatically and immediately</strong>.
               </p>
+              <a
+                href="https://t.me/TgStarStore_bot"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Open Telegram Bot
+              </a>
             </div>
           </div>
         </ScrollReveal>
