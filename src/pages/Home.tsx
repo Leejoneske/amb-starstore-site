@@ -317,7 +317,7 @@ const Home = () => {
               {
                 step: "01",
                 title: "Apply Through the Official Channel",
-                desc: `Visit the StarStore ambassador page at starstore.site/ambassador or open the Telegram bot @TgStarStore_bot. Fill out the application form with your email address and the social media platforms where you plan to promote. Your application will be reviewed within 1–3 business days.`,
+                desc: `Visit the StarStore ambassador page at starstore.site/ambassador or open the Telegram bot on Telegram. Fill out the application form with your email address and the social media platforms where you plan to promote. Your application will be reviewed within 1–3 business days.`,
               },
               {
                 step: "02",
@@ -336,8 +336,8 @@ const Home = () => {
               },
               {
                 step: "05",
-                title: "Withdraw Your Earnings",
-                desc: `Once your balance meets the minimum withdrawal threshold for your level, you can request a payout through your preferred method. We support USDT (TON network), PayPal, AirTM, and more. Payouts are processed within 3–7 business days, depending on the method and your level.`,
+                title: "Receive Your Monthly Payout",
+                desc: `Payouts are made automatically on the 1st of each month. Your earnings are sent directly to your configured USDT (TON network) wallet address — completely free of charge. Alternative payout methods are available but processing fees will be deducted from your earnings, so we strongly recommend USDT on TON. There is no minimum withdrawal — even if your balance is as low as 0.5 USDT, it will be paid out.`,
               },
             ].map((item) => (
               <div key={item.step} className="flex gap-4">
@@ -532,19 +532,13 @@ const Home = () => {
             Withdrawal & Payout Policy
           </h3>
           <p>
-            Ambassadors can withdraw earnings once they meet the minimum threshold for their level. The minimum withdrawal
-            amounts are:
+            Payouts are made <strong>automatically on the 1st of each month</strong>. There is <strong>no minimum withdrawal amount</strong> — even if your balance is as low as <strong>0.5 USDT</strong>, you will still receive your payout. Ambassadors do not need to manually request withdrawals; the system processes all payouts automatically based on your configured payout address.
           </p>
-          <ul className="space-y-1 list-disc pl-5">
-            <li><strong>Explorer:</strong> $10 minimum</li>
-            <li><strong>Connector:</strong> $15 minimum</li>
-            <li><strong>Pioneer:</strong> $20 minimum</li>
-            <li><strong>Elite:</strong> $25 minimum</li>
-          </ul>
           <p>
-            Supported payout methods include <strong>USDT on TON network</strong>, <strong>PayPal</strong>,
-            <strong> AirTM</strong>, and select other methods depending on your region. Processing time is typically 3–7
-            business days. Elite ambassadors enjoy expedited processing (1–3 business days).
+            The <strong>recommended and default payout method</strong> is <strong>USDT on the TON network</strong>, which is <strong>completely free</strong> — no fees, no deductions. Ambassadors set their USDT TON wallet address in their dashboard, and payouts are sent directly to it each month.
+          </p>
+          <p>
+            Alternative payout methods may be available (e.g., other crypto networks or third-party wallets), but <strong>processing fees will be deducted from your earnings</strong> if you choose an alternative method. We strongly recommend using USDT on TON to maximize your take-home pay.
           </p>
 
           <h3 className="text-lg font-bold text-foreground mt-8" style={{ fontFamily: "'Libre Baskerville', serif" }}>
@@ -638,11 +632,20 @@ const Home = () => {
                 <MessageCircle className="w-5 h-5 text-primary" />
                 <h4 className="text-sm font-semibold text-foreground">Method 2: Telegram Bot</h4>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Open the StarStore bot on Telegram at <strong>@TgStarStore_bot</strong>. Type the command
+              <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                Open the StarStore bot on Telegram. Type the command
                 <strong> /opt_out</strong> and follow the on-screen prompts. You'll be asked to confirm your decision.
                 Bot-initiated opt-outs are processed <strong>automatically and immediately</strong>.
               </p>
+              <a
+                href="https://t.me/TgStarStore_bot"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Open Telegram Bot
+              </a>
             </div>
           </div>
         </ScrollReveal>
@@ -758,7 +761,7 @@ const Home = () => {
               },
               {
                 q: "What payout methods are available?",
-                a: "We currently support USDT on the TON network, PayPal, and AirTM. Additional methods may be added based on regional demand. Check your dashboard for the latest available options.",
+                a: "The recommended payout method is USDT on the TON network, which is completely free. Alternative methods may be available but will have processing fees deducted from your earnings. We strongly recommend USDT on TON to keep 100% of your pay.",
               },
               {
                 q: "Can I rejoin the program after opting out?",
@@ -774,7 +777,7 @@ const Home = () => {
               },
               {
                 q: "How do I contact support?",
-                a: "You can reach our support team at support@starstore.site or through the Telegram bot @TgStarStore_bot. Ambassadors at Pioneer level and above have access to priority support with faster response times.",
+                a: "You can reach our support team at support@starstore.site or through the Telegram bot. You can also join our Telegram community at t.me/StarStore_app for updates and peer support. Ambassadors at Pioneer level and above have access to priority support with faster response times.",
               },
             ].map((item, i) => (
               <AccordionItem key={i} value={`faq-${i}`} className="border-border">
@@ -803,7 +806,7 @@ const Home = () => {
             © {new Date().getFullYear()} StarStore. All rights reserved. This guide is for informational purposes.
             Program terms may change — always refer to the latest version at this page or contact support for clarification.
           </p>
-          <div className="flex justify-center gap-4 text-xs text-muted-foreground">
+          <div className="flex flex-wrap justify-center gap-4 text-xs text-muted-foreground">
             <a href="https://starstore.site" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
               starstore.site
             </a>
@@ -813,7 +816,11 @@ const Home = () => {
             </a>
             <span>·</span>
             <a href="https://t.me/TgStarStore_bot" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-              @TgStarStore_bot
+              Telegram Bot
+            </a>
+            <span>·</span>
+            <a href="https://t.me/StarStore_app" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+              Community
             </a>
           </div>
         </div>

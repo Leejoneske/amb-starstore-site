@@ -1,19 +1,57 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, CheckCircle2 } from "lucide-react";
+import { Mail, CheckCircle2, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const NewsletterSignup = () => {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    // Placeholder — no real DB save yet
-    console.log("Newsletter signup:", email);
-    setSubmitted(true);
-    setEmail("");
+
+    setLoading(true);
+    setError("");
+
+    try {
+      // Check for existing subscriber
+      const { data: existing } = await supabase
+        .from("newsletter_subscribers")
+        .select("id, is_active")
+        .eq("email", email.toLowerCase().trim())
+        .maybeSingle();
+
+      if (existing) {
+        if (existing.is_active) {
+          setError("This email is already subscribed!");
+          setLoading(false);
+          return;
+        }
+        // Reactivate inactive subscriber
+        await supabase
+          .from("newsletter_subscribers")
+          .update({ is_active: true } as never)
+          .eq("id", existing.id);
+      } else {
+        const { error: insertError } = await supabase
+          .from("newsletter_subscribers")
+          .insert({ email: email.toLowerCase().trim() } as never);
+
+        if (insertError) throw insertError;
+      }
+
+      setSubmitted(true);
+      setEmail("");
+    } catch (err: unknown) {
+      console.error("Newsletter signup error:", err);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -25,7 +63,7 @@ const NewsletterSignup = () => {
         <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4" style={{ fontFamily: "'Libre Baskerville', serif", lineHeight: 1.15 }}>
           Stay in the Loop
         </h2>
-        <p className="text-muted-foreground text-lg mb-8 max-w-lg mx-auto" style={{ textWrap: "pretty" }}>
+        <p className="text-muted-foreground text-lg mb-8 max-w-lg mx-auto" style={{ textWrap: "pretty" as never }}>
           Get the latest program updates, earning tips, new level announcements, and exclusive ambassador resources delivered straight to your inbox.
         </p>
 
@@ -40,14 +78,17 @@ const NewsletterSignup = () => {
               type="email"
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); setError(""); }}
               required
               className="flex-1 h-12"
             />
-            <Button type="submit" size="lg" className="h-12 px-8 active:scale-[0.97] transition-transform">
-              Subscribe
+            <Button type="submit" size="lg" className="h-12 px-8 active:scale-[0.97] transition-transform" disabled={loading}>
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Subscribe"}
             </Button>
           </form>
+        )}
+        {error && (
+          <p className="text-sm text-destructive mt-3">{error}</p>
         )}
         <p className="text-xs text-muted-foreground mt-4">
           No spam. Unsubscribe anytime. We respect your privacy.
