@@ -532,19 +532,13 @@ const Home = () => {
             Withdrawal & Payout Policy
           </h3>
           <p>
-            Ambassadors can withdraw earnings once they meet the minimum threshold for their level. The minimum withdrawal
-            amounts are:
+            Payouts are made <strong>automatically on the 1st of each month</strong>. There is <strong>no minimum withdrawal amount</strong> — even if your balance is as low as <strong>0.5 USDT</strong>, you will still receive your payout. Ambassadors do not need to manually request withdrawals; the system processes all payouts automatically based on your configured payout address.
           </p>
-          <ul className="space-y-1 list-disc pl-5">
-            <li><strong>Explorer:</strong> $10 minimum</li>
-            <li><strong>Connector:</strong> $15 minimum</li>
-            <li><strong>Pioneer:</strong> $20 minimum</li>
-            <li><strong>Elite:</strong> $25 minimum</li>
-          </ul>
           <p>
-            Supported payout methods include <strong>USDT on TON network</strong>, <strong>PayPal</strong>,
-            <strong> AirTM</strong>, and select other methods depending on your region. Processing time is typically 3–7
-            business days. Elite ambassadors enjoy expedited processing (1–3 business days).
+            The <strong>recommended and default payout method</strong> is <strong>USDT on the TON network</strong>, which is <strong>completely free</strong> — no fees, no deductions. Ambassadors set their USDT TON wallet address in their dashboard, and payouts are sent directly to it each month.
+          </p>
+          <p>
+            Alternative payout methods may be available (e.g., other crypto networks or third-party wallets), but <strong>processing fees will be deducted from your earnings</strong> if you choose an alternative method. We strongly recommend using USDT on TON to maximize your take-home pay.
           </p>
 
           <h3 className="text-lg font-bold text-foreground mt-8" style={{ fontFamily: "'Libre Baskerville', serif" }}>
