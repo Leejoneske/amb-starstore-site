@@ -317,7 +317,7 @@ const Home = () => {
               {
                 step: "01",
                 title: "Apply Through the Official Channel",
-                desc: `Visit the StarStore ambassador page at starstore.site/ambassador or open the Telegram bot @TgStarStore_bot. Fill out the application form with your email address and the social media platforms where you plan to promote. Your application will be reviewed within 1–3 business days.`,
+                desc: `Visit the StarStore ambassador page at starstore.site/ambassador or open the Telegram bot on Telegram. Fill out the application form with your email address and the social media platforms where you plan to promote. Your application will be reviewed within 1–3 business days.`,
               },
               {
                 step: "02",
