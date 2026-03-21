@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const navLinks = [
   { label: "Overview", href: "#overview" },
@@ -14,6 +15,10 @@ const navLinks = [
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isHome = location.pathname === "/";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -23,6 +28,10 @@ const Navbar = () => {
 
   const handleClick = (href: string) => {
     setOpen(false);
+    if (!isHome) {
+      navigate("/" + href);
+      return;
+    }
     const el = document.querySelector(href);
     el?.scrollIntoView({ behavior: "smooth" });
   };
@@ -37,7 +46,11 @@ const Navbar = () => {
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <a href="#" className="flex items-center gap-2 group">
+          <a
+            href="/"
+            onClick={(e) => { e.preventDefault(); navigate("/"); }}
+            className="flex items-center gap-2 group"
+          >
             <span className="text-xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Libre Baskerville', serif" }}>
               StarStore
             </span>
@@ -48,7 +61,7 @@ const Navbar = () => {
 
           {/* Desktop links */}
           <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((l) => (
+            {isHome && navLinks.map((l) => (
               <button
                 key={l.href}
                 onClick={() => handleClick(l.href)}
@@ -57,6 +70,14 @@ const Navbar = () => {
                 {l.label}
               </button>
             ))}
+            <button
+              onClick={() => { setOpen(false); navigate("/contact"); }}
+              className={`px-3 py-1.5 text-sm transition-colors rounded-md hover:bg-secondary/60 active:scale-[0.97] ${
+                location.pathname === "/contact" ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Contact Us
+            </button>
           </div>
 
           {/* Mobile toggle */}
@@ -74,7 +95,7 @@ const Navbar = () => {
       {open && (
         <div className="md:hidden bg-background/98 backdrop-blur-md border-b border-border animate-fade-in">
           <div className="px-4 py-3 space-y-1">
-            {navLinks.map((l) => (
+            {isHome && navLinks.map((l) => (
               <button
                 key={l.href}
                 onClick={() => handleClick(l.href)}
@@ -83,6 +104,12 @@ const Navbar = () => {
                 {l.label}
               </button>
             ))}
+            <button
+              onClick={() => { setOpen(false); navigate("/contact"); }}
+              className="block w-full text-left px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/60 rounded-md transition-colors"
+            >
+              Contact Us
+            </button>
           </div>
         </div>
       )}
