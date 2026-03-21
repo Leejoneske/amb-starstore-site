@@ -777,7 +777,7 @@ const Home = () => {
               },
               {
                 q: "How do I contact support?",
-                a: "You can reach our support team at support@starstore.site or through the Telegram bot @TgStarStore_bot. Ambassadors at Pioneer level and above have access to priority support with faster response times.",
+                a: "You can reach our support team at support@starstore.site or through the Telegram bot. You can also join our Telegram community at t.me/StarStore_app for updates and peer support. Ambassadors at Pioneer level and above have access to priority support with faster response times.",
               },
             ].map((item, i) => (
               <AccordionItem key={i} value={`faq-${i}`} className="border-border">
