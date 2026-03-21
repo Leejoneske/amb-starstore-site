@@ -806,7 +806,7 @@ const Home = () => {
             © {new Date().getFullYear()} StarStore. All rights reserved. This guide is for informational purposes.
             Program terms may change — always refer to the latest version at this page or contact support for clarification.
           </p>
-          <div className="flex justify-center gap-4 text-xs text-muted-foreground">
+          <div className="flex flex-wrap justify-center gap-4 text-xs text-muted-foreground">
             <a href="https://starstore.site" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
               starstore.site
             </a>
@@ -816,7 +816,11 @@ const Home = () => {
             </a>
             <span>·</span>
             <a href="https://t.me/TgStarStore_bot" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-              @TgStarStore_bot
+              Telegram Bot
+            </a>
+            <span>·</span>
+            <a href="https://t.me/StarStore_app" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+              Community
             </a>
           </div>
         </div>
