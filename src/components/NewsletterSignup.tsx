@@ -30,13 +30,11 @@ const NewsletterSignup = () => {
         return;
       }
 
-      {
-        const { error: insertError } = await supabase
-          .from("newsletter_subscribers")
-          .insert({ email: email.toLowerCase().trim() } as never);
+      const { error: insertError } = await supabase
+        .from("newsletter_subscribers")
+        .insert({ email: email.toLowerCase().trim() } as never);
 
-        if (insertError) throw insertError;
-      }
+      if (insertError) throw insertError;
 
       setSubmitted(true);
       setEmail("");
