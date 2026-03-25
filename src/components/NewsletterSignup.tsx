@@ -18,31 +18,23 @@ const NewsletterSignup = () => {
     setError("");
 
     try {
-      // Check for existing subscriber
-      const { data: existing } = await supabase
-        .from("newsletter_subscribers")
-        .select("id, is_active")
-        .eq("email", email.toLowerCase().trim())
-        .maybeSingle();
+      // Check if email already subscribed using secure RPC (no public SELECT)
+      const { data: alreadySubscribed, error: rpcError } = await supabase
+        .rpc("check_newsletter_email", { p_email: email.toLowerCase().trim() });
 
-      if (existing) {
-        if (existing.is_active) {
-          setError("This email is already subscribed!");
-          setLoading(false);
-          return;
-        }
-        // Reactivate inactive subscriber
-        await supabase
-          .from("newsletter_subscribers")
-          .update({ is_active: true } as never)
-          .eq("id", existing.id);
-      } else {
-        const { error: insertError } = await supabase
-          .from("newsletter_subscribers")
-          .insert({ email: email.toLowerCase().trim() } as never);
+      if (rpcError) throw rpcError;
 
-        if (insertError) throw insertError;
+      if (alreadySubscribed) {
+        setError("This email is already subscribed!");
+        setLoading(false);
+        return;
       }
+
+      const { error: insertError } = await supabase
+        .from("newsletter_subscribers")
+        .insert({ email: email.toLowerCase().trim() } as never);
+
+      if (insertError) throw insertError;
 
       setSubmitted(true);
       setEmail("");
