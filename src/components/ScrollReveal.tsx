@@ -13,17 +13,45 @@ const ScrollReveal = ({ children, className = "", delay = 0 }: ScrollRevealProps
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+
+    const reveal = () => setVisible(true);
+
+    if (typeof window === "undefined") {
+      reveal();
+      return;
+    }
+
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      reveal();
+      return;
+    }
+
+    if (!("IntersectionObserver" in window)) {
+      reveal();
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setVisible(true);
+          reveal();
           observer.unobserve(el);
         }
       },
       { threshold: 0.15 }
     );
+
+    const fallbackTimer = window.setTimeout(() => {
+      reveal();
+      observer.unobserve(el);
+    }, 1200 + delay);
+
     observer.observe(el);
-    return () => observer.disconnect();
+
+    return () => {
+      window.clearTimeout(fallbackTimer);
+      observer.disconnect();
+    };
   }, []);
 
   return (
