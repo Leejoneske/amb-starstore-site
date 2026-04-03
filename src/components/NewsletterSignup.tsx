@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, CheckCircle2, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 
 const NewsletterSignup = () => {
   const [email, setEmail] = useState("");
@@ -13,6 +13,11 @@ const NewsletterSignup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
+
+    if (!supabase) {
+      setError("Newsletter signup is temporarily unavailable. Please try again later.");
+      return;
+    }
 
     setLoading(true);
     setError("");
@@ -59,6 +64,12 @@ const NewsletterSignup = () => {
           Get the latest program updates, earning tips, new level announcements, and exclusive ambassador resources delivered straight to your inbox.
         </p>
 
+        {!isSupabaseConfigured && (
+          <div className="mb-6 rounded-xl border border-border bg-secondary/60 px-4 py-3 text-sm text-muted-foreground">
+            Newsletter signup is temporarily unavailable until the Supabase environment variables are configured in deployment.
+          </div>
+        )}
+
         {submitted ? (
           <div className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 py-4 px-6 rounded-xl animate-fade-in">
             <CheckCircle2 className="w-5 h-5" />
@@ -71,10 +82,11 @@ const NewsletterSignup = () => {
               placeholder="you@example.com"
               value={email}
               onChange={(e) => { setEmail(e.target.value); setError(""); }}
+              disabled={!isSupabaseConfigured || loading}
               required
               className="flex-1 h-12"
             />
-            <Button type="submit" size="lg" className="h-12 px-8 active:scale-[0.97] transition-transform" disabled={loading}>
+            <Button type="submit" size="lg" className="h-12 px-8 active:scale-[0.97] transition-transform" disabled={!isSupabaseConfigured || loading}>
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Subscribe"}
             </Button>
           </form>
