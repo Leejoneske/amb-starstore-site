@@ -71,11 +71,11 @@ const NewsletterSignup = () => {
               placeholder="you@example.com"
               value={email}
               onChange={(e) => { setEmail(e.target.value); setError(""); }}
-              disabled={!isSupabaseConfigured || loading}
+              disabled={loading}
               required
               className="flex-1 h-12"
             />
-            <Button type="submit" size="lg" className="h-12 px-8 active:scale-[0.97] transition-transform" disabled={!isSupabaseConfigured || loading}>
+            <Button type="submit" size="lg" className="h-12 px-8 active:scale-[0.97] transition-transform" disabled={loading}>
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Subscribe"}
             </Button>
           </form>
