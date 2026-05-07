@@ -37,11 +37,6 @@ const Contact = () => {
       return;
     }
 
-    if (!supabase) {
-      setError("Contact form is temporarily unavailable. Please email us directly at support@starstore.app");
-      return;
-    }
-
     setLoading(true);
     setError("");
 
