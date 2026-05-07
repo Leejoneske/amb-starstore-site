@@ -64,12 +64,6 @@ const NewsletterSignup = () => {
           Get the latest program updates, earning tips, new level announcements, and exclusive ambassador resources delivered straight to your inbox.
         </p>
 
-        {!isSupabaseConfigured && (
-          <div className="mb-6 rounded-xl border border-border bg-secondary/60 px-4 py-3 text-sm text-muted-foreground">
-            Newsletter signup is temporarily unavailable until the Supabase environment variables are configured in deployment.
-          </div>
-        )}
-
         {submitted ? (
           <div className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 py-4 px-6 rounded-xl animate-fade-in">
             <CheckCircle2 className="w-5 h-5" />

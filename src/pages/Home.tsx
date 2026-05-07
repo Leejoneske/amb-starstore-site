@@ -317,7 +317,7 @@ const Home = () => {
               {
                 step: "01",
                 title: "Apply Through the Official Channel",
-                desc: `Visit the StarStore ambassador page at starstore.site/ambassador or open the Telegram bot on Telegram. Fill out the application form with your email address and the social media platforms where you plan to promote. Your application will be reviewed within 1–3 business days.`,
+                desc: `Visit the StarStore ambassador page at starstore.app/ambassador or open the Telegram bot on Telegram. Fill out the application form with your email address and the social media platforms where you plan to promote. Your application will be reviewed within 1–3 business days.`,
               },
               {
                 step: "02",
@@ -552,7 +552,7 @@ const Home = () => {
             forfeited.
           </p>
           <p>
-            To reactivate a suspended account, contact support at <strong>support@starstore.site</strong>. Reactivation is at
+            To reactivate a suspended account, contact support at <strong>support@starstore.app</strong>. Reactivation is at
             StarStore's discretion and may require starting at the Explorer level regardless of your previous tier.
           </p>
 
@@ -581,7 +581,7 @@ const Home = () => {
             StarStore collects and processes ambassador data (name, email, social profiles, referral statistics, payout
             information) in accordance with our Privacy Policy. Your data is never sold to third parties. Referral tracking
             data is used solely for the purpose of calculating commissions and evaluating level status. You can request a
-            complete data export or deletion at any time by contacting <strong>support@starstore.site</strong>.
+            complete data export or deletion at any time by contacting <strong>support@starstore.app</strong>.
           </p>
 
           <h3 className="text-lg font-bold text-foreground mt-8" style={{ fontFamily: "'Libre Baskerville', serif" }}>
@@ -621,7 +621,7 @@ const Home = () => {
                 <h4 className="text-sm font-semibold text-foreground">Method 1: Email</h4>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Send an email to <strong>support@starstore.site</strong> with the subject line
+                Send an email to <strong>support@starstore.app</strong> with the subject line
                 <strong> "Ambassador Opt-Out Request"</strong>. Include your registered email address and your ambassador
                 referral code. Our team will process your request within <strong>3–5 business days</strong> and send you a
                 confirmation email once completed.
@@ -701,7 +701,7 @@ const Home = () => {
             Changed your mind? We'd love to have you back. Here's how the opt-in process works after you've previously opted out:
           </p>
           <ul className="space-y-2 list-none pl-0">
-            <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 mt-0.5 text-primary shrink-0" /> <span><strong>Within 30 days of opt-out:</strong> You can request reinstatement by emailing support@starstore.site. Your previous data and referral history may be restored, and you may resume at your previous level if your historical metrics support it. A brief review is required.</span></li>
+            <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 mt-0.5 text-primary shrink-0" /> <span><strong>Within 30 days of opt-out:</strong> You can request reinstatement by emailing support@starstore.app. Your previous data and referral history may be restored, and you may resume at your previous level if your historical metrics support it. A brief review is required.</span></li>
             <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 mt-0.5 text-primary shrink-0" /> <span><strong>After 30 days:</strong> You'll need to <strong>reapply</strong> through the standard application process. Your previous history is not carried over, and you'll start fresh as an Explorer. This ensures fairness for all ambassadors.</span></li>
             <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 mt-0.5 text-primary shrink-0" /> <span><strong>Previously terminated for cause:</strong> If you were removed due to a policy violation, reinstatement is at StarStore's <strong>sole discretion</strong>. You may be required to complete an appeal process and agree to additional monitoring for a probationary period.</span></li>
           </ul>
@@ -777,7 +777,7 @@ const Home = () => {
               },
               {
                 q: "How do I contact support?",
-                a: "You can reach our support team at support@starstore.site or through the Telegram bot. You can also join our Telegram community at t.me/StarStore_app for updates and peer support. Ambassadors at Pioneer level and above have access to priority support with faster response times.",
+                a: "You can reach our support team at support@starstore.app or through the Telegram bot. You can also join our Telegram community at t.me/StarStore_app for updates and peer support. Ambassadors at Pioneer level and above have access to priority support with faster response times.",
               },
             ].map((item, i) => (
               <AccordionItem key={i} value={`faq-${i}`} className="border-border">
@@ -807,12 +807,12 @@ const Home = () => {
             Program terms may change — always refer to the latest version at this page or contact support for clarification.
           </p>
           <div className="flex flex-wrap justify-center gap-4 text-xs text-muted-foreground">
-            <a href="https://starstore.site" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-              starstore.site
+            <a href="https://starstore.app" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+              starstore.app
             </a>
             <span>·</span>
-            <a href="mailto:support@starstore.site" className="hover:text-foreground transition-colors">
-              support@starstore.site
+            <a href="mailto:support@starstore.app" className="hover:text-foreground transition-colors">
+              support@starstore.app
             </a>
             <span>·</span>
             <a href="https://t.me/TgStarStore_bot" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
