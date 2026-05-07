@@ -117,8 +117,8 @@ serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "StarStore Ambassador <noreply@starstore.site>",
-        to: ["support@starstore.site"],
+        from: "StarStore Ambassador <noreply@starstore.app>",
+        to: ["support@starstore.app"],
         reply_to: email,
         subject: `[Ambassador Contact] ${validatedSubject}: ${escapeHtml(name)}`,
         html: `
@@ -153,7 +153,7 @@ serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "StarStore Ambassador <noreply@starstore.site>",
+        from: "StarStore Ambassador <noreply@starstore.app>",
         to: [email],
         subject: "We received your message — StarStore Ambassador Program",
         html: `

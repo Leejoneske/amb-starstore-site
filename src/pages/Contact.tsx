@@ -38,7 +38,7 @@ const Contact = () => {
     }
 
     if (!supabase) {
-      setError("Contact form is temporarily unavailable. Please email us directly at support@starstore.site");
+      setError("Contact form is temporarily unavailable. Please email us directly at support@starstore.app");
       return;
     }
 
@@ -59,7 +59,7 @@ const Contact = () => {
       setSent(true);
     } catch (err) {
       console.error("Contact form error:", err);
-      setError("Failed to send message. Please try again or email us directly at support@starstore.site");
+      setError("Failed to send message. Please try again or email us directly at support@starstore.app");
     } finally {
       setLoading(false);
     }
@@ -99,8 +99,8 @@ const Contact = () => {
             <div className="bg-card border border-border rounded-xl p-5 text-center">
               <Mail className="w-5 h-5 text-primary mx-auto mb-2" />
               <h3 className="text-sm font-semibold text-foreground mb-1">Email Us</h3>
-              <a href="mailto:support@starstore.site" className="text-sm text-primary hover:underline">
-                support@starstore.site
+              <a href="mailto:support@starstore.app" className="text-sm text-primary hover:underline">
+                support@starstore.app
               </a>
             </div>
             <div className="bg-card border border-border rounded-xl p-5 text-center">
@@ -216,7 +216,7 @@ const Contact = () => {
               </Button>
 
               <p className="text-xs text-muted-foreground text-center">
-                Your message will be sent to our support team at support@starstore.site. We typically respond within 1–3 business days.
+                Your message will be sent to our support team at support@starstore.app. We typically respond within 1–3 business days.
               </p>
             </form>
           )}
