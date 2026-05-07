@@ -199,7 +199,7 @@ const Contact = () => {
                 <p className="text-sm text-destructive">{error}</p>
               )}
 
-              <Button type="submit" size="lg" className="w-full h-12" disabled={loading || !isSupabaseConfigured}>
+              <Button type="submit" size="lg" className="w-full h-12" disabled={loading}>
                 {loading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
