@@ -112,11 +112,6 @@ const Contact = () => {
             </div>
           </div>
 
-          {!isSupabaseConfigured && (
-            <div className="mb-8 rounded-xl border border-border bg-secondary/60 px-4 py-3 text-sm text-muted-foreground">
-              The contact form is disabled until the Supabase environment variables are configured in deployment.
-            </div>
-          )}
 
           {sent ? (
             <div className="bg-card border border-border rounded-2xl p-8 text-center animate-fade-in">
