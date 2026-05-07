@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, CheckCircle2, Loader2 } from "lucide-react";
-import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 
 const NewsletterSignup = () => {
   const [email, setEmail] = useState("");
@@ -13,11 +13,6 @@ const NewsletterSignup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-
-    if (!supabase) {
-      setError("Newsletter signup is temporarily unavailable. Please try again later.");
-      return;
-    }
 
     setLoading(true);
     setError("");
@@ -76,11 +71,11 @@ const NewsletterSignup = () => {
               placeholder="you@example.com"
               value={email}
               onChange={(e) => { setEmail(e.target.value); setError(""); }}
-              disabled={!isSupabaseConfigured || loading}
+              disabled={loading}
               required
               className="flex-1 h-12"
             />
-            <Button type="submit" size="lg" className="h-12 px-8 active:scale-[0.97] transition-transform" disabled={!isSupabaseConfigured || loading}>
+            <Button type="submit" size="lg" className="h-12 px-8 active:scale-[0.97] transition-transform" disabled={loading}>
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Subscribe"}
             </Button>
           </form>

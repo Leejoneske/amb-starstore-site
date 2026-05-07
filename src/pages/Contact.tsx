@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Mail, Send, CheckCircle2, Loader2, ArrowLeft, MessageCircle } from "lucide-react";
-import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 
 const subjectOptions = [
   "General Inquiry",
@@ -34,11 +34,6 @@ const Contact = () => {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
       setError("Please fill in all required fields.");
-      return;
-    }
-
-    if (!supabase) {
-      setError("Contact form is temporarily unavailable. Please email us directly at support@starstore.app");
       return;
     }
 
@@ -199,7 +194,7 @@ const Contact = () => {
                 <p className="text-sm text-destructive">{error}</p>
               )}
 
-              <Button type="submit" size="lg" className="w-full h-12" disabled={loading || !isSupabaseConfigured}>
+              <Button type="submit" size="lg" className="w-full h-12" disabled={loading}>
                 {loading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
