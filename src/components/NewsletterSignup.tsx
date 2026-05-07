@@ -14,11 +14,6 @@ const NewsletterSignup = () => {
     e.preventDefault();
     if (!email) return;
 
-    if (!supabase) {
-      setError("Newsletter signup is temporarily unavailable. Please try again later.");
-      return;
-    }
-
     setLoading(true);
     setError("");
 
