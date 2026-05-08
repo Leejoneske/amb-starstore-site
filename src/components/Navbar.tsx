@@ -12,6 +12,11 @@ const navLinks = [
   { label: "Newsletter", href: "#newsletter" },
 ];
 
+const externalLinks = [
+  { label: "Blog", href: "https://starstore.app/blog" },
+  { label: "Main App", href: "https://starstore.app" },
+];
+
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
