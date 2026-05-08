@@ -83,6 +83,17 @@ const Navbar = () => {
             >
               Contact Us
             </button>
+            {externalLinks.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-secondary/60"
+              >
+                {l.label} ↗
+              </a>
+            ))}
           </div>
 
           {/* Mobile toggle */}
