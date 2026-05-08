@@ -811,6 +811,10 @@ const Home = () => {
               starstore.app
             </a>
             <span>·</span>
+            <a href="https://starstore.app/blog" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+              Blog
+            </a>
+            <span>·</span>
             <a href="mailto:support@starstore.app" className="hover:text-foreground transition-colors">
               support@starstore.app
             </a>
