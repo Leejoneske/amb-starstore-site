@@ -813,6 +813,41 @@ const Home = () => {
         </ScrollReveal>
       </Section>
 
+      {/* ────── APPLY CTA ────── */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <ScrollReveal>
+          <div className="max-w-3xl mx-auto bg-card border border-border rounded-2xl p-8 md:p-10 text-center shadow-sm">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 mb-4">
+              <Rocket className="w-6 h-6 text-primary" />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3" style={{ fontFamily: "'Libre Baskerville', serif" }}>
+              Ready to become an Ambassador?
+            </h2>
+            <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
+              The application form lives inside our Telegram Mini App — fastest way to apply, get reviewed, and start earning.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
+              <a
+                href="https://t.me/TgStarStore_bot?startapp=ambassador"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/20 hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
+                <Rocket className="w-4 h-4" /> Open Mini App & Apply
+              </a>
+              <a
+                href="https://starstore.app/ambassador"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-border text-foreground text-sm font-semibold hover:bg-secondary/60 transition-colors"
+              >
+                Apply on Web <ArrowRight className="w-4 h-4" />
+              </a>
+            </div>
+          </div>
+        </ScrollReveal>
+      </section>
+
       {/* ────── NEWSLETTER ────── */}
       <NewsletterSignup />
 
