@@ -12,6 +12,11 @@ const navLinks = [
   { label: "Newsletter", href: "#newsletter" },
 ];
 
+const externalLinks = [
+  { label: "Blog", href: "https://starstore.app/blog" },
+  { label: "Main App", href: "https://starstore.app" },
+];
+
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -78,6 +83,17 @@ const Navbar = () => {
             >
               Contact Us
             </button>
+            {externalLinks.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-secondary/60"
+              >
+                {l.label} ↗
+              </a>
+            ))}
           </div>
 
           {/* Mobile toggle */}
@@ -110,6 +126,18 @@ const Navbar = () => {
             >
               Contact Us
             </button>
+            {externalLinks.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOpen(false)}
+                className="block w-full text-left px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/60 rounded-md transition-colors"
+              >
+                {l.label} ↗
+              </a>
+            ))}
           </div>
         </div>
       )}
