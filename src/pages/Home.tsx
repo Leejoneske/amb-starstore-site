@@ -68,7 +68,27 @@ const HeroSection = () => (
           our policies and managing your membership. This is your complete reference.
         </p>
       </ScrollReveal>
-      <ScrollReveal delay={240}>
+      <ScrollReveal delay={220}>
+        <div className="flex flex-wrap justify-center gap-3 mb-8">
+          <a
+            href="https://t.me/TgStarStore_bot?startapp=ambassador"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-primary-foreground text-sm font-semibold shadow-lg shadow-primary/20 hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all"
+          >
+            <Rocket className="w-4 h-4" /> Apply in Telegram Mini App
+          </a>
+          <a
+            href="https://starstore.app/ambassador"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-border bg-card text-foreground text-sm font-semibold hover:bg-secondary/60 transition-colors"
+          >
+            Apply on Web <ArrowRight className="w-4 h-4" />
+          </a>
+        </div>
+      </ScrollReveal>
+      <ScrollReveal delay={280}>
         <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
           <span className="flex items-center gap-1.5"><Users className="w-4 h-4 text-primary" /> 500+ Active Ambassadors</span>
           <span className="flex items-center gap-1.5"><TrendingUp className="w-4 h-4 text-primary" /> $50K+ Paid Out</span>
