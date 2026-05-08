@@ -126,6 +126,18 @@ const Navbar = () => {
             >
               Contact Us
             </button>
+            {externalLinks.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOpen(false)}
+                className="block w-full text-left px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/60 rounded-md transition-colors"
+              >
+                {l.label} ↗
+              </a>
+            ))}
           </div>
         </div>
       )}
